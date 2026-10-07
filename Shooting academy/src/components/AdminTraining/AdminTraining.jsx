@@ -143,6 +143,6 @@ export class AdminTrainingModule extends BaseAdminModule {
   }
 }
 
-export function createAdminTraining(container: HTMLElement) {
+export function createAdminTraining(container) {
   return new AdminTrainingModule(container);
 }

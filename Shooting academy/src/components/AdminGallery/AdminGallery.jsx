@@ -1,10 +1,8 @@
 import { BaseAdminModule } from '@/lib/admin-module';
-import { uploadImage, deleteImage, STORAGE_BUCKETS } from '@/lib/admin-api';
+import { uploadImage, deleteImage } from '@/lib/admin-api';
+import { STORAGE_BUCKETS } from '@/lib/supabase';
 
 export class AdminGalleryModule extends BaseAdminModule {
-  private uploading = false;
-  private uploadProgress = 0;
-
   constructor(container) {
     super({
       container,
@@ -36,6 +34,9 @@ export class AdminGalleryModule extends BaseAdminModule {
       sortable: true,
       reorderable: true,
     });
+
+    this.uploading = false;
+    this.uploadProgress = 0;
   }
 
   async init() {
@@ -59,11 +60,59 @@ export class AdminGalleryModule extends BaseAdminModule {
   }
 
   getTableHtml() {
-    return `${this.isLoading ? `<div class="admin-module__loading"><div class="admin-spinner"></div></div>` : `
-      <div class="admin-table-container"><table class="admin-table"><thead><tr><th>Image</th><th data-sort="title">Title</th><th data-sort="category">Category</th><th data-sort="is_visible">Visible</th><th data-sort="is_featured">Featured</th><th data-sort="display_order">Order</th><th>Actions</th></tr></thead>
-      <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">${this.items.length > 0 ? this.items.map(item => `
-        <tr data-id="${item.id}" data-order="${item.display_order}"><td><img src="${item.image_url || ''}" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td><td>${item.title || '-'}</td><td>${item.category}</td><td><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></td><td><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-featured" data-id="${item.id}" ${item.is_featured ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></td><td><input type="number" class="admin-order-input" value="${item.display_order}" data-action="update-order" data-id="${item.id}" style="width: 60px;"></td><td><div class="admin-actions"><button class="admin-action-btn" data-action="edit" data-id="${item.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>
-      `).join('') : `<tr><td colspan="7" class="admin-table__empty">No images found</td></tr>`}</tbody></table></div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}`;
+    if (this.isLoading) {
+      return `<div class="admin-module__loading"><div class="admin-spinner"></div></div>`;
+    }
+
+    const rows = this.items.length > 0 ? this.items.map(item => `
+      <tr data-id="${item.id}" data-order="${item.display_order}">
+        <td><img src="${item.image_url || ''}" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>
+        <td>${item.title || '-'}</td>
+        <td>${item.category}</td>
+        <td>
+          <label class="admin-toggle">
+            <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
+            <span class="admin-toggle__slider"></span>
+          </label>
+        </td>
+        <td>
+          <label class="admin-toggle">
+            <input type="checkbox" class="admin-toggle__input" data-action="toggle-featured" data-id="${item.id}" ${item.is_featured ? 'checked' : ''}>
+            <span class="admin-toggle__slider"></span>
+          </label>
+        </td>
+        <td><input type="number" class="admin-order-input" value="${item.display_order}" data-action="update-order" data-id="${item.id}" style="width: 60px;"></td>
+        <td>
+          <div class="admin-actions">
+            <button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}" title="Delete">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="7" class="admin-table__empty">No images found</td></tr>`;
+
+    return `<div class="admin-table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th data-sort="title">Title</th>
+            <th data-sort="category">Category</th>
+            <th data-sort="is_visible">Visible</th>
+            <th data-sort="is_featured">Featured</th>
+            <th data-sort="display_order">Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">
+          ${rows}
+        </tbody>
+      </table>
+    </div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}`;
   }
 
   getFormHtml() {
@@ -82,7 +131,7 @@ export class AdminGalleryModule extends BaseAdminModule {
 
   getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
 
-  async handleCreate(data: any) {
+  async handleCreate(data) {
     if (data.image_file) {
       this.uploading = true;
       this.uploadProgress = 0;
@@ -96,7 +145,8 @@ export class AdminGalleryModule extends BaseAdminModule {
 
         await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
 
-        data.image_url = `${(await import('@/lib/supabase')).getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
+        const supabaseModule = await import('@/lib/supabase');
+        data.image_url = `${supabaseModule.getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
         data.storage_path = path;
       } catch (err) {
         this.uploading = false;
@@ -111,7 +161,7 @@ export class AdminGalleryModule extends BaseAdminModule {
     this.uploading = false;
   }
 
-  async handleUpdate(id: string, data: any) {
+  async handleUpdate(id, data) {
     if (data.image_file) {
       this.uploading = true;
       this.uploadProgress = 0;
@@ -125,7 +175,8 @@ export class AdminGalleryModule extends BaseAdminModule {
 
         await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
 
-        data.image_url = `${(await import('@/lib/supabase')).getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
+        const supabaseModule = await import('@/lib/supabase');
+        data.image_url = `${supabaseModule.getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
         data.storage_path = path;
       } catch (err) {
         this.uploading = false;
@@ -140,7 +191,7 @@ export class AdminGalleryModule extends BaseAdminModule {
     this.uploading = false;
   }
 
-  async handleDelete(id: string) {
+  async handleDelete(id) {
     if (!confirm('Are you sure you want to delete this image?')) return;
     const item = this.items.find(i => i.id === id);
     if (item?.storage_path) {
@@ -157,15 +208,15 @@ export class AdminGalleryModule extends BaseAdminModule {
     });
 
     this.container.querySelector('input[type="file"]')?.addEventListener('change', (e) => {
-      const file = (e.target).files?.[0];
+      const file = e.target.files?.[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = () => {
           const preview = this.container.querySelector('.admin-image-upload__preview');
-          if (preview) preview.setAttribute('src', reader.result as string);
+          if (preview) preview.setAttribute('src', reader.result);
           else {
             const img = document.createElement('img');
-            img.src = reader.result as string;
+            img.src = reader.result;
             img.className = 'admin-image-upload__preview';
             img.style.cssText = 'max-width: 200px; max-height: 150px; object-fit: cover; border-radius: var(--radius-sm); margin-top: var(--spacing-2);';
             this.container.querySelector('.admin-image-upload')?.appendChild(img);
@@ -175,8 +226,6 @@ export class AdminGalleryModule extends BaseAdminModule {
       }
     });
   }
-
-  getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
 }
 
-export function createAdminGallery(container: HTMLElement) { return new AdminGalleryModule(container); }
+export function createAdminGallery(container) { return new AdminGalleryModule(container); }

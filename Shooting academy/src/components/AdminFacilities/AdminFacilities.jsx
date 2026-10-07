@@ -64,4 +64,4 @@ export class AdminFacilitiesModule extends BaseAdminModule {
   getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
 }
 
-export function createAdminFacilities(container: HTMLElement) { return new AdminFacilitiesModule(container); }
+export function createAdminFacilities(container) { return new AdminFacilitiesModule(container); }

@@ -56,13 +56,68 @@ export class AdminHomepageModule extends BaseAdminModule {
           <h2 class="admin-module__title">${this.title}</h2>
           <p class="admin-module__subtitle">Manage homepage sections content</p>
         </div>
-
         ${this.showForm ? this.getFormHtml() : this.getListHtml()}
       </div>
     `;
   }
 
   getListHtml() {
+    const tableContent = this.isLoading
+      ? `<div class="admin-module__loading"><div class="admin-spinner"></div></div>`
+      : (() => {
+          const rows = this.items.length > 0 ? this.items.map(item => `
+            <tr data-id="${item.id}" data-order="${item.display_order}">
+              <td><strong>${this.getSectionLabel(item.section_key)}</strong></td>
+              <td>${item.title || '-'}</td>
+              <td>
+                <label class="admin-toggle">
+                  <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
+                  <span class="admin-toggle__slider"></span>
+                </label>
+              </td>
+              <td>
+                <label class="admin-toggle">
+                  <input type="checkbox" class="admin-toggle__input" data-action="toggle-featured" data-id="${item.id}" ${item.is_featured ? 'checked' : ''}>
+                  <span class="admin-toggle__slider"></span>
+                </label>
+              </td>
+              <td>
+                <input type="number" class="admin-order-input" value="${item.display_order}" data-action="update-order" data-id="${item.id}" style="width: 60px;">
+              </td>
+              <td>
+                <div class="admin-actions">
+                  <button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}" title="Delete">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `).join('') : `<tr><td colspan="6" class="admin-table__empty">No sections found</td></tr>`;
+
+          return `
+            <div class="admin-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th data-sort="section_key">Section</th>
+                    <th data-sort="title">Title</th>
+                    <th data-sort="is_visible">Visible</th>
+                    <th data-sort="is_featured">Featured</th>
+                    <th data-sort="display_order">Order</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">
+                  ${rows}
+                </tbody>
+              </table>
+            </div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}
+          `;
+        })();
+
     return `
       <div class="admin-module__toolbar">
         <div class="admin-module__search">
@@ -89,72 +144,8 @@ export class AdminHomepageModule extends BaseAdminModule {
           Add Section
         </button>
       </div>
-
-      ${this.isLoading ? `
-        <div class="admin-module__loading">
-          <div class="admin-spinner"></div>
-        </div>
-      ` : `
-        <div class="admin-table-container">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th data-sort="section_key">Section</th>
-                <th data-sort="title">Title</th>
-                <th data-sort="is_visible">Visible</th>
-                <th data-sort="is_featured">Featured</th>
-                <th data-sort="display_order">Order</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">
-              ${this.items.length > 0 ? this.items.map(item => `
-                <tr data-id="${item.id}" data-order="${item.display_order}">
-                  <td><strong>${this.getSectionLabel(item.section_key)}</strong></td>
-                  <td>${item.title || '-'}</td>
-                  <td>
-                    <label class="admin-toggle">
-                      <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
-                      <span class="admin-toggle__slider"></span>
-                    </label>
-                  </td>
-                  <td>
-                    <label class="admin-toggle">
-                      <input type="checkbox" class="admin-toggle__input" data-action="toggle-featured" data-id="${item.id}" ${item.is_featured ? 'checked' : ''}>
-                      <span class="admin-toggle__slider"></span>
-                    </label>
-                  </td>
-                  <td>
-                    <input type="number" class="admin-order-input" value="${item.display_order}" data-action="update-order" data-id="${item.id}" style="width: 60px;">
-                  </td>
-                  <td>
-                    <div class="admin-actions">
-                      <button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      </button>
-                      <button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}" title="Delete">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              `).join('') : `
-                <tr>
-                  <td colspan="6" class="admin-table__empty">No sections found</td>
-                </tr>
-              `}
-            </tbody>
-          </table>
-        </div>
-
-        ${this.totalPages > 1 ? `
-          <div class="admin-pagination">
-            <button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button>
-            <span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span>
-            <button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button>
-          </div>
-        ` : ''}
-      `;
+      ${tableContent}
+    `;
   }
 
   getFormHtml() {
@@ -205,9 +196,13 @@ export class AdminHomepageModule extends BaseAdminModule {
     `;
   }
 
-  getSectionLabel(key: string): string {
+  getSectionLabel(key) {
     const section = HOMEPAGE_SECTIONS.find(s => s.key === key);
     return section ? section.label : key;
+  }
+
+  getPaginationHtml() {
+    return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`;
   }
 
   bindEvents() {
@@ -218,7 +213,7 @@ export class AdminHomepageModule extends BaseAdminModule {
 
     // Search
     this.container.querySelector('.admin-search')?.addEventListener('input', (e) => {
-      this.search = (e.target).value;
+      this.search = e.target.value;
       this.currentPage = 1;
       this.loadData();
     });
@@ -226,8 +221,8 @@ export class AdminHomepageModule extends BaseAdminModule {
     // Filters
     this.container.querySelectorAll('.admin-filter').forEach(select => {
       select.addEventListener('change', (e) => {
-        const key = (e.target).dataset.filter!;
-        const value = (e.target).value;
+        const key = e.target.dataset.filter;
+        const value = e.target.value;
         if (value) this.activeFilters[key] = value;
         else delete this.activeFilters[key];
         this.currentPage = 1;
@@ -238,7 +233,7 @@ export class AdminHomepageModule extends BaseAdminModule {
     // Sort
     this.container.querySelectorAll('[data-sort]').forEach(th => {
       th.addEventListener('click', () => {
-        const sortBy = th.dataset.sort!;
+        const sortBy = th.dataset.sort;
         if (this.sortBy === sortBy) {
           this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
         } else {
@@ -252,30 +247,30 @@ export class AdminHomepageModule extends BaseAdminModule {
     // Actions
     this.container.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const action = (e.currentTarget).dataset.action!;
-        const id = (e.currentTarget).dataset.id;
+        const action = e.currentTarget.dataset.action;
+        const id = e.currentTarget.dataset.id;
 
         switch (action) {
           case 'create':
             this.showCreateForm();
             break;
           case 'edit':
-            this.showEditForm(this.items.find(i => i.id === id)!);
+            this.showEditForm(this.items.find(i => i.id === id));
             break;
           case 'delete':
-            this.handleDelete(id!);
+            this.handleDelete(id);
             break;
           case 'toggle-visibility':
             const checkbox = e.target;
-            this.handleToggleVisibility(id!, checkbox.checked);
+            this.handleToggleVisibility(id, checkbox.checked);
             break;
           case 'toggle-featured':
             const featCheckbox = e.target;
-            this.handleToggleFeatured(id!, featCheckbox.checked);
+            this.handleToggleFeatured(id, featCheckbox.checked);
             break;
           case 'update-order':
             const orderInput = e.target;
-            this.handleReorder([{ id: id!, display_order: parseInt(orderInput.value) }]);
+            this.handleReorder([{ id: id, display_order: parseInt(orderInput.value) }]);
             break;
           case 'prev-page':
             if (this.currentPage > 1) {
@@ -301,7 +296,7 @@ export class AdminHomepageModule extends BaseAdminModule {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      const data: Record<string, any> = {};
+      const data = {};
       formData.forEach((value, key) => {
         const field = this.fields.find(f => f.key === key);
         if (field?.type === 'checkbox') {
@@ -332,6 +327,4 @@ export class AdminHomepageModule extends BaseAdminModule {
   }
 }
 
-export function createAdminHomepage(container: HTMLElement) {
-  return new AdminHomepageModule(container);
-}
+export function createAdminHomepage(container) { return new AdminHomepageModule(container); }
