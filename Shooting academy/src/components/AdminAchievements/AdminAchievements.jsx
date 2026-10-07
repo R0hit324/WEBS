@@ -59,7 +59,7 @@ export class AdminAchievementsModule extends BaseAdminModule {
   }
 
   getTableHtml() {
-    const medalColors: Record<string, string> = { gold: '#f59e0b', silver: '#9ca3af', bronze: '#cd7f32', participation: '#6b7280' };
+    const medalColors = { gold: '#f59e0b', silver: '#9ca3af', bronze: '#cd7f32', participation: '#6b7280' };
     return `${this.isLoading ? `<div class="admin-module__loading"><div class="admin-spinner"></div></div>` : `
       <div class="admin-table-container"><table class="admin-table"><thead><tr><th data-sort="athlete_name">Athlete</th><th data-sort="medal">Medal</th><th data-sort="competition">Competition</th><th data-sort="event">Event</th><th data-sort="year">Year</th><th data-sort="is_visible">Visible</th><th data-sort="display_order">Order</th><th>Actions</th></tr></thead>
       <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">${this.items.length > 0 ? this.items.map(item => `
