@@ -1,0 +1,1 @@
+export { AboutPage, createAboutPage } from './AboutPage.js';

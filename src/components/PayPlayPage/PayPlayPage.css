@@ -1,0 +1,662 @@
+.pay-play-page {
+  padding: var(--spacing-16) 0;
+}
+
+.pay-play-page__hero {
+  text-align: center;
+  padding: var(--spacing-16) 0 var(--spacing-12);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--spacing-16);
+}
+
+.pay-play-page__hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-6);
+}
+
+.pay-play-page__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pay-play-page__title-accent {
+  color: var(--color-accent-bright);
+}
+
+.pay-play-page__description {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.pay-play-page__sessions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+  max-width: 1100px;
+  margin: 0 auto var(--spacing-16);
+}
+
+.pay-play-session {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.pay-play-session:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.pay-play-session__header {
+  margin-bottom: var(--spacing-6);
+}
+
+.pay-play-session__name {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.pay-play-session__duration {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent-bright);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-4);
+}
+
+.pay-play-session__price {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+}
+
+.pay-play-session__price-currency {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-ivory);
+}
+
+.pay-play-session__description {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  flex: 1;
+  margin-bottom: var(--spacing-6);
+}
+
+.pay-play-session__features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-8);
+}
+
+.pay-play-session__feature {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pay-play-session__feature-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-accent-bright);
+  flex-shrink: 0;
+}
+
+.pay-play-session__cta {
+  width: 100%;
+  justify-content: center;
+}
+
+.pay-play-page__booking {
+  max-width: 720px;
+  margin: 0 auto var(--spacing-16);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-8);
+  display: none;
+}
+
+.pay-play-page__booking--visible {
+  display: block;
+}
+
+.booking-step {
+  display: none;
+}
+
+.booking-step--active {
+  display: block;
+}
+
+.booking-step__header {
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.booking-step__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.booking-step__subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.booking-step__progress {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-8);
+}
+
+.booking-step__progress-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  color: var(--color-muted-ivory);
+  font-size: var(--font-size-sm);
+}
+
+.booking-step__progress-item--active {
+  color: var(--color-accent-bright);
+}
+
+.booking-step__progress-item--active .booking-step__progress-dot {
+  background-color: var(--color-accent-bright);
+  border-color: var(--color-accent-bright);
+}
+
+.booking-step__progress-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--color-bg-tertiary);
+  border: 2px solid var(--color-border-subtle);
+  margin-bottom: var(--spacing-1);
+}
+
+.booking-summary {
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
+}
+
+.booking-summary__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.booking-summary__row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-sm);
+}
+
+.booking-summary__row:last-child {
+  border-bottom: none;
+}
+
+.booking-summary__label {
+  color: var(--color-text-secondary);
+}
+
+.booking-summary__value {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.booking-summary__total {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.form-group label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.form-group label .required-indicator {
+  color: var(--color-gold-score);
+  margin-left: var(--spacing-1);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-bright);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--color-muted-ivory);
+}
+
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+  border-color: #ef4444;
+}
+
+.form-group__error {
+  font-size: var(--font-size-xs);
+  color: #ef4444;
+  display: none;
+}
+
+.form-group input.error + .form-group__error,
+.form-group select.error + .form-group__error,
+.form-group textarea.error + .form-group__error {
+  display: block;
+}
+
+.booking-step__actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.booking-step__back {
+  color: var(--color-text-secondary);
+}
+
+.booking-step__back:hover {
+  color: var(--color-text-primary);
+}
+
+.booking-step__next,
+.booking-step__submit {
+  width: auto;
+  min-width: 180px;
+}
+
+.booking-step__submit.loading .btn__spinner {
+  display: inline-block;
+}
+
+.booking-step__submit.loading .btn__text {
+  opacity: 0.7;
+}
+
+@media (max-width: 1024px) {
+  .pay-play-page__sessions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pay-play-page__title {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .pay-play-page {
+    padding: var(--spacing-12) 0;
+  }
+  .pay-play-page__hero {
+    padding: var(--spacing-12) 0 var(--spacing-8);
+  }
+  .pay-play-page__title {
+    font-size: var(--font-size-3xl);
+  }
+  .pay-play-page__description {
+    font-size: var(--font-size-lg);
+  }
+  .pay-play-page__sessions {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+  .pay-play-page__booking {
+    padding: var(--spacing-6);
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .booking-step__actions {
+    flex-direction: column-reverse;
+    gap: var(--spacing-3);
+  }
+  .booking-step__back,
+  .booking-step__next,
+  .booking-step__submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   Pay & Play Session Detail Page
+   ============================================================ */
+
+.pay-play-session-page {
+  padding: var(--spacing-12) 0 var(--spacing-16);
+}
+
+.pay-play-session-page__hero {
+  margin-bottom: var(--spacing-12);
+}
+
+.pay-play-session-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-6);
+  transition: color var(--transition-fast);
+}
+
+.pay-play-session-page__back:hover {
+  color: var(--color-text-primary);
+}
+
+.pay-play-session-page__badge {
+  display: inline-block;
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-bright);
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--spacing-4);
+}
+
+.pay-play-session-page__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  max-width: 800px;
+}
+
+.pay-play-session-page__content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: var(--spacing-12);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pay-play-session-page__sidebar {
+  position: sticky;
+  top: var(--spacing-24);
+}
+
+.pay-play-session-detail {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-8);
+  margin-bottom: var(--spacing-6);
+}
+
+.pay-play-session-detail__header {
+  margin-bottom: var(--spacing-6);
+}
+
+.pay-play-session-detail__name {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.pay-play-session-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+}
+
+.pay-play-session-detail__duration,
+.pay-play-session-detail__price {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-md);
+}
+
+.pay-play-session-detail__duration {
+  color: var(--color-accent-bright);
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.pay-play-session-detail__price {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+.pay-play-session-detail__includes h3 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-3);
+}
+
+.pay-play-session-detail__includes ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.pay-play-session-detail__includes li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pay-play-session-detail__includes li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-accent-bright);
+  flex-shrink: 0;
+}
+
+.pay-play-session-page__price-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  text-align: center;
+}
+
+.pay-play-session-page__price-amount {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+.pay-play-session-page__price-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pay-play-session-page__main {
+  min-width: 0;
+}
+
+.booking-form__section {
+  margin-bottom: var(--spacing-10);
+}
+
+.booking-form__section-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.booking-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.booking-form__error {
+  padding: var(--spacing-4);
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  color: #ef4444;
+  margin-bottom: var(--spacing-6);
+}
+
+.booking-success {
+  text-align: center;
+  padding: var(--spacing-16) var(--spacing-8);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.booking-success__icon {
+  margin-bottom: var(--spacing-6);
+}
+
+.booking-success h3 {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.booking-success p {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-3);
+}
+
+.booking-success__note {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-ivory);
+}
+
+@media (max-width: 1024px) {
+  .pay-play-session-page__content {
+    grid-template-columns: 1fr;
+  }
+  .pay-play-session-page__sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-6);
+  }
+}
+
+@media (max-width: 768px) {
+  .pay-play-session-page {
+    padding: var(--spacing-8) 0 var(--spacing-12);
+  }
+  .pay-play-session-page__title {
+    font-size: var(--font-size-3xl);
+  }
+  .pay-play-session-page__sidebar {
+    grid-template-columns: 1fr;
+  }
+  .pay-play-session-page__content {
+    gap: var(--spacing-8);
+  }
+  .booking-form__actions {
+    flex-direction: column-reverse;
+  }
+  .booking-form__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

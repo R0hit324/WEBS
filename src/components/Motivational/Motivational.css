@@ -1,0 +1,97 @@
+.motivational {
+  padding: var(--spacing-20) 0;
+  background-color: var(--color-dark-surface);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.motivational__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-8);
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.motivational__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-6) var(--spacing-4);
+}
+
+.motivational__number {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-bright);
+  line-height: 1;
+}
+
+.motivational__word {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.motivational__divider {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(180deg, transparent, var(--color-border-subtle), transparent);
+  align-self: center;
+}
+
+@media (max-width: 1024px) {
+  .motivational {
+    padding: var(--spacing-16) 0;
+  }
+  .motivational__grid {
+    gap: var(--spacing-6);
+  }
+  .motivational__number {
+    font-size: var(--font-size-3xl);
+  }
+  .motivational__word {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 768px) {
+  .motivational {
+    padding: var(--spacing-12) 0;
+  }
+  .motivational__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-6) var(--spacing-4);
+  }
+  .motivational__divider:nth-child(2n) {
+    display: none;
+  }
+  .motivational__divider:nth-child(4n) {
+    display: block;
+    width: 100%;
+    height: 1px;
+    grid-column: 1 / -1;
+    margin: var(--spacing-4) 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .motivational__grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-8);
+  }
+  .motivational__divider {
+    display: none;
+  }
+  .motivational__number {
+    font-size: var(--font-size-3xl);
+  }
+  .motivational__word {
+    font-size: var(--font-size-lg);
+  }
+}

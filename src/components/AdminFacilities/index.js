@@ -1,0 +1,1 @@
+export { createAdminFacilities } from './AdminFacilities.jsx';

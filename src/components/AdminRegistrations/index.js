@@ -1,0 +1,1 @@
+export { createAdminRegistrations } from './AdminRegistrations.jsx';

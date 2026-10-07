@@ -1,0 +1,1 @@
+export { GalleryPage, createGalleryPage } from './GalleryPage.js';

@@ -1,0 +1,1 @@
+export { createAdminMotivational } from './AdminMotivational.jsx';

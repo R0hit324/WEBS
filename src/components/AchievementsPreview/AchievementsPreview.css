@@ -1,0 +1,117 @@
+.achievements-preview {
+  padding: var(--spacing-16) 0;
+  background-color: var(--color-dark-surface);
+}
+
+.achievements-preview__header {
+  text-align: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.achievements-preview__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+  max-width: 1000px;
+  margin: 0 auto var(--spacing-10);
+}
+
+.achievement-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.achievement-card:hover {
+  border-color: var(--color-gold-score);
+  transform: translateY(-4px);
+}
+
+.achievement-card__medal {
+  width: 64px;
+  height: 64px;
+  color: var(--color-gold-score);
+  margin-bottom: var(--spacing-4);
+}
+
+.achievement-card__event {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.achievement-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.achievement-card__athlete {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted-ivory);
+}
+
+.achievement-card__year {
+  color: var(--color-accent-bright);
+}
+
+.achievements-preview__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--spacing-16) var(--spacing-8);
+  background-color: var(--color-bg-secondary);
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.achievements-preview__empty-icon {
+  width: 64px;
+  height: 64px;
+  color: var(--color-border-subtle);
+  margin: 0 auto var(--spacing-4);
+}
+
+.achievements-preview__empty-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.achievements-preview__empty-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  max-width: 400px;
+  margin: 0 auto var(--spacing-6);
+}
+
+.achievements-preview__cta {
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .achievements-preview__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .achievements-preview {
+    padding: var(--spacing-12) 0;
+  }
+  .achievements-preview__grid {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+  }
+}

@@ -1,0 +1,1 @@
+export { ShootingTarget, createShootingTarget } from './ShootingTarget.js';

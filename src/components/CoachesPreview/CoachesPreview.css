@@ -1,0 +1,103 @@
+.coaches-preview {
+  padding: var(--spacing-16) 0;
+}
+
+.coaches-preview__header {
+  text-align: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.coaches-preview__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-8);
+  max-width: 800px;
+  margin: 0 auto var(--spacing-10);
+}
+
+.coach-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.coach-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-4px);
+}
+
+.coach-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background-color: var(--color-bg-tertiary);
+}
+
+.coach-card__placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.coach-card__placeholder-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-border-subtle);
+  margin-bottom: var(--spacing-3);
+}
+
+.coach-card__placeholder-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.coach-card__content {
+  padding: var(--spacing-6);
+  text-align: center;
+}
+
+.coach-card__name {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-1);
+}
+
+.coach-card__role {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent-bright);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-3);
+}
+
+.coach-card__bio {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.coaches-preview__cta {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .coaches-preview {
+    padding: var(--spacing-12) 0;
+  }
+  .coaches-preview__grid {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+  }
+}

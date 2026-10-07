@@ -1,0 +1,1 @@
+export { TrainingPage, createTrainingPage } from './TrainingPage.js';

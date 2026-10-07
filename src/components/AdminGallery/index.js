@@ -1,0 +1,1 @@
+export { createAdminGallery } from './AdminGallery.jsx';

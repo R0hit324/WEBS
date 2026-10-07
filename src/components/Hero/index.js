@@ -1,0 +1,1 @@
+export { Hero, createHero } from './Hero.js';

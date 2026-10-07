@@ -1,0 +1,14 @@
+{
+  "name": "matsya-shooting-academy",
+  "version": "1.0.0",
+  "description": "Matsya Shooting Sports Academy - Official Website",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

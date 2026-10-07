@@ -1,0 +1,220 @@
+.coaches-page {
+  padding: var(--spacing-16) 0;
+}
+
+.coaches-page__hero {
+  text-align: center;
+  padding: var(--spacing-16) 0 var(--spacing-12);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--spacing-16);
+}
+
+.coaches-page__hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-6);
+}
+
+.coaches-page__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.coaches-page__title-accent {
+  color: var(--color-accent-bright);
+}
+
+.coaches-page__description {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.coaches-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-8);
+  max-width: 1000px;
+  margin: 0 auto var(--spacing-16);
+}
+
+.coach-profile {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.coach-profile:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-4px);
+}
+
+.coach-profile__visual {
+  aspect-ratio: 3 / 4;
+  background-color: var(--color-bg-tertiary);
+  overflow: hidden;
+}
+
+.coach-profile__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.coach-profile:hover .coach-profile__image {
+  transform: scale(1.03);
+}
+
+.coach-profile__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.coach-profile__placeholder-icon {
+  width: 64px;
+  height: 64px;
+  color: var(--color-border-subtle);
+  margin-bottom: var(--spacing-4);
+}
+
+.coach-profile__placeholder-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+.coach-profile__content {
+  padding: var(--spacing-8);
+}
+
+.coach-profile__header {
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.coach-profile__name {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.coach-profile__role {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent-bright);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.coach-profile__bio {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-6);
+}
+
+.coach-profile__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.coach-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.coach-detail__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted-ivory);
+}
+
+.coach-detail__value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.coach-detail__value--empty {
+  color: var(--color-border-subtle);
+  font-style: italic;
+}
+
+.coach-profile__cta {
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid var(--color-border-subtle);
+  text-align: center;
+}
+
+.coaches-page__cta-section {
+  text-align: center;
+  padding: var(--spacing-12) 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.coaches-page__cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .coaches-page__title {
+    font-size: var(--font-size-4xl);
+  }
+  .coaches-page__grid {
+    gap: var(--spacing-6);
+  }
+}
+
+@media (max-width: 768px) {
+  .coaches-page {
+    padding: var(--spacing-12) 0;
+  }
+  .coaches-page__hero {
+    padding: var(--spacing-12) 0 var(--spacing-8);
+  }
+  .coaches-page__title {
+    font-size: var(--font-size-3xl);
+  }
+  .coaches-page__description {
+    font-size: var(--font-size-lg);
+  }
+  .coaches-page__grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+  .coach-profile__content {
+    padding: var(--spacing-6);
+  }
+}

@@ -1,0 +1,99 @@
+.facilities-preview {
+  padding: var(--spacing-16) 0;
+}
+
+.facilities-preview__header {
+  text-align: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.facilities-preview__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+  max-width: 1000px;
+  margin: 0 auto var(--spacing-10);
+}
+
+.facility-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.facility-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-4px);
+}
+
+.facility-card__image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background-color: var(--color-bg-tertiary);
+}
+
+.facility-card__placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.facility-card__placeholder-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-border-subtle);
+  margin-bottom: var(--spacing-3);
+}
+
+.facility-card__placeholder-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.facility-card__content {
+  padding: var(--spacing-5);
+}
+
+.facility-card__name {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.facility-card__desc {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.facilities-preview__cta {
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .facilities-preview__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .facilities-preview {
+    padding: var(--spacing-12) 0;
+  }
+  .facilities-preview__grid {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+  }
+}

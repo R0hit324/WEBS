@@ -1,0 +1,1 @@
+export { FacilitiesPage, createFacilitiesPage } from './FacilitiesPage.js';

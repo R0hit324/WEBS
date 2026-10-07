@@ -1,0 +1,327 @@
+.achievements-page {
+  padding: var(--spacing-16) 0;
+}
+
+.achievements-page__hero {
+  text-align: center;
+  padding: var(--spacing-16) 0 var(--spacing-12);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--spacing-16);
+}
+
+.achievements-page__hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-6);
+}
+
+.achievements-page__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-6);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.achievements-page__title-accent {
+  color: var(--color-accent-bright);
+}
+
+.achievements-page__description {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.achievements-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  justify-content: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.achievements-page__filter {
+  padding: var(--spacing-2) var(--spacing-5);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.achievements-page__filter:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+
+.achievements-page__filter--active {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-ivory);
+}
+
+.achievements-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-6);
+  max-width: 1200px;
+  margin: 0 auto var(--spacing-16);
+}
+
+.medalist-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.medalist-card:hover {
+  border-color: var(--color-gold-score);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.medalist-card__visual {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-bg-tertiary);
+  overflow: hidden;
+}
+
+.medalist-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.medalist-card:hover .medalist-card__image {
+  transform: scale(1.03);
+}
+
+.medalist-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.medalist-card__placeholder-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-border-subtle);
+  margin-bottom: var(--spacing-3);
+}
+
+.medalist-card__placeholder-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.medalist-card__medal-badge {
+  position: absolute;
+  top: var(--spacing-4);
+  right: var(--spacing-4);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+
+.medalist-card__medal-badge--gold {
+  background: linear-gradient(135deg, #F4C542 0%, #D4A83A 100%);
+  color: #111315;
+}
+
+.medalist-card__medal-badge--silver {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
+  color: #111315;
+}
+
+.medalist-card__medal-badge--bronze {
+  background: linear-gradient(135deg, #CD7F32 0%, #A05A2A 100%);
+  color: #F5F3EA;
+}
+
+.medalist-card__medal-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.medalist-card__content {
+  padding: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.medalist-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-3);
+}
+
+.medalist-card__athlete {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-tight);
+}
+
+.medalist-card__year {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-muted-ivory);
+  white-space: nowrap;
+  background-color: var(--color-bg-tertiary);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+}
+
+.medalist-card__event {
+  font-size: var(--font-size-sm);
+  color: var(--color-accent-bright);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-2);
+}
+
+.medalist-card__competition {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2);
+}
+
+.medalist-card__discipline {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-ivory);
+  margin-bottom: var(--spacing-4);
+}
+
+.medalist-card__description {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  flex: 1;
+  margin-bottom: var(--spacing-6);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.medalist-card__cta {
+  width: 100%;
+  justify-content: center;
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.achievements-page__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--spacing-20) var(--spacing-8);
+  background-color: var(--color-bg-secondary);
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.achievements-page__empty-icon {
+  width: 80px;
+  height: 80px;
+  color: var(--color-border-subtle);
+  margin: 0 auto var(--spacing-6);
+}
+
+.achievements-page__empty-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-3);
+}
+
+.achievements-page__empty-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  max-width: 500px;
+  margin: 0 auto var(--spacing-8);
+}
+
+.achievements-page__cta-section {
+  text-align: center;
+  padding: var(--spacing-12) 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.achievements-page__cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .achievements-page__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .achievements-page__title {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .achievements-page {
+    padding: var(--spacing-12) 0;
+  }
+  .achievements-page__hero {
+    padding: var(--spacing-12) 0 var(--spacing-8);
+  }
+  .achievements-page__title {
+    font-size: var(--font-size-3xl);
+  }
+  .achievements-page__description {
+    font-size: var(--font-size-lg);
+  }
+  .achievements-page__grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+  .achievements-page__filters {
+    gap: var(--spacing-2);
+  }
+  .achievements-page__filter {
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-xs);
+  }
+}

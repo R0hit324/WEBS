@@ -1,0 +1,1 @@
+export { SectionHeading, createSectionHeading } from './SectionHeading.js';

@@ -1,0 +1,1 @@
+export { createAdminTraining } from './AdminTraining.jsx';

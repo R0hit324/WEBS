@@ -1,0 +1,1 @@
+export { Footer, createFooter } from './Footer.js';

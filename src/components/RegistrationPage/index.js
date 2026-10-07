@@ -1,0 +1,1 @@
+export { RegistrationPage, createRegistrationPage } from './RegistrationPage.js';
