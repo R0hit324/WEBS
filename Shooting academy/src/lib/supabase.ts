@@ -6,6 +6,7 @@
  * Use environment variables for all sensitive configuration.
  */
 
+import { createClient } from '@supabase/supabase-js';
 import type { SupabaseConfig } from '../types/database';
 
 /**
@@ -31,10 +32,12 @@ export function getSupabaseConfig(): SupabaseConfig {
 
 /**
  * Supabase client instance (lazy initialization)
- * Will be initialized when @supabase/supabase-js is installed
  */
-let supabaseClient: unknown = null;
+let supabaseClient: ReturnType<typeof createClient> | null = null;
 
+/**
+ * Get or create the Supabase client instance
+ */
 export function getSupabaseClient() {
   if (supabaseClient) return supabaseClient;
 
@@ -44,9 +47,7 @@ export function getSupabaseClient() {
     throw new Error('Supabase configuration not available. Please set environment variables.');
   }
 
-  // Dynamic import to avoid bundling issues before package is installed
-  // import { createClient } from '@supabase/supabase-js';
-  // supabaseClient = createClient(config.url, config.anonKey);
+  supabaseClient = createClient(config.url, config.anonKey);
   
   return supabaseClient;
 }
@@ -83,9 +84,10 @@ export function getPublicUrl(bucket: StorageBucket, path: string): string {
 }
 
 export function getSignedUrl(bucket: StorageBucket, path: string, expiresIn = 3600): string {
-  // This would use the Supabase client to generate signed URLs
-  // Implementation requires @supabase/supabase-js
-  return '';
+  const client = getSupabaseClient();
+  const { data, error } = client.storage.from(bucket).createSignedUrl(path, expiresIn);
+  if (error || !data) return '';
+  return data.signedUrl;
 }
 
 /**
