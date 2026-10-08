@@ -23,6 +23,11 @@ const ABOUT_FEATURES = [
 
 const PLACEHOLDER_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class AboutPreview {
   constructor(container, options = {}) {
     this.container = container;
@@ -39,6 +44,7 @@ export class AboutPreview {
 
   init() {
     this.render();
+    this.initAnimations();
   }
 
   render() {
@@ -81,7 +87,90 @@ export class AboutPreview {
     `;
   }
 
+  initAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const section = this.container.querySelector('.about-preview');
+    const content = this.container.querySelector('.about-preview__content');
+    const visual = this.container.querySelector('.about-preview__visual');
+    const heading = this.container.querySelector('.section-heading');
+    const features = this.container.querySelectorAll('.about-preview__feature');
+    const cta = this.container.querySelector('.about-preview__cta');
+
+    if (!section) return;
+
+    // Entrance animation
+    gsap.fromTo([heading, features, cta], 
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          end: 'top 50%',
+          scrub: false
+        }
+      }
+    );
+
+    // Visual parallax
+    if (visual) {
+      gsap.fromTo(visual, 
+        { opacity: 0, scale: 0.95 },
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 1,
+          ease: 'power3.out',
+          delay: 0.3,
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 85%',
+            end: 'top 55%',
+            scrub: false
+          }
+        }
+      );
+
+      gsap.to(visual, {
+        y: -30,
+        scale: 1.02,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+    }
+
+    // Subtle content parallax
+    if (content) {
+      gsap.to(content, {
+        y: -20,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+    }
+  }
+
   destroy() {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.trigger === this.container.querySelector('.about-preview')) {
+        st.kill();
+      }
+    });
     this.container.innerHTML = '';
   }
 }

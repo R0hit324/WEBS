@@ -166,8 +166,7 @@ export class FacilitiesPage {
 
           <div class="facilities-page__cta-section">
             <div class="facilities-page__cta-actions" role="group" aria-label="Facilities page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
+              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
             </div>
           </div>
         </div>

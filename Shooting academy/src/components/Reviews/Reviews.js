@@ -28,6 +28,11 @@ const DEFAULT_REVIEWS = [
   }
 ];
 
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class Reviews {
   constructor(container, options = {}) {
     this.container = container;
@@ -42,6 +47,7 @@ export class Reviews {
 
   init() {
     this.render();
+    this.initAnimations();
   }
 
   render() {
@@ -117,12 +123,98 @@ export class Reviews {
     }
   }
 
+  initAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const section = this.container.querySelector('.reviews');
+    const header = this.container.querySelector('.reviews__header');
+    const cards = this.container.querySelectorAll('.review-card');
+    const cta = this.container.querySelector('.reviews__cta');
+
+    if (!section) return;
+
+    // Header entrance
+    gsap.fromTo(header, 
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 55%',
+          scrub: false
+        }
+      }
+    );
+
+    // Cards staggered entrance
+    gsap.fromTo(cards, 
+      { opacity: 0, y: 50, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.7,
+        ease: 'power3.out',
+        stagger: 0.15,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          end: 'top 50%',
+          scrub: false
+        }
+      }
+    );
+
+    // CTA entrance
+    if (cta) {
+      gsap.fromTo(cta, 
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: 'power3.out',
+          delay: 0.3,
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 75%',
+            end: 'top 45%',
+            scrub: false
+          }
+        }
+      );
+    }
+
+    // Subtle floating animation on cards
+    cards.forEach((card, index) => {
+      gsap.to(card, {
+        y: -10,
+        ease: 'sine.inOut',
+        duration: 2.5 + index * 0.3,
+        repeat: -1,
+        yoyo: true,
+        delay: index * 0.3
+      });
+    });
+  }
+
   updateReviews(reviews) {
     this.options.reviews = reviews;
     this.render();
+    this.initAnimations();
   }
 
   destroy() {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.trigger === this.container.querySelector('.reviews')) {
+        st.kill();
+      }
+    });
     this.container.innerHTML = '';
   }
 }

@@ -148,8 +148,7 @@ export class TrainingPage {
 
           <div class="training-page__cta-section">
             <div class="training-page__cta-actions" role="group" aria-label="Training page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
+              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
             </div>
             <p class="training-page__note">Specific program schedules, fees, and enrollment details are managed through our registration system. Contact us for current availability.</p>
           </div>

@@ -85,8 +85,7 @@ export class GalleryPage {
 
           <div class="gallery-page__cta-section">
             <div class="gallery-page__cta-actions" role="group" aria-label="Gallery page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
+              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
             </div>
           </div>
 
@@ -165,8 +164,7 @@ export class GalleryPage {
 
           <div class="gallery-page__cta-section">
             <div class="gallery-page__cta-actions" role="group" aria-label="Gallery page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
+              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
             </div>
           </div>
         </div>

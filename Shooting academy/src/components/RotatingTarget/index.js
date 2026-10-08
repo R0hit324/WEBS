@@ -1,0 +1,1 @@
+export { RotatingTarget, createRotatingTarget } from './RotatingTarget.jsx';

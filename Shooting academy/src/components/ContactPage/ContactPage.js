@@ -175,7 +175,6 @@ export class ContactPage {
 
           <div class="contact-page__cta-section">
             <div class="contact-page__cta-actions" role="group" aria-label="Contact page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
               <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>

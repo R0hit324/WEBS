@@ -1,5 +1,6 @@
 @import './styles/design-system.css';
 @import './components/ShootingTarget/ShootingTarget.css';
+@import './components/RotatingTarget/RotatingTarget.css';
 @import './components/Hero/Hero.css';
 @import './components/SectionHeading/SectionHeading.css';
 @import './components/CTA/CTA.css';

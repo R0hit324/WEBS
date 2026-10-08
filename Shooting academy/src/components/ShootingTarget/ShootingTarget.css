@@ -10,6 +10,7 @@
   width: 100%;
   height: 100%;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.4));
+  transform-origin: 250px 250px;
 }
 
 .shooting-target__ring {
@@ -26,6 +27,40 @@
 .shooting-target__ring--8 { fill: var(--color-emerald); opacity: 0.15; }
 .shooting-target__ring--9 { fill: var(--color-ivory); }
 .shooting-target__ring--10 { fill: var(--color-emerald); }
+
+.shooting-target__bullseye {
+  transition: filter 0.3s ease;
+}
+
+.shooting-target__bullseye-inner {
+  transition: opacity 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shooting-target__ring,
+  .shooting-target__bullseye,
+  .shooting-target__bullseye-inner {
+    transition: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .shooting-target {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shooting-target {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shooting-target {
+    max-width: 260px;
+  }
+}
 
 .shooting-target__score {
   font-family: var(--font-family-display);
@@ -48,50 +83,3 @@
 .shooting-target__score--10 { font-size: 48px; }
 .shooting-target__score--9 { font-size: 42px; }
 .shooting-target__score--8 { font-size: 36px; }
-
-.shooting-target__impact {
-  fill: var(--color-gold-score);
-  opacity: 0;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
-  filter: drop-shadow(0 0 4px var(--color-gold-score));
-}
-
-.shooting-target__impact--visible {
-  opacity: 0.8;
-  transform: scale(1.2);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .shooting-target__score,
-  .shooting-target__impact,
-  .shooting-target__ring {
-    transition: none;
-  }
-}
-
-@media (max-width: 1024px) {
-  .shooting-target {
-    max-width: 400px;
-  }
-  .shooting-target__score--10 { font-size: 40px; }
-  .shooting-target__score--9 { font-size: 34px; }
-  .shooting-target__score--8 { font-size: 30px; }
-}
-
-@media (max-width: 768px) {
-  .shooting-target {
-    max-width: 320px;
-  }
-  .shooting-target__score--10 { font-size: 32px; }
-  .shooting-target__score--9 { font-size: 28px; }
-  .shooting-target__score--8 { font-size: 24px; }
-}
-
-@media (max-width: 480px) {
-  .shooting-target {
-    max-width: 260px;
-  }
-  .shooting-target__score--10 { font-size: 26px; }
-  .shooting-target__score--9 { font-size: 22px; }
-  .shooting-target__score--8 { font-size: 18px; }
-}

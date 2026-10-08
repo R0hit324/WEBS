@@ -30,6 +30,11 @@ const MEDAL_ICONS = {
 
 const EMPTY_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
 
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class AchievementsPreview {
   constructor(container, options = {}) {
     this.container = container;
@@ -44,6 +49,7 @@ export class AchievementsPreview {
 
   init() {
     this.render();
+    this.initAnimations();
   }
 
   render() {
@@ -116,12 +122,99 @@ export class AchievementsPreview {
     }
   }
 
+  initAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const section = this.container.querySelector('.achievements-preview');
+    const header = this.container.querySelector('.achievements-preview__header');
+    const cards = this.container.querySelectorAll('.achievement-card');
+    const cta = this.container.querySelector('.achievements-preview__cta');
+
+    if (!section) return;
+
+    // Header entrance
+    gsap.fromTo(header, 
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 55%',
+          scrub: false
+        }
+      }
+    );
+
+    // Cards staggered entrance
+    gsap.fromTo(cards, 
+      { opacity: 0, y: 50, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: 'power3.out',
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          end: 'top 50%',
+          scrub: false
+        }
+      }
+    );
+
+    // CTA entrance
+    if (cta) {
+      gsap.fromTo(cta, 
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: 'power3.out',
+          delay: 0.3,
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 75%',
+            end: 'top 45%',
+            scrub: false
+          }
+        }
+      );
+    }
+
+    // Subtle floating animation on cards
+    cards.forEach((card, index) => {
+      const delay = index * 0.5;
+      gsap.to(card, {
+        y: -10,
+        ease: 'sine.inOut',
+        duration: 2 + index * 0.5,
+        repeat: -1,
+        yoyo: true,
+        delay
+      });
+    });
+  }
+
   updateAchievements(achievements) {
     this.options.achievements = achievements;
     this.render();
+    this.initAnimations();
   }
 
   destroy() {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.trigger === this.container.querySelector('.achievements-preview')) {
+        st.kill();
+      }
+    });
     this.container.innerHTML = '';
   }
 }

@@ -20,14 +20,13 @@ const FOOTER_NAV = {
 };
 
 const FOOTER_CTAS = [
-  { label: 'Register Now', variant: 'primary', href: '#register' },
-  { label: 'Pay & Play', variant: 'secondary', href: '/pay-play' }
+  { label: 'Contact Us', variant: 'primary', href: '/contact' }
 ];
 
 const FOOTER_CONTACT = {
-  address: { label: 'Address', value: '[Academy Address Placeholder]', icon: 'location' },
-  phone: { label: 'Phone', value: '[Phone Placeholder]', icon: 'phone' },
-  email: { label: 'Email', value: '[Email Placeholder]', icon: 'mail' }
+  address: { label: 'Address', value: 'Matsya Shooting Sports Academy, 74, Near Central GST Commissionerate, Surya Nagar, Kherado, Diwakari, Rajasthan 301001', icon: 'location' },
+  phone: { label: 'Phone', value: '8282821519, 7734057123', icon: 'phone' },
+  email: { label: 'Email', value: 'alwarshooting@gmail.com', icon: 'mail' }
 };
 
 const CONTACT_ICONS = {

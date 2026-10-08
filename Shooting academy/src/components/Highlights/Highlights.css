@@ -49,6 +49,15 @@
   font-weight: var(--font-weight-normal);
 }
 
+.highlights__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--spacing-1);
+  color: var(--color-accent-bright);
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .highlights {
     padding: var(--spacing-6) 0;

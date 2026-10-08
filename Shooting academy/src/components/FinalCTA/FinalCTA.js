@@ -1,3 +1,8 @@
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class FinalCTA {
   constructor(container, options = {}) {
     this.container = container;
@@ -5,7 +10,7 @@ export class FinalCTA {
       title: options.title || 'Ready to Take Your First Shot?',
       titleAccent: options.titleAccent || 'First Shot',
       description: options.description || 'Join Alwar\'s first RRA-certified academy. World-class ranges, expert coaches, and a community dedicated to your growth.',
-      primaryAction: options.primaryAction || { label: 'Register Now', href: '#register' },
+      primaryAction: options.primaryAction || { label: 'Contact Us', href: '/contact' },
       secondaryAction: options.secondaryAction || { label: 'Pay & Play', href: '/pay-play' },
       ...options
     };
@@ -14,6 +19,7 @@ export class FinalCTA {
 
   init() {
     this.render();
+    this.initAnimations();
   }
 
   render() {
@@ -46,7 +52,71 @@ export class FinalCTA {
     `;
   }
 
+  initAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const section = this.container.querySelector('.final-cta');
+    const card = this.container.querySelector('.final-cta__card');
+    const title = this.container.querySelector('.final-cta__title');
+    const description = this.container.querySelector('.final-cta__description');
+    const actions = this.container.querySelector('.final-cta__actions');
+
+    if (!section) return;
+
+    // Card entrance with scale
+    gsap.fromTo(card, 
+      { opacity: 0, y: 40, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 55%',
+          scrub: false
+        }
+      }
+    );
+
+    // Title, description, actions staggered
+    gsap.fromTo([title, description, actions], 
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: 'power3.out',
+        stagger: 0.1,
+        delay: 0.2,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          end: 'top 50%',
+          scrub: false
+        }
+      }
+    );
+
+    // Subtle floating animation on card
+    gsap.to(card, {
+      y: -12,
+      ease: 'sine.inOut',
+      duration: 3,
+      repeat: -1,
+      yoyo: true
+    });
+  }
+
   destroy() {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.trigger === this.container.querySelector('.final-cta')) {
+        st.kill();
+      }
+    });
     this.container.innerHTML = '';
   }
 }

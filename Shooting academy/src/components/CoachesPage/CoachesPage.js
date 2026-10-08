@@ -3,7 +3,7 @@ const DEFAULT_COACHES = [
     id: 'aman-choudhary',
     name: 'Aman Choudhary',
     role: 'Head Coach',
-    photo: null,
+    photo: '/coaches/Aman.jpeg',
     photoAlt: 'Coach Aman Choudhary',
     qualifications: null,
     certifications: null,
@@ -17,7 +17,7 @@ const DEFAULT_COACHES = [
     id: 'chaman-choudhary',
     name: 'Chaman Choudhary',
     role: 'Senior Coach',
-    photo: null,
+    photo: '/coaches/Chaman.jpeg',
     photoAlt: 'Coach Chaman Choudhary',
     qualifications: null,
     certifications: null,
@@ -136,8 +136,7 @@ export class CoachesPage {
 
           <div class="coaches-page__cta-section">
             <div class="coaches-page__cta-actions" role="group" aria-label="Coaches page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
+              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
             </div>
           </div>
         </div>

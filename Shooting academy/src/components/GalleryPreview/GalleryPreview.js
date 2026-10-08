@@ -45,6 +45,11 @@ const GALLERY_ITEMS = [
 
 const GALLERY_PLACEHOLDER_ICON = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class GalleryPreview {
   constructor(container, options = {}) {
     this.container = container;
@@ -59,6 +64,7 @@ export class GalleryPreview {
 
   init() {
     this.render();
+    this.initAnimations();
   }
 
   render() {
@@ -101,12 +107,101 @@ export class GalleryPreview {
     `;
   }
 
+  initAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const section = this.container.querySelector('.gallery-preview');
+    const header = this.container.querySelector('.gallery-preview__header');
+    const items = this.container.querySelectorAll('.gallery-item');
+    const cta = this.container.querySelector('.gallery-preview__cta');
+
+    if (!section) return;
+
+    // Header entrance
+    gsap.fromTo(header, 
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 55%',
+          scrub: false
+        }
+      }
+    );
+
+    // Items staggered entrance with scale
+    gsap.fromTo(items, 
+      { opacity: 0, y: 50, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: 'power3.out',
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 80%',
+          end: 'top 50%',
+          scrub: false
+        }
+      }
+    );
+
+    // CTA entrance
+    if (cta) {
+      gsap.fromTo(cta, 
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: 'power3.out',
+          delay: 0.3,
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 75%',
+            end: 'top 45%',
+            scrub: false
+          }
+        }
+      );
+    }
+
+    // Subtle parallax on items
+    items.forEach((item, index) => {
+      const direction = index % 2 === 0 ? -1 : 1;
+      gsap.to(item, {
+        y: -20 * direction,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+    });
+  }
+
   updateItems(items) {
     this.options.items = items;
     this.render();
+    this.initAnimations();
   }
 
   destroy() {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.trigger === this.container.querySelector('.gallery-preview')) {
+        st.kill();
+      }
+    });
     this.container.innerHTML = '';
   }
 }

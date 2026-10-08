@@ -57,6 +57,15 @@ function init() {
 
     navbarInstance = createNavbar(navbarContainer, { currentPath: window.location.pathname });
     createFooter(footerContainer);
+
+    // Listen for hero actions (register, explore)
+    document.addEventListener('hero:action', (e) => {
+      if (e.detail.action === 'register') {
+        router.navigate('/register');
+      } else if (e.detail.action === 'explore') {
+        router.navigate('/about');
+      }
+    });
   } else {
     navbarInstance = null;
   }
@@ -233,7 +242,16 @@ function renderContact(mainContent) {
 
   const contactContainer = document.createElement('div');
   mainContent.appendChild(contactContainer);
-  currentPageInstance = createContactPage(contactContainer);
+  currentPageInstance = createContactPage(contactContainer, {
+    contact: {
+      address: 'Matsya Shooting Sports Academy, 74, Near Central GST Commissionerate, Surya Nagar, Kherado, Diwakari, Rajasthan 301001',
+      phone: '8282821519, 7734057123',
+      whatsapp: '8282821519',
+      email: 'alwarshooting@gmail.com',
+      hours: 'Mon-Sat: 6:00 AM - 8:00 PM | Sun: 7:00 AM - 6:00 PM',
+      mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3537.2804241908266!2d76.64980147550403!3d27.553806176271056!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x397291a458a82b11%3A0x71a9c69e830e2c17!2sMatsya%20shooting%20sports%20academy%20alwar%20rajasthan!5e0!3m2!1sen!2sin!4v1791442142353!5m2!1sen!2sin'
+    }
+  });
 }
 
 function renderRegistration(mainContent) {

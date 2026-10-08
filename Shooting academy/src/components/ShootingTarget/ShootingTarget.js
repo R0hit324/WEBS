@@ -1,3 +1,8 @@
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class ShootingTarget {
   constructor(container, options = {}) {
     this.container = container;
@@ -26,6 +31,9 @@ export class ShootingTarget {
     this.render();
     this.bindElements();
     this.startAnimation();
+    if (!this.prefersReducedMotion) {
+      this.initScrollRotation();
+    }
     this.setupReducedMotionListener();
   }
 
@@ -78,14 +86,50 @@ export class ShootingTarget {
     this.impactElements = this.container.querySelectorAll('.shooting-target__impact');
   }
 
+  initScrollRotation() {
+    const heroSection = this.container.closest('.hero');
+    if (!heroSection) return;
+
+    const rings = this.container.querySelectorAll('.shooting-target__ring');
+    
+    rings.forEach((ring, index) => {
+      const rotationAmount = 180 + (index * 8);
+      gsap.to(ring, {
+        rotation: rotationAmount,
+        transformOrigin: '250px 250px',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+    });
+
+    gsap.to(this.svgEl, {
+      scale: 1.1,
+      y: -40,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1
+      }
+    });
+  }
+
   setupReducedMotionListener() {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     mediaQuery.addEventListener('change', (e) => {
       this.prefersReducedMotion = e.matches;
       if (this.prefersReducedMotion) {
         this.stopAnimation();
+        ScrollTrigger.getAll().forEach(st => st.kill());
       } else {
         this.startAnimation();
+        this.initScrollRotation();
       }
     });
   }
@@ -192,6 +236,7 @@ export class ShootingTarget {
 
   destroy() {
     this.stopAnimation();
+    ScrollTrigger.getAll().forEach(st => st.kill());
     this.container.innerHTML = '';
   }
 }

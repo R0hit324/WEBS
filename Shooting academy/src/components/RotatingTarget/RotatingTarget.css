@@ -1,0 +1,31 @@
+.rotating-target {
+  width: 100%;
+  aspect-ratio: 1;
+  transform-origin: center center;
+}
+
+.rotating-target__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rotating-target__ring {
+  transition: stroke-opacity 0.3s ease;
+}
+
+.rotating-target__bullseye {
+  transition: filter 0.3s ease;
+}
+
+.rotating-target__bullseye-inner {
+  transition: opacity 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotating-target__ring,
+  .rotating-target__bullseye,
+  .rotating-target__bullseye-inner {
+    animation: none !important;
+    transform: none !important;
+  }
+}

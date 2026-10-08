@@ -5,6 +5,11 @@ const MOTIVATIONAL_WORDS = [
   { word: 'Consistency', number: '04' }
 ];
 
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 export class Motivational {
   constructor(container, options = {}) {
     this.container = container;
@@ -17,6 +22,7 @@ export class Motivational {
 
   init() {
     this.render();
+    this.initAnimations();
   }
 
   render() {
@@ -37,7 +43,53 @@ export class Motivational {
     `;
   }
 
+  initAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const section = this.container.querySelector('.motivational');
+    const items = this.container.querySelectorAll('.motivational__item');
+
+    if (!section) return;
+
+    // Items staggered entrance with scale
+    gsap.fromTo(items, 
+      { opacity: 0, y: 40, scale: 0.9 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.7,
+        ease: 'power3.out',
+        stagger: 0.15,
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 55%',
+          scrub: false
+        }
+      }
+    );
+
+    // Subtle continuous floating animation
+    items.forEach((item, index) => {
+      gsap.to(item, {
+        y: -8,
+        ease: 'sine.inOut',
+        duration: 2 + index * 0.5,
+        repeat: -1,
+        yoyo: true,
+        delay: index * 0.3
+      });
+    });
+  }
+
   destroy() {
+    ScrollTrigger.getAll().forEach(st => {
+      if (st.trigger === this.container.querySelector('.motivational')) {
+        st.kill();
+      }
+    });
     this.container.innerHTML = '';
   }
 }
