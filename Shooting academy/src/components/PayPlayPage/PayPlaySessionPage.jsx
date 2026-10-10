@@ -1,42 +1,11 @@
 import { getSupabaseConfig, TABLES } from '@/lib/supabase';
 
-const sessionsData = [
-  {
-    id: 's1',
-    name: '10m Air Rifle',
-    duration: '30 min',
-    price: 800,
-    includes: ['Range time', 'Air rifle', 'Targets', 'Instructor guidance'],
-  },
-  {
-    id: 's2',
-    name: '10m Air Pistol',
-    duration: '30 min',
-    price: 800,
-    includes: ['Range time', 'Air pistol', 'Targets', 'Instructor guidance'],
-  },
-  {
-    id: 's3',
-    name: '50m Rifle',
-    duration: '1 hour',
-    price: 1200,
-    includes: ['Range time', 'Rifle', 'Targets', 'Instructor guidance'],
-  },
-  {
-    id: 's4',
-    name: '50m Pistol',
-    duration: '1 hour',
-    price: 1200,
-    includes: ['Range time', 'Pistol', 'Targets', 'Instructor guidance'],
-  },
-];
-
 export class PayPlaySessionPage {
   constructor(container, options = {}) {
     this.container = container;
     this.options = { ...options };
-    this.sessionId = options.sessionId || 's1';
-    this.session = sessionsData.find(s => s.id === this.sessionId) || sessionsData[0];
+    this.sessionId = options.sessionId;
+    this.session = null;
     this.formData = {
       full_name: '',
       phone: '',
@@ -53,27 +22,110 @@ export class PayPlaySessionPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.fetchSession();
     this.render();
     this.bindEvents();
   }
 
+  async fetchSession() {
+    if (!this.sessionId) return;
+
+    const config = getSupabaseConfig();
+    if (!config.url) {
+      console.warn('Supabase not configured');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.url}/rest/v1/${TABLES.PAY_PLAY_OPTIONS}?id=eq.${this.sessionId}&select=*`, {
+        headers: {
+          'apikey': config.anonKey,
+          'Authorization': `Bearer ${config.anonKey}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.session = data[0] || null;
+      } else {
+        console.error('Failed to fetch session:', response.status);
+      }
+    } catch (err) {
+      console.error('Error fetching session:', err);
+    }
+  }
+
   getSessionDetailsHtml() {
+    if (!this.session) {
+      return `
+        <div class="pay-play-session-detail">
+          <p>Session not found</p>
+        </div>
+      `;
+    }
+
+    const availabilityLabels = {
+      available: 'Available',
+      unavailable: 'Unavailable',
+      temporarily_closed: 'Temporarily Closed'
+    };
+    const availabilityColors = {
+      available: 'availability--available',
+      unavailable: 'availability--unavailable',
+      temporarily_closed: 'availability--temporarily-closed'
+    };
+    const availabilityLabel = availabilityLabels[this.session.availability_status] || this.session.availability_status;
+    const availabilityColor = availabilityColors[this.session.availability_status] || 'availability--secondary';
+
     return `
       <div class="pay-play-session-detail">
         <div class="pay-play-session-detail__header">
           <h2 class="pay-play-session-detail__name">${this.session.name}</h2>
           <div class="pay-play-session-detail__meta">
-            <span class="pay-play-session-detail__duration">${this.session.duration}</span>
-            <span class="pay-play-session-detail__price">₹${this.session.price} / person</span>
+            <span class="pay-play-session-detail__duration">${this.session.duration_minutes ? `${this.session.duration_minutes} min` : '-'}</span>
+            <span class="pay-play-session-detail__price">₹${this.session.price_amount} / person</span>
+            <span class="pay-play-session-detail__availability ${availabilityColor}">${availabilityLabel}</span>
           </div>
         </div>
+        ${this.session.start_time && this.session.end_time ? `
+        <div class="pay-play-session-detail__time">
+          <h3>Time Slot</h3>
+          <p>${this.session.start_time} - ${this.session.end_time}</p>
+        </div>
+        ` : ''}
+        ${this.session.description ? `
+        <div class="pay-play-session-detail__description">
+          <h3>Description</h3>
+          <p>${this.session.description}</p>
+        </div>
+        ` : ''}
+        ${this.session.instructions ? `
+        <div class="pay-play-session-detail__instructions">
+          <h3>Instructions</h3>
+          <p>${this.session.instructions}</p>
+        </div>
+        ` : ''}
+        ${this.session.rules ? `
+        <div class="pay-play-session-detail__rules">
+          <h3>Rules</h3>
+          <p>${this.session.rules}</p>
+        </div>
+        ` : ''}
+        ${this.session.notices ? `
+        <div class="pay-play-session-detail__notices">
+          <h3>Important Notices</h3>
+          <p>${this.session.notices}</p>
+        </div>
+        ` : ''}
+        ${this.session.includes && this.session.includes.length > 0 ? `
         <div class="pay-play-session-detail__includes">
           <h3>Includes</h3>
           <ul>
             ${this.session.includes.map(item => `<li>${item}</li>`).join('')}
           </ul>
         </div>
+        ` : ''}
       </div>
     `;
   }
@@ -184,15 +236,15 @@ export class PayPlaySessionPage {
             <span>Back to Sessions</span>
           </a>
           <div class="pay-play-session-page__badge">PAY & PLAY</div>
-          <h1 class="pay-play-session-page__title">${this.session.name}</h1>
+          <h1 class="pay-play-session-page__title">${this.session?.name || 'Loading...'}</h1>
         </div>
 
         <div class="pay-play-session-page__content">
           <div class="pay-play-session-page__sidebar">
             ${this.getSessionDetailsHtml()}
             <div class="pay-play-session-page__price-card">
-              <div class="pay-play-session-page__price-amount">₹${this.session.price}</div>
-              <div class="pay-play-session-page__price-label">per person / ${this.session.duration}</div>
+              <div class="pay-play-session-page__price-amount">₹${this.session?.price_amount || '-'}</div>
+              <div class="pay-play-session-page__price-label">per person / ${this.session?.duration_minutes || '-'} min</div>
             </div>
           </div>
 
@@ -301,8 +353,7 @@ export class PayPlaySessionPage {
         preferred_date: this.formData.preferred_date,
         preferred_time: this.formData.preferred_time,
         message: this.formData.message,
-        amount: this.session.price,
-        payment_status: 'pending',
+        amount: this.session.price_amount,
         booking_status: 'pending',
       };
 

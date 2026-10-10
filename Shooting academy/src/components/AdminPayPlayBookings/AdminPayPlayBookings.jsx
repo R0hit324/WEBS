@@ -14,13 +14,11 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
         { key: 'preferred_date', label: 'Preferred Date', type: 'date', readonly: true },
         { key: 'preferred_time', label: 'Preferred Time', type: 'text', readonly: true },
         { key: 'amount', label: 'Amount (₹)', type: 'number', readonly: true },
-        { key: 'payment_status', label: 'Payment Status', type: 'select', options: [{ value: 'pending', label: 'Pending' }, { value: 'paid', label: 'Paid' }, { value: 'failed', label: 'Failed' }, { value: 'refunded', label: 'Refunded' }] },
         { key: 'booking_status', label: 'Booking Status', type: 'select', options: [{ value: 'pending', label: 'Pending' }, { value: 'confirmed', label: 'Confirmed' }, { value: 'cancelled', label: 'Cancelled' }, { value: 'completed', label: 'Completed' }] },
         { key: 'created_at', label: 'Submitted', type: 'datetime', readonly: true },
       ],
       searchFields: ['full_name', 'email', 'phone'],
       filters: [
-        { key: 'payment_status', label: 'Payment Status', type: 'select', options: [{ value: '', label: 'All' }, { value: 'pending', label: 'Pending' }, { value: 'paid', label: 'Paid' }, { value: 'failed', label: 'Failed' }, { value: 'refunded', label: 'Refunded' }] },
         { key: 'booking_status', label: 'Booking Status', type: 'select', options: [{ value: '', label: 'All' }, { value: 'pending', label: 'Pending' }, { value: 'confirmed', label: 'Confirmed' }, { value: 'cancelled', label: 'Cancelled' }, { value: 'completed', label: 'Completed' }] },
       ],
       sortable: true,
@@ -39,7 +37,7 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
   }
 
   getListHtml() {
-    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search bookings..." value="${this.search}" aria-label="Search" /><select class="admin-filter" data-filter="payment_status"><option value="">Payment Status</option><option value="pending" ${this.activeFilters.payment_status === 'pending' ? 'selected' : ''}>Pending</option><option value="paid" ${this.activeFilters.payment_status === 'paid' ? 'selected' : ''}>Paid</option><option value="failed" ${this.activeFilters.payment_status === 'failed' ? 'selected' : ''}>Failed</option><option value="refunded" ${this.activeFilters.payment_status === 'refunded' ? 'selected' : ''}>Refunded</option></select><select class="admin-filter" data-filter="booking_status"><option value="">Booking Status</option><option value="pending" ${this.activeFilters.booking_status === 'pending' ? 'selected' : ''}>Pending</option><option value="confirmed" ${this.activeFilters.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${this.activeFilters.booking_status === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="completed" ${this.activeFilters.booking_status === 'completed' ? 'selected' : ''}>Completed</option></select></div>${this.getTableHtml()}`;
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search bookings..." value="${this.search}" aria-label="Search" /><select class="admin-filter" data-filter="booking_status"><option value="">Booking Status</option><option value="pending" ${this.activeFilters.booking_status === 'pending' ? 'selected' : ''}>Pending</option><option value="confirmed" ${this.activeFilters.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${this.activeFilters.booking_status === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="completed" ${this.activeFilters.booking_status === 'completed' ? 'selected' : ''}>Completed</option></select></div>${this.getTableHtml()}`;
   }
 
   getTableHtml() {
@@ -55,7 +53,6 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
         <td>${item.session_id}</td>
         <td>${item.preferred_date} ${item.preferred_time}</td>
         <td>₹${item.amount}</td>
-        <td><span class="admin-badge admin-badge--${item.payment_status}">${item.payment_status}</span></td>
         <td><span class="admin-badge admin-badge--${item.booking_status}">${item.booking_status}</span></td>
         <td>
           <div class="admin-actions">
@@ -65,7 +62,7 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
           </div>
         </td>
       </tr>
-    `).join('') : `<tr><td colspan="9" class="admin-table__empty">No bookings found</td></tr>`;
+    `).join('') : `<tr><td colspan="7" class="admin-table__empty">No bookings found</td></tr>`;
 
     return `<div class="admin-table-container">
       <table class="admin-table">
@@ -77,7 +74,6 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
             <th>Session</th>
             <th>Date/Time</th>
             <th>Amount</th>
-            <th>Payment</th>
             <th>Booking</th>
             <th>Actions</th>
           </tr>
@@ -101,10 +97,10 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
               <label for="${field.key}">${field.label}</label>
               ${field.type === 'select' ? `
                 <select name="${field.key}" id="${field.key}">
-                  <option value="pending" ${item?.payment_status === 'pending' ? 'selected' : ''}>Pending</option>
-                  <option value="paid" ${item?.payment_status === 'paid' ? 'selected' : ''}>Paid</option>
-                  <option value="failed" ${item?.payment_status === 'failed' ? 'selected' : ''}>Failed</option>
-                  <option value="refunded" ${item?.payment_status === 'refunded' ? 'selected' : ''}>Refunded</option>
+                  <option value="pending" ${item?.booking_status === 'pending' ? 'selected' : ''}>Pending</option>
+                  <option value="confirmed" ${item?.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                  <option value="cancelled" ${item?.booking_status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                  <option value="completed" ${item?.booking_status === 'completed' ? 'selected' : ''}>Completed</option>
                 </select>
               ` : `
                 <input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" ${field.readonly ? 'readonly' : ''}>

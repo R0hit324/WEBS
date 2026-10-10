@@ -104,6 +104,7 @@ export const TABLES = {
   REVIEWS: 'reviews',
   REGISTRATIONS: 'registrations',
   PAY_PLAY_OPTIONS: 'pay_play_options',
+  PAY_PLAY_BOOKINGS: 'pay_play_bookings',
   MOTIVATIONAL_QUOTES: 'motivational_quotes',
   CONTACT_SETTINGS: 'contact_settings',
   SITE_SECTION_SETTINGS: 'site_section_settings',

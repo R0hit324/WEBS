@@ -178,6 +178,28 @@ export interface PayPlayOption extends BaseEntity, VisibilityEntity {
 }
 
 // ============================================================
+// Pay & Play Bookings
+// ============================================================
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+
+export interface PayPlayBooking extends BaseEntity {
+  full_name: string;
+  phone: string;
+  email: string;
+  session_id: string;
+  booking_date: string | null;
+  booking_time: string | null;
+  amount: number;
+  payment_status: PaymentStatus;
+  booking_status: BookingStatus;
+  payment_reference: string | null;
+  payment_provider: string | null;
+  payment_order_id: string | null;
+  payment_id: string | null;
+}
+
+// ============================================================
 // Motivational Quotes
 // ============================================================
 export interface MotivationalQuote extends BaseEntity, VisibilityEntity {
