@@ -22,7 +22,10 @@ import { createReviewsPage } from './components/ReviewsPage/index.js';
 import { createContactPage } from './components/ContactPage/index.js';
 import { createRegistrationPage } from './components/RegistrationPage/index.js';
 import { createPayPlayPage, createPayPlaySessionPage } from './components/PayPlayPage/index.js';
-
+import { createAdminLoginPage } from './components/AdminLoginPage/index.js';
+import { createAdminLayout } from './components/AdminLayout/index.js';
+import { createAdminDashboard } from './components/AdminDashboard/index.js';
+import { isAdminAuthenticated } from './lib/admin-auth.ts';
 import { router } from './router/index.js';
 
 const app = document.getElementById('app');
@@ -293,7 +296,6 @@ function renderAdminLogin(mainContent) {
 }
 
 async function renderAdminDashboard(mainContent) {
-  const { isAdminAuthenticated } = require('./lib/admin-auth');
   if (!(await isAdminAuthenticated())) {
     window.location.href = '/admin/login';
     return;
@@ -318,7 +320,6 @@ async function renderAdminDashboard(mainContent) {
 }
 
 async function renderAdminSection(mainContent, section) {
-  const { isAdminAuthenticated } = require('./lib/admin-auth');
   if (!(await isAdminAuthenticated())) {
     window.location.href = '/admin/login';
     return;
