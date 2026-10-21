@@ -57,8 +57,9 @@
 }
 
 .admin-stat-card__icon svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  color: var(--stat-color);
 }
 
 .admin-stat-card__content {
