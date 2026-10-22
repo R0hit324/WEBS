@@ -1,9 +1,102 @@
+/* ---- Ambient reflections: cinematic continuation of the chamber lights ----
+   Two blurred glow clusters drift slowly behind the numbers (emerald theme
+   accent + the gold warm light used by the hero spotlight). Content stays in
+   a raised layer; the glows are decorative pseudo-elements with no layout. */
+
 .motivational {
+  position: relative;
+  overflow: hidden;
   padding: var(--spacing-20) 0;
   background-color: var(--color-dark-surface);
   border-top: 1px solid var(--color-border-subtle);
   border-bottom: 1px solid var(--color-border-subtle);
 }
+
+.motivational::before,
+.motivational::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+}
+
+/* Left cluster: deep emerald reflections */
+.motivational::before {
+  top: -35%;
+  left: -12%;
+  width: 52%;
+  height: 130%;
+  filter: blur(70px);
+  background:
+    radial-gradient(closest-side, rgba(16, 185, 129, 0.13), rgba(16, 185, 129, 0) 72%),
+    radial-gradient(closest-side at 62% 78%, rgba(15, 118, 110, 0.16), rgba(15, 118, 110, 0) 78%);
+  animation: mot-drift-left 36s ease-in-out infinite alternate;
+}
+
+/* Right cluster: warm gold spillover from the range light */
+.motivational::after {
+  bottom: -45%;
+  right: -14%;
+  width: 46%;
+  height: 135%;
+  filter: blur(80px);
+  background:
+    radial-gradient(closest-side, rgba(244, 197, 66, 0.09), rgba(244, 197, 66, 0) 70%),
+    radial-gradient(closest-side at 48% 24%, rgba(16, 185, 129, 0.07), rgba(16, 185, 129, 0) 74%);
+  animation: mot-drift-right 44s ease-in-out infinite alternate;
+}
+
+.motivational .container {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes mot-drift-left {
+  0% {
+    transform: translate3d(-4%, -3%, 0) scale(1);
+    opacity: 0.85;
+  }
+  33% {
+    transform: translate3d(5%, 4%, 0) scale(1.09);
+    opacity: 1;
+  }
+  66% {
+    transform: translate3d(-2%, 5%, 0) scale(0.94);
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(6%, -2%, 0) scale(1.06);
+    opacity: 0.95;
+  }
+}
+
+@keyframes mot-drift-right {
+  0% {
+    transform: translate3d(3%, 4%, 0) scale(1.04);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate3d(-5%, -5%, 0) scale(0.92);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+    opacity: 0.68;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motivational::before {
+    animation: none;
+    transform: translate3d(0, 0, 0);
+  }
+  .motivational::after {
+    animation: none;
+    transform: translate3d(-2%, -3%, 0);
+  }
+}
+
 
 .motivational__grid {
   display: grid;
@@ -20,6 +113,52 @@
   align-items: center;
   gap: var(--spacing-4);
   padding: var(--spacing-6) var(--spacing-4);
+}
+
+/* Gentle continuous float: staggered timings so the four values never move
+   in lockstep. Transform-only — no layout shifts. Amplitudes live in CSS
+   vars so the mobile media query scales the SAME keyframes down. */
+.motivational__item {
+  will-change: transform;
+  --mot-rise: 9px;   /* upward amplitude */
+  --mot-fall: 8px;   /* downward amplitude */
+  --mot-sway: 3px;   /* horizontal amplitude */
+}
+
+.motivational__item:nth-child(2) { --mot-rise: 10px; --mot-fall: 7px; --mot-sway: 2.5px; }
+.motivational__item:nth-child(3) { --mot-rise: 8px;  --mot-fall: 9px; --mot-sway: 3.2px; }
+.motivational__item:nth-child(4) { --mot-rise: 9.5px; --mot-fall: 7.5px; --mot-sway: 2.8px; }
+
+.motivational__item:nth-child(1) { animation: mot-float-1 4.3s cubic-bezier(0.37, 0, 0.63, 1) -0.5s infinite alternate; }
+.motivational__item:nth-child(2) { animation: mot-float-2 3.8s cubic-bezier(0.37, 0, 0.63, 1) -1.6s infinite alternate; }
+.motivational__item:nth-child(3) { animation: mot-float-3 4.7s cubic-bezier(0.37, 0, 0.63, 1) -2.4s infinite alternate; }
+.motivational__item:nth-child(4) { animation: mot-float-4 4.1s cubic-bezier(0.37, 0, 0.63, 1) -1.0s infinite alternate; }
+
+@keyframes mot-float-1 {
+  from { transform: translate3d(var(--mot-sway), var(--mot-rise), 0); }
+  to { transform: translate3d(calc(var(--mot-sway) * -0.7), calc(var(--mot-fall) * -1), 0); }
+}
+
+@keyframes mot-float-2 {
+  from { transform: translate3d(calc(var(--mot-sway) * -1), calc(var(--mot-fall) * -1), 0); }
+  to { transform: translate3d(calc(var(--mot-sway) * 0.8), calc(var(--mot-rise) * 0.9), 0); }
+}
+
+@keyframes mot-float-3 {
+  from { transform: translate3d(calc(var(--mot-sway) * 0.9), calc(var(--mot-rise) * 0.95), 0); }
+  to { transform: translate3d(calc(var(--mot-sway) * -1), calc(var(--mot-fall) * -1), 0); }
+}
+
+@keyframes mot-float-4 {
+  from { transform: translate3d(calc(var(--mot-sway) * -1), calc(var(--mot-rise) * 0.9), 0); }
+  to { transform: translate3d(calc(var(--mot-sway) * 0.8), calc(var(--mot-fall) * -1), 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motivational__item:nth-child(n) {
+    animation: none;
+    transform: none;
+  }
 }
 
 .motivational__number {
@@ -63,6 +202,25 @@
 @media (max-width: 768px) {
   .motivational {
     padding: var(--spacing-12) 0;
+  }
+  .motivational__item:nth-child(n) {
+    --mot-rise: 6px;
+    --mot-fall: 5.5px;
+    --mot-sway: 2px;
+  }
+  .motivational::before {
+    top: -20%;
+    height: 110%;
+    width: 70%;
+    filter: blur(55px);
+    animation-duration: 30s;
+  }
+  .motivational::after {
+    bottom: -30%;
+    height: 115%;
+    width: 62%;
+    filter: blur(62px);
+    animation-duration: 36s;
   }
   .motivational__grid {
     grid-template-columns: repeat(2, 1fr);

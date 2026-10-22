@@ -37,6 +37,22 @@
   flex-shrink: 0;
 }
 
+/* Gentle idle drift, echoing the core-values float but smaller */
+.highlights__item:nth-child(odd) { animation: hl-drift 5.6s ease-in-out -0.9s infinite alternate; }
+.highlights__item:nth-child(even) { animation: hl-drift 5.1s ease-in-out -2.4s infinite alternate-reverse; }
+
+@keyframes hl-drift {
+  from { transform: translate3d(-2px, 2px, 0); }
+  to { transform: translate3d(2px, -3px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlights__item:nth-child(n) {
+    animation: none;
+    transform: none;
+  }
+}
+
 .highlights__text {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);

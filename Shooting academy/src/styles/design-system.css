@@ -299,3 +299,74 @@ h1, h2, h3, h4, h5, h6 {
     --font-size-3xl: 1.5rem;
   }
 }
+
+/* ---- Public page ambience: navy-slate depth + restrained brand glows ----
+   Scoped to public routes only (body gets .page--public in main.js), so the
+   admin dashboard keeps its original flat surface palette. Palette shift is
+   token-driven: the same emerald/ivory system, resting on navy-tinged darks */
+
+body.page--public {
+  --color-bg-primary: #0e1219;
+  --color-bg-secondary: #161d26;
+  --color-bg-tertiary: #1c2532;
+  --color-border-subtle: #2a3341;
+
+  background-color: #0e1219;
+  background-image:
+    radial-gradient(85% 55% at 100% -8%, rgba(64, 88, 126, 0.15) 0%, rgba(64, 88, 126, 0) 100%),
+    radial-gradient(75% 55% at 8% 102%, rgba(16, 185, 129, 0.13) 0%, rgba(16, 185, 129, 0) 100%),
+    linear-gradient(180deg, #0f1320 0%, #0e1219 46%, #0c1015 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+/* Section ambience: one consistent motif — slate-blue light upper-left,
+   faint academy-red wash lower-right. Rendered as a pseudo layer so it can
+   breathe slowly (intensity + scale) on a transform-only timeline.
+   :where() keeps specificity at zero: sections that define their own
+   background or pseudo (e.g. motivational) keep full control. */
+:where(body.page--public .section) {
+  position: relative;
+}
+
+:where(body.page--public .section)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 70% at 4% -4%, rgba(64, 88, 126, 0.13) 0%, rgba(64, 88, 126, 0) 72%),
+    radial-gradient(52% 64% at 22% 106%, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0) 78%),
+    radial-gradient(46% 58% at 97% 104%, rgba(168, 64, 54, 0.10) 0%, rgba(168, 64, 54, 0) 74%);
+  animation: section-glow-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes section-glow-drift {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(0.975);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.945);
+    opacity: 0.65;
+  }
+}
+
+:where(body.page--public .section) > .container {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(body.page--public .section)::before {
+    animation: none;
+    transform: none;
+    opacity: 0.8;
+  }
+}

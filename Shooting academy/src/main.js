@@ -29,6 +29,12 @@ import { activatePrecisionChamber, destroyPrecisionChamber } from './lib/precisi
 
 const app = document.getElementById('app');
 
+// Public pages only: scoped background/ambience styles (design-system.css)
+// key off this class so admin surfaces keep their original palette.
+function syncPageScope() {
+  document.body.classList.toggle('page--public', !window.location.pathname.startsWith('/admin'));
+}
+
 let navbarInstance = null;
 let currentPageInstance = null;
 let adminLayoutInstance = null;
@@ -36,6 +42,7 @@ let adminLayoutInstance = null;
 function init() {
   const path = window.location.pathname;
   const isAdminRoute = path.startsWith('/admin');
+  syncPageScope();
 
   if (isAdminRoute) {
     app.innerHTML = `
@@ -106,6 +113,7 @@ function setupRoutes(mainContent) {
 }
 
 function clearMainContent(mainContent) {
+  syncPageScope();
   destroyScrollReveal();
   destroyPrecisionChamber();
   if (currentPageInstance && typeof currentPageInstance.destroy === 'function') {
