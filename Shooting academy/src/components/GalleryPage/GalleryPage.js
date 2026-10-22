@@ -98,7 +98,7 @@ export class GalleryPage {
       <section class="gallery-page" aria-labelledby="gallery-page-title">
         <div class="container">
           <header class="gallery-page__hero">
-            <div class="gallery-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="gallery-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="gallery-page-title" class="gallery-page__title">Photo <span class="gallery-page__title-accent">Gallery</span></h1>
             <p class="gallery-page__description">Training sessions, competitions, events, and daily life at Matsya Shooting Sports Academy.</p>
           </header>
@@ -110,13 +110,6 @@ export class GalleryPage {
           </div>
 
           <div class="gallery-page__grid" role="list">${gridHtml}</div>
-
-          <div class="gallery-page__cta-section">
-            <div class="gallery-page__cta-actions" role="group" aria-label="Gallery page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
-          </div>
 
           <!-- Lightbox -->
           <div class="lightbox" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
@@ -155,14 +148,16 @@ export class GalleryPage {
     return `
       <article class="gallery-item ${featured}" role="listitem" data-index="${index}" data-category="${item.category || 'academy'}" tabindex="0" aria-label="View ${item.title || 'gallery image'}">
         ${item.image
-          ? `<img src="${item.image}" alt="${item.title || 'Gallery image'}" class="gallery-item__image" loading="lazy">`
-          : `
-            <div class="gallery-item__placeholder" role="img" aria-label="${item.title || 'Gallery image'} placeholder">
-              <span class="gallery-item__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
-              <span class="gallery-item__placeholder-text">Gallery Image</span>
-            </div>
+          ? `<img src="${item.image}" alt="${item.alt_text || item.title || 'Gallery image'}" class="gallery-item__image" loading="lazy"
+               onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
           `
+          : ''
         }
+        <div class="gallery-item__placeholder" role="img" aria-label="${item.title || 'Gallery image'} placeholder"
+             style="${item.image ? 'display:none' : ''}">
+          <span class="gallery-item__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
+          <span class="gallery-item__placeholder-text">Gallery Image</span>
+        </div>
         <div class="gallery-item__overlay">
           <div class="gallery-item__info">
             <span class="gallery-item__category">${categoryLabel}</span>
@@ -178,7 +173,7 @@ export class GalleryPage {
       <section class="gallery-page" aria-labelledby="gallery-page-title">
         <div class="container">
           <header class="gallery-page__hero">
-            <div class="gallery-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="gallery-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="gallery-page-title" class="gallery-page__title">Photo <span class="gallery-page__title-accent">Gallery</span></h1>
             <p class="gallery-page__description">Training sessions, competitions, events, and daily life at Matsya Shooting Sports Academy.</p>
           </header>
@@ -188,13 +183,6 @@ export class GalleryPage {
               <span class="gallery-page__empty-icon" aria-hidden="true">${EMPTY_ICON}</span>
               <h2 class="gallery-page__empty-title">No Images Yet</h2>
               <p class="gallery-page__empty-desc">Academy photos will appear here once uploaded through the CMS.</p>
-            </div>
-          </div>
-
-          <div class="gallery-page__cta-section">
-            <div class="gallery-page__cta-actions" role="group" aria-label="Gallery page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>
@@ -283,10 +271,12 @@ export class GalleryPage {
 
     if (item.image) {
       image.src = item.image;
-      image.alt = item.title || 'Gallery image';
+      image.alt = item.alt_text || item.title || 'Gallery image';
+      image.style.display = '';
     } else {
-      image.src = '';
+      image.removeAttribute('src');
       image.alt = item.title || 'Gallery image';
+      image.style.display = 'none';
     }
 
     title.textContent = item.title || 'Untitled';

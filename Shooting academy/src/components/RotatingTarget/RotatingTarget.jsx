@@ -162,7 +162,7 @@ render() {
       }
     });
 
-    // Layer 2: Controlled rotation based on scroll (subtle, -4Â° to +4Â°)
+    // Layer 2: Controlled rotation based on scroll (subtle, -4° to +4°)
     gsap.to('.rotating-target', {
       rotation: -4,
       ease: 'none',

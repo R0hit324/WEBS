@@ -35,6 +35,9 @@ export class ContactPage {
 
   async init() {
     await this.loadContactSettings();
+    const subjectParam = new URLSearchParams(window.location.search).get('subject');
+    const validSubjects = ['admissions', 'training', 'pay_play', 'facilities', 'coaching', 'general', 'other'];
+    this.selectedSubject = validSubjects.includes(subjectParam) ? subjectParam : '';
     this.render();
     this.bindFormEvents();
   }
@@ -52,17 +55,20 @@ export class ContactPage {
 
       const contactMap = {};
       (data || []).forEach(item => {
-        contactMap[item.setting_key] = item.setting_value;
+        if (item.setting_value) {
+          contactMap[item.setting_key] = item.setting_value;
+        }
       });
 
+      // Fall back to built-in defaults for any missing setting
       this.options.contact = {
-        address: contactMap.address || '',
-        phone: contactMap.phone || '',
-        whatsapp: contactMap.whatsapp || '',
-        email: contactMap.email || '',
-        hours: contactMap.hours || '',
+        address: contactMap.address || DEFAULT_CONTACT.address,
+        phone: contactMap.phone || DEFAULT_CONTACT.phone,
+        whatsapp: contactMap.whatsapp || DEFAULT_CONTACT.whatsapp,
+        email: contactMap.email || DEFAULT_CONTACT.email,
+        hours: contactMap.hours || DEFAULT_CONTACT.hours,
         mapUrl: contactMap.map_url || '',
-        mapEmbed: contactMap.map_embed || ''
+        mapEmbed: contactMap.map_embed || DEFAULT_CONTACT.mapEmbed
       };
     } catch (error) {
       console.error('Failed to load contact settings:', error);
@@ -88,7 +94,12 @@ export class ContactPage {
         <div class="contact-detail__content">
           <span class="contact-detail__label">Phone</span>
           <span class="contact-detail__value ${contact.phone ? '' : 'contact-detail__value--empty'}">
-            ${contact.phone ? `<a href="tel:${contact.phone}" class="contact-detail__link">${contact.phone}</a>` : '[Phone Placeholder]'}
+            ${contact.phone
+              ? contact.phone.split(',').map(part => {
+                  const digits = part.replace(/[^\d+]/g, '');
+                  return `<a href="tel:${digits}" class="contact-detail__link">${part.trim()}</a>`;
+                }).join(', ')
+              : '[Phone Placeholder]'}
           </span>
         </div>
       </div>
@@ -134,7 +145,7 @@ export class ContactPage {
       <section class="contact-page" aria-labelledby="contact-page-title">
         <div class="container">
           <header class="contact-page__hero">
-            <div class="contact-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="contact-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="contact-page-title" class="contact-page__title">Get in <span class="contact-page__title-accent">Touch</span></h1>
             <p class="contact-page__description">Have questions? We'd love to hear from you. Reach out for admissions, inquiries, or to schedule a visit.</p>
           </header>
@@ -170,12 +181,13 @@ export class ContactPage {
                     <label for="subject">Subject</label>
                     <select id="subject" name="subject" autocomplete="off">
                       <option value="">Select a topic</option>
-                      <option value="admissions">Admissions & Registration</option>
-                      <option value="training">Training Programs</option>
-                      <option value="facilities">Facilities & Ranges</option>
-                      <option value="coaching">Coaching Inquiries</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="other">Other</option>
+                      <option value="admissions" ${this.selectedSubject === 'admissions' ? 'selected' : ''}>Admissions & Registration</option>
+                      <option value="training" ${this.selectedSubject === 'training' ? 'selected' : ''}>Training Programs</option>
+                      <option value="pay_play" ${this.selectedSubject === 'pay_play' ? 'selected' : ''}>Pay & Play</option>
+                      <option value="facilities" ${this.selectedSubject === 'facilities' ? 'selected' : ''}>Facilities & Ranges</option>
+                      <option value="coaching" ${this.selectedSubject === 'coaching' ? 'selected' : ''}>Coaching Inquiries</option>
+                      <option value="general" ${this.selectedSubject === 'general' ? 'selected' : ''}>General Inquiry</option>
+                      <option value="other" ${this.selectedSubject === 'other' ? 'selected' : ''}>Other</option>
                     </select>
                     <span class="form-group__error" id="subject-error"></span>
                   </div>
@@ -203,12 +215,6 @@ export class ContactPage {
           <div class="contact-page__map">
             <h2 class="contact-page__map-title">Find Us</h2>
             <div class="contact-page__map-container">${mapHtml}</div>
-          </div>
-
-          <div class="contact-page__cta-section">
-            <div class="contact-page__cta-actions" role="group" aria-label="Contact page actions">
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
           </div>
         </div>
       </section>

@@ -72,11 +72,13 @@ export class CoachesPage {
         role: item.role,
         photo: item.photo_url,
         photoAlt: item.photo_alt || item.full_name,
-        qualifications: item.qualifications,
-        certifications: item.certifications,
-        experience: item.experience,
-        bio: item.bio,
-        achievements: item.achievements,
+        qualifications: item.qualifications || '',
+        certifications: item.certifications || '',
+        experience: item.experience_years != null && item.experience_years !== ''
+          ? `${item.experience_years} years`
+          : (item.experience || ''),
+        bio: item.bio || '',
+        achievements: item.achievements || '',
         visible: item.is_visible !== false,
         displayOrder: item.display_order ?? 0
       }));
@@ -93,7 +95,13 @@ export class CoachesPage {
       <article class="coach-profile" data-coach-id="${coach.id}">
         <div class="coach-profile__visual">
           ${coach.photo
-            ? `<img src="${coach.photo}" alt="${coach.photoAlt}" class="coach-profile__image" loading="lazy">`
+            ? `<img src="${coach.photo}" alt="${coach.photoAlt || coach.name}" class="coach-profile__image" loading="lazy"
+                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
+               >
+               <div class="coach-profile__placeholder" role="img" aria-label="${coach.name} photo placeholder" style="display:none">
+                 <span class="coach-profile__placeholder-icon" aria-hidden="true">${COACH_PLACEHOLDER_ICON}</span>
+                 <span class="coach-profile__placeholder-text">Coach Photo</span>
+               </div>`
             : `
               <div class="coach-profile__placeholder" role="img" aria-label="${coach.name} photo placeholder">
                 <span class="coach-profile__placeholder-icon" aria-hidden="true">${COACH_PLACEHOLDER_ICON}</span>
@@ -105,52 +113,41 @@ export class CoachesPage {
         <div class="coach-profile__content">
           <header class="coach-profile__header">
             <h2 class="coach-profile__name">${coach.name}</h2>
-            <p class="coach-profile__role">${coach.role}</p>
+            ${coach.role ? `<p class="coach-profile__role">${coach.role}</p>` : ''}
           </header>
-          <div class="coach-profile__bio">
-            <p>${coach.bio}</p>
-          </div>
-          <div class="coach-profile__details">
-            ${coach.qualifications ? `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Qualifications</span>
-                <span class="coach-detail__value">${coach.qualifications}</span>
-              </div>
-            ` : `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Qualifications</span>
-                <span class="coach-detail__value coach-detail__value--empty">[To be added via CMS]</span>
-              </div>
-            `}
-            ${coach.certifications ? `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Certifications</span>
-                <span class="coach-detail__value">${coach.certifications}</span>
-              </div>
-            ` : `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Certifications</span>
-                <span class="coach-detail__value coach-detail__value--empty">[To be added via CMS]</span>
-              </div>
-            `}
-            ${coach.experience ? `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Experience</span>
-                <span class="coach-detail__value">${coach.experience}</span>
-              </div>
-            ` : `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Experience</span>
-                <span class="coach-detail__value coach-detail__value--empty">[To be added via CMS]</span>
-              </div>
-            `}
-            ${coach.achievements ? `
-              <div class="coach-detail">
-                <span class="coach-detail__label">Achievements</span>
-                <span class="coach-detail__value">${coach.achievements}</span>
-              </div>
-            ` : ''}
-          </div>
+          ${coach.bio ? `
+            <div class="coach-profile__bio">
+              <p>${coach.bio}</p>
+            </div>
+          ` : ''}
+          ${coach.qualifications || coach.certifications || coach.experience || coach.achievements ? `
+            <div class="coach-profile__details">
+              ${coach.qualifications ? `
+                <div class="coach-detail">
+                  <span class="coach-detail__label">Qualifications</span>
+                  <span class="coach-detail__value">${coach.qualifications}</span>
+                </div>
+              ` : ''}
+              ${coach.certifications ? `
+                <div class="coach-detail">
+                  <span class="coach-detail__label">Certifications</span>
+                  <span class="coach-detail__value">${coach.certifications}</span>
+                </div>
+              ` : ''}
+              ${coach.experience ? `
+                <div class="coach-detail">
+                  <span class="coach-detail__label">Experience</span>
+                  <span class="coach-detail__value">${coach.experience}</span>
+                </div>
+              ` : ''}
+              ${coach.achievements ? `
+                <div class="coach-detail">
+                  <span class="coach-detail__label">Achievements</span>
+                  <span class="coach-detail__value">${coach.achievements}</span>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
           <div class="coach-profile__cta">
             <a href="/contact" class="btn btn--secondary">Contact Coach</a>
           </div>
@@ -162,19 +159,12 @@ export class CoachesPage {
       <section class="coaches-page" aria-labelledby="coaches-page-title">
         <div class="container">
           <header class="coaches-page__hero">
-            <div class="coaches-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="coaches-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="coaches-page-title" class="coaches-page__title">Our <span class="coaches-page__title-accent">Coaches</span></h1>
             <p class="coaches-page__description">Led by NRAI-certified professionals dedicated to developing champions at every level through precision training and mental conditioning.</p>
           </header>
 
           <div class="coaches-page__grid" role="list">${coachesHtml}</div>
-
-          <div class="coaches-page__cta-section">
-            <div class="coaches-page__cta-actions" role="group" aria-label="Coaches page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
-          </div>
         </div>
       </section>
     `;

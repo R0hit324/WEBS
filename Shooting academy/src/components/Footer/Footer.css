@@ -120,6 +120,20 @@
 
 .footer__contact-value {
   color: var(--color-text-secondary);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.footer__contact-link {
+  color: var(--color-muted-ivory);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer__contact-link:hover,
+.footer__contact-link:focus-visible {
+  color: var(--color-accent-bright);
+  text-decoration: underline;
 }
 
 .footer__divider {

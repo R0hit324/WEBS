@@ -4,13 +4,10 @@ import { createHero } from './components/Hero/index.js';
 import { createHighlights } from './components/Highlights/index.js';
 import { createAboutPreview } from './components/AboutPreview/index.js';
 import { createTrainingPreview } from './components/TrainingPreview/index.js';
-import { createCoachesPreview } from './components/CoachesPreview/index.js';
 import { createAchievementsPreview } from './components/AchievementsPreview/index.js';
 import { createFacilitiesPreview } from './components/FacilitiesPreview/index.js';
-import { createGalleryPreview } from './components/GalleryPreview/index.js';
 import { createReviews } from './components/Reviews/index.js';
 import { createMotivational } from './components/Motivational/index.js';
-import { createFinalCTA } from './components/FinalCTA/index.js';
 import { createFooter } from './components/Footer/index.js';
 import { createAboutPage } from './components/AboutPage/index.js';
 import { createTrainingPage } from './components/TrainingPage/index.js';
@@ -140,11 +137,6 @@ function renderHome(mainContent) {
   mainContent.appendChild(trainingContainer);
   createTrainingPreview(trainingContainer);
 
-  const coachesContainer = document.createElement('div');
-  coachesContainer.id = 'coaches';
-  mainContent.appendChild(coachesContainer);
-  createCoachesPreview(coachesContainer);
-
   const achievementsContainer = document.createElement('div');
   achievementsContainer.id = 'achievements';
   mainContent.appendChild(achievementsContainer);
@@ -155,11 +147,6 @@ function renderHome(mainContent) {
   mainContent.appendChild(facilitiesContainer);
   createFacilitiesPreview(facilitiesContainer);
 
-  const galleryContainer = document.createElement('div');
-  galleryContainer.id = 'gallery';
-  mainContent.appendChild(galleryContainer);
-  createGalleryPreview(galleryContainer);
-
   const reviewsContainer = document.createElement('div');
   reviewsContainer.id = 'reviews';
   mainContent.appendChild(reviewsContainer);
@@ -168,10 +155,6 @@ function renderHome(mainContent) {
   const motivationalContainer = document.createElement('div');
   mainContent.appendChild(motivationalContainer);
   createMotivational(motivationalContainer);
-
-  const finalCtaContainer = document.createElement('div');
-  mainContent.appendChild(finalCtaContainer);
-  createFinalCTA(finalCtaContainer);
 }
 
 function renderAbout(mainContent) {

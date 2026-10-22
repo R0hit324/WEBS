@@ -16,6 +16,13 @@ function sortReviews(reviews) {
     });
 }
 
+function formatReviewDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export class ReviewsPage {
   constructor(container, options = {}) {
     this.container = container;
@@ -26,8 +33,41 @@ export class ReviewsPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
+  }
+
+  async loadData() {
+    if (this.options.reviews && this.options.reviews.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.REVIEWS)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.reviews = (data || []).map(item => ({
+        rating: item.rating || 5,
+        text: item.review_text,
+        author: item.author_name,
+        role: item.author_role,
+        avatar: item.photo_url,
+        avatarAlt: item.photo_alt || item.author_name,
+        date: item.review_date,
+        featured: Boolean(item.is_featured),
+        visible: item.is_visible !== false,
+        displayOrder: item.display_order ?? 0
+      }));
+    } catch (error) {
+      console.error('Failed to load reviews:', error);
+      this.options.reviews = [];
+    }
   }
 
   render() {
@@ -44,47 +84,40 @@ export class ReviewsPage {
       <section class="reviews-page" aria-labelledby="reviews-page-title">
         <div class="container">
           <header class="reviews-page__hero">
-            <div class="reviews-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="reviews-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="reviews-page-title" class="reviews-page__title">Reviews & <span class="reviews-page__title-accent">Testimonials</span></h1>
             <p class="reviews-page__description">Authentic feedback from athletes who have trained at Matsya Shooting Sports Academy.</p>
           </header>
 
           <div class="reviews-page__grid" role="list">${reviewsHtml}</div>
-
-          <div class="reviews-page__cta-section">
-            <div class="reviews-page__cta-actions" role="group" aria-label="Reviews page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
-          </div>
         </div>
       </section>
     `;
   }
 
   renderReviewCard(review) {
-    const rating = review.rating || 5;
-    const hasDate = review.date && review.date.trim() !== '';
+    const rating = Math.min(5, Math.max(1, Math.round(review.rating || 5)));
+    const dateText = formatReviewDate(review.date);
 
     return `
       <article class="review-card" role="listitem">
         <div class="review-card__rating" aria-label="${rating} out of 5 stars">
-          ${STAR_ICON.repeat(Math.min(5, Math.max(1, rating)))}
+          ${STAR_ICON.repeat(rating)}
         </div>
-        <p class="review-card__text">"${review.text || '[Review text]'}"</p>
+        ${review.text ? `<p class="review-card__text">"${review.text}"</p>` : ''}
         <footer class="review-card__author">
           <div class="review-card__avatar" aria-hidden="true">
             ${review.avatar
-              ? `<img src="${review.avatar}" alt="" class="review-card__avatar-img" loading="lazy">`
+              ? `<img src="${review.avatar}" alt="" class="review-card__avatar-img" loading="lazy"
+                   onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
+                 <div class="review-card__avatar-placeholder" style="display:none"><span class="review-card__avatar-icon">${AVATAR_ICON}</span></div>`
               : `<div class="review-card__avatar-placeholder"><span class="review-card__avatar-icon">${AVATAR_ICON}</span></div>`
             }
           </div>
           <div>
-            ${review.author ? `
-              <span class="review-card__name">${review.author}</span>
-              ${review.role ? `<span class="review-card__role">${review.role}</span>` : ''}
-            ` : ''}
-            ${hasDate ? `<span class="review-card__date">${review.date}</span>` : ''}
+            ${review.author ? `<span class="review-card__name">${review.author}</span>` : ''}
+            ${review.role ? `<span class="review-card__role">${review.role}</span>` : ''}
+            ${dateText ? `<span class="review-card__date">${dateText}</span>` : ''}
           </div>
         </footer>
       </article>
@@ -96,7 +129,7 @@ export class ReviewsPage {
       <section class="reviews-page" aria-labelledby="reviews-page-title">
         <div class="container">
           <header class="reviews-page__hero">
-            <div class="reviews-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="reviews-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="reviews-page-title" class="reviews-page__title">Reviews & <span class="reviews-page__title-accent">Testimonials</span></h1>
             <p class="reviews-page__description">Authentic feedback from athletes who have trained at Matsya Shooting Sports Academy.</p>
           </header>
@@ -106,13 +139,6 @@ export class ReviewsPage {
               <span class="reviews-page__empty-icon" aria-hidden="true">${EMPTY_REVIEWS_ICON}</span>
               <h2 class="reviews-page__empty-title">No Reviews Yet</h2>
               <p class="reviews-page__empty-desc">Authentic reviews from our athletes will appear here once submitted.</p>
-            </div>
-          </div>
-
-          <div class="reviews-page__cta-section">
-            <div class="reviews-page__cta-actions" role="group" aria-label="Reviews page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>

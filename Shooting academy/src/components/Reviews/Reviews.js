@@ -10,7 +10,7 @@ export class Reviews {
     this.options = {
       reviews: options.reviews || [],
       ctaLabel: options.ctaLabel || 'Read All Reviews',
-      ctaHref: options.ctaHref || '#reviews',
+      ctaHref: options.ctaHref || '/reviews',
       ...options
     };
     this.init();
@@ -49,13 +49,9 @@ export class Reviews {
   }
 
   render() {
-    const reviews = this.options.reviews.length > 0
-      ? this.options.reviews
-      : DEFAULT_REVIEWS;
+    const reviews = this.options.reviews;
 
-    const isEmpty = this.options.reviews.length === 0;
-
-    if (isEmpty) {
+    if (reviews.length === 0) {
       this.container.innerHTML = `
         <section class="reviews section" aria-labelledby="reviews-title">
           <div class="container">
@@ -79,46 +75,49 @@ export class Reviews {
           </div>
         </section>
       `;
-    } else {
-      const reviewsHtml = reviews.map(review => `
-        <article class="review-card" role="listitem">
-          <div class="review-card__rating" aria-label="${review.rating} out of 5 stars">
-            ${STAR_ICON.repeat(review.rating)}
-          </div>
-          <p class="review-card__text">"${review.text}"</p>
-          <div class="review-card__author">
-            <div class="review-card__avatar" aria-hidden="true">
-              ${review.avatar
-                ? `<img src="${review.avatar}" alt="" class="review-card__avatar-img">`
-                : `<div class="review-card__avatar-placeholder"><span class="review-card__avatar-icon">${AVATAR_ICON}</span></div>`
-              }
-            </div>
-            <div>
-              <span class="review-card__name">${review.author}</span>
-              <span class="review-card__role">${review.role}</span>
-            </div>
-          </div>
-        </article>
-      `).join('');
-
-      this.container.innerHTML = `
-        <section class="reviews section" aria-labelledby="reviews-title">
-          <div class="container">
-            <div class="reviews__header">
-              <div class="section-heading">
-                <p class="section-heading__pretitle">Reviews</p>
-                <h2 id="reviews-title" class="section-heading__title">Trusted by <span class="section-heading__title-accent">Champions</span></h2>
-                <p class="section-heading__subtitle">Hear from athletes who trained at Alwar's premier shooting academy.</p>
-              </div>
-            </div>
-            <div class="reviews__grid" role="list">${reviewsHtml}</div>
-            <div class="reviews__cta">
-              <a href="${this.options.ctaHref}" class="btn btn--primary btn--large">${this.options.ctaLabel}</a>
-            </div>
-          </div>
-        </section>
-      `;
+      return;
     }
+
+    const reviewsHtml = reviews.map(review => `
+      <article class="review-card" role="listitem">
+        <div class="review-card__rating" aria-label="${review.rating} out of 5 stars">
+          ${STAR_ICON.repeat(Math.min(5, Math.max(1, Math.round(review.rating))))}
+        </div>
+        ${review.text ? `<p class="review-card__text">"${review.text}"</p>` : ''}
+        <div class="review-card__author">
+          <div class="review-card__avatar" aria-hidden="true">
+            ${review.avatar
+              ? `<img src="${review.avatar}" alt="" class="review-card__avatar-img" loading="lazy"
+                   onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
+                 <div class="review-card__avatar-placeholder" style="display:none"><span class="review-card__avatar-icon">${AVATAR_ICON}</span></div>`
+              : `<div class="review-card__avatar-placeholder"><span class="review-card__avatar-icon">${AVATAR_ICON}</span></div>`
+            }
+          </div>
+          <div>
+            ${review.author ? `<span class="review-card__name">${review.author}</span>` : ''}
+            ${review.role ? `<span class="review-card__role">${review.role}</span>` : ''}
+          </div>
+        </div>
+      </article>
+    `).join('');
+
+    this.container.innerHTML = `
+      <section class="reviews section" aria-labelledby="reviews-title">
+        <div class="container">
+          <div class="reviews__header">
+            <div class="section-heading">
+              <p class="section-heading__pretitle">Reviews</p>
+              <h2 id="reviews-title" class="section-heading__title">Trusted by <span class="section-heading__title-accent">Champions</span></h2>
+              <p class="section-heading__subtitle">Hear from athletes who trained at Alwar's premier shooting academy.</p>
+            </div>
+          </div>
+          <div class="reviews__grid" role="list">${reviewsHtml}</div>
+          <div class="reviews__cta">
+            <a href="${this.options.ctaHref}" class="btn btn--primary btn--large">${this.options.ctaLabel}</a>
+          </div>
+        </div>
+      </section>
+    `;
   }
 
   updateReviews(reviews) {

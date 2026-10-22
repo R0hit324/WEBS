@@ -83,8 +83,8 @@ export class PayPlaySessionPage {
         <div class="pay-play-session-detail__header">
           <h2 class="pay-play-session-detail__name">${this.session.name}</h2>
           <div class="pay-play-session-detail__meta">
-            <span class="pay-play-session-detail__duration">${this.session.duration_minutes ? `${this.session.duration_minutes} min` : '-'}</span>
-            <span class="pay-play-session-detail__price">₹${this.session.price_amount} / person</span>
+            <span class="pay-play-session-detail__duration">${this.session.duration_minutes ? `${this.session.duration_minutes} min` : ''}</span>
+            ${this.session.price_amount != null ? `<span class="pay-play-session-detail__price">₹${this.session.price_amount} / person</span>` : ''}
             <span class="pay-play-session-detail__availability ${availabilityColor}">${availabilityLabel}</span>
           </div>
         </div>
@@ -243,8 +243,8 @@ export class PayPlaySessionPage {
           <div class="pay-play-session-page__sidebar">
             ${this.getSessionDetailsHtml()}
             <div class="pay-play-session-page__price-card">
-              <div class="pay-play-session-page__price-amount">₹${this.session?.price_amount || '-'}</div>
-              <div class="pay-play-session-page__price-label">per person / ${this.session?.duration_minutes || '-'} min</div>
+              <div class="pay-play-session-page__price-amount">₹${this.session?.price_amount ?? '-'}</div>
+              <div class="pay-play-session-page__price-label">per person${this.session?.duration_minutes ? ` / ${this.session.duration_minutes} min` : ''}</div>
             </div>
           </div>
 

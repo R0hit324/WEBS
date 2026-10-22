@@ -171,6 +171,7 @@
   color: var(--color-text-secondary);
   flex: 1;
   margin-bottom: var(--spacing-6);
+  overflow-wrap: anywhere;
 }
 
 .training-range-card__features {
@@ -194,11 +195,6 @@
   height: 16px;
   color: var(--color-accent-bright);
   flex-shrink: 0;
-}
-
-.training-range-card__cta {
-  width: 100%;
-  justify-content: center;
 }
 
 .training-page__audiences-grid {
@@ -244,20 +240,8 @@
   color: var(--color-text-secondary);
 }
 
-.training-page__cta-section {
-  text-align: center;
-  padding: var(--spacing-12) 0;
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.training-page__cta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-4);
-  justify-content: center;
-}
-
 .training-page__note {
+  text-align: center;
   font-size: var(--font-size-sm);
   color: var(--color-muted-ivory);
   margin-top: var(--spacing-8);

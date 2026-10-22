@@ -6,6 +6,16 @@
 
 const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
+function detailValueText(value) {
+  if (value == null) return '';
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) return value.filter(Boolean).join(', ');
+  if (typeof value === 'object') {
+    return Object.values(value).filter(v => v != null).join(', ').trim();
+  }
+  return String(value).trim();
+}
+
 function sortFacilities(facilities) {
   return [...facilities]
     .filter(f => f.visible !== false)
@@ -48,8 +58,8 @@ export class FacilitiesPage {
         description: item.description || item.short_description || '',
         image: item.image_url || null,
         imageAlt: item.image_alt || item.name,
-        specifications: item.specifications || null,
-        equipment: item.equipment || null,
+        specifications: detailValueText(item.specifications),
+        equipment: detailValueText(item.equipment),
         capacity: item.capacity || null,
         features: Array.isArray(item.features) ? item.features : [],
         visible: item.is_visible !== false,
@@ -64,11 +74,20 @@ export class FacilitiesPage {
   render() {
     const facilities = sortFacilities(this.options.facilities);
 
-    const facilitiesHtml = facilities.map(facility => `
+    const facilitiesHtml = facilities.map(facility => {
+      const hasDetails = facility.specifications || facility.equipment || facility.capacity;
+
+      return `
       <article class="facility-card" data-facility-id="${facility.id}">
         <div class="facility-card__visual">
           ${facility.image
-            ? `<img src="${facility.image}" alt="${facility.imageAlt}" class="facility-card__image" loading="lazy">`
+            ? `<img src="${facility.image}" alt="${facility.imageAlt || facility.name}" class="facility-card__image" loading="lazy"
+                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
+               >
+               <div class="facility-card__placeholder" role="img" aria-label="${facility.name} placeholder" style="display:none">
+                 <span class="facility-card__placeholder-icon" aria-hidden="true">${FACILITY_ICONS[facility.name] || ''}</span>
+                 <span class="facility-card__placeholder-text">Facility Image</span>
+               </div>`
             : `
               <div class="facility-card__placeholder" role="img" aria-label="${facility.name} placeholder">
                 <span class="facility-card__placeholder-icon" aria-hidden="true">${FACILITY_ICONS[facility.name] || ''}</span>
@@ -82,39 +101,31 @@ export class FacilitiesPage {
             <h2 class="facility-card__name">${facility.name}</h2>
             <span class="facility-card__category">${facility.category}</span>
           </header>
-          <p class="facility-card__desc">${facility.description}</p>
-          <div class="facility-card__details">
-            ${facility.specifications ? `
-              <div class="facility-detail">
-                <span class="facility-detail__label">Specifications</span>
-                <span class="facility-detail__value">${facility.specifications}</span>
-              </div>
-            ` : `
-              <div class="facility-detail">
-                <span class="facility-detail__label">Specifications</span>
-                <span class="facility-detail__value facility-detail__value--empty">[To be added via CMS]</span>
-              </div>
-            `}
-            ${facility.equipment ? `
-              <div class="facility-detail">
-                <span class="facility-detail__label">Equipment</span>
-                <span class="facility-detail__value">${facility.equipment}</span>
-              </div>
-            ` : `
-              <div class="facility-detail">
-                <span class="facility-detail__label">Equipment</span>
-                <span class="facility-detail__value facility-detail__value--empty">[To be added via CMS]</span>
-              </div>
-            `}
-            ${facility.capacity ? `
-              <div class="facility-detail">
-                <span class="facility-detail__label">Capacity</span>
-                <span class="facility-detail__value">${facility.capacity}</span>
-              </div>
-            ` : ''}
-          </div>
+          ${facility.description ? `<p class="facility-card__desc">${facility.description}</p>` : ''}
+          ${hasDetails ? `
+            <div class="facility-card__details">
+              ${facility.specifications ? `
+                <div class="facility-detail">
+                  <span class="facility-detail__label">Specifications</span>
+                  <span class="facility-detail__value">${facility.specifications}</span>
+                </div>
+              ` : ''}
+              ${facility.equipment ? `
+                <div class="facility-detail">
+                  <span class="facility-detail__label">Equipment</span>
+                  <span class="facility-detail__value">${facility.equipment}</span>
+                </div>
+              ` : ''}
+              ${facility.capacity ? `
+                <div class="facility-detail">
+                  <span class="facility-detail__label">Capacity</span>
+                  <span class="facility-detail__value">${facility.capacity}</span>
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
           ${facility.features && facility.features.length > 0 ? `
-            <ul class="facility-card__features" role="list" style="list-style: none; padding: 0; margin: 0 0 var(--spacing-6); display: flex; flex-direction: column; gap: var(--spacing-2);">
+            <ul class="facility-card__features" role="list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--spacing-2);">
               ${facility.features.map(feature => `
                 <li style="display: flex; align-items: center; gap: var(--spacing-2); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
                   <span aria-hidden="true">${CHECK_ICON}</span>
@@ -123,28 +134,22 @@ export class FacilitiesPage {
               `).join('')}
             </ul>
           ` : ''}
-          <a href="/contact" class="btn btn--secondary facility-card__cta">Enquire About This Facility</a>
         </div>
       </article>
-    `).join('');
+    `;
+    }).join('');
 
     this.container.innerHTML = `
       <section class="facilities-page" aria-labelledby="facilities-page-title">
         <div class="container">
           <header class="facilities-page__hero">
-            <div class="facilities-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="facilities-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="facilities-page-title" class="facilities-page__title">Our <span class="facilities-page__title-accent">Facilities</span></h1>
-            <p class="facilities-page__description">Three dedicated ranges meeting international standards â€” from beginner air gun to elite 50m competition. Designed for training excellence.</p>
+            <p class="facilities-page__description">Three dedicated ranges meeting international standards — from beginner air gun to elite 50m competition. Designed for training excellence.</p>
           </header>
 
           <div class="facilities-page__grid" role="list">${facilitiesHtml}</div>
 
-          <div class="facilities-page__cta-section">
-            <div class="facilities-page__cta-actions" role="group" aria-label="Facilities page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
-          </div>
         </div>
       </section>
     `;

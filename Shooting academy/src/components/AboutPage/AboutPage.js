@@ -73,7 +73,12 @@ export class AboutPage {
     const { content, imageSrc, imageAlt } = this.options;
 
     const visualHtml = imageSrc
-      ? `<img src="${imageSrc}" alt="${imageAlt}" class="about-page__image" loading="lazy">`
+      ? `<img src="${imageSrc}" alt="${imageAlt}" class="about-page__image" loading="lazy"
+           onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
+         <div class="about-page__placeholder" role="img" aria-label="Academy facility placeholder" style="display:none">
+           <span class="about-page__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
+           <span class="about-page__placeholder-text">Academy Facility Image</span>
+         </div>`
       : `
         <div class="about-page__placeholder" role="img" aria-label="Academy facility placeholder">
           <span class="about-page__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
@@ -149,7 +154,7 @@ export class AboutPage {
 
           <div class="about-page__section" id="philosophy">
             <div class="about-page__section-header">
-              <p class="about-page__section-pretile">Approach</p>
+              <p class="about-page__section-pretitle">Approach</p>
               <h2 class="about-page__section-title">${content.philosophy.title}</h2>
             </div>
             <div class="about-page__content-grid">

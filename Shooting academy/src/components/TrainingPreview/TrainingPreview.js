@@ -6,7 +6,7 @@ export class TrainingPreview {
     this.options = {
       cards: options.cards || [],
       ctaLabel: options.ctaLabel || 'View Training',
-      ctaHref: options.ctaHref || '#training',
+      ctaHref: options.ctaHref || '/training',
       ...options
     };
     this.init();
@@ -34,7 +34,7 @@ export class TrainingPreview {
       this.options.cards = (data || []).map(item => ({
         distance: item.distance,
         discipline: item.discipline,
-        description: item.short_description || item.description,
+        description: item.description || item.short_description || '',
         features: item.features || [],
         icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
       }));
@@ -50,7 +50,7 @@ export class TrainingPreview {
         <span class="training-card__icon" aria-hidden="true">${card.icon}</span>
         <h3 class="training-card__distance">${card.distance}</h3>
         <p class="training-card__discipline">${card.discipline}</p>
-        <p class="training-card__description">${card.description}</p>
+        ${card.description ? `<p class="training-card__description">${card.description}</p>` : ''}
         <ul class="training-card__features" role="list">
           ${card.features.map(feature => `
             <li class="training-card__feature">
@@ -58,9 +58,8 @@ export class TrainingPreview {
               <span>${feature}</span>
             </li>
           `).join('')}
-        </ul>
-        <a href="${this.options.ctaHref}#${card.distance.toLowerCase()}" class="btn btn--secondary training-card__cta">Learn More</a>
-      </article>
+          </ul>
+        </article>
     `).join('');
 
     this.container.innerHTML = `
@@ -70,7 +69,7 @@ export class TrainingPreview {
             <div class="section-heading">
               <p class="section-heading__pretitle">Training Programs</p>
               <h2 id="training-preview-title" class="section-heading__title">Ranges for Every <span class="section-heading__title-accent">Discipline</span></h2>
-              <p class="section-heading__subtitle">Three dedicated ranges meeting international standards â€” from beginner air gun to elite 50m competition.</p>
+              <p class="section-heading__subtitle">Three dedicated ranges meeting international standards — from beginner air gun to elite 50m competition.</p>
             </div>
           </div>
           <div class="training-preview__cards" role="list">${cardsHtml}</div>

@@ -33,7 +33,7 @@ export class GalleryPreview {
     this.options = {
       items: options.items || [],
       ctaLabel: options.ctaLabel || 'View Gallery',
-      ctaHref: options.ctaHref || '#gallery',
+      ctaHref: options.ctaHref || '/gallery',
       ...options
     };
     this.currentFilter = 'all';
@@ -119,14 +119,16 @@ export class GalleryPreview {
     return `
       <article class="gallery-item ${item.featured ? 'gallery-item--featured' : ''}" role="listitem" data-index="${index}" data-category="${item.category || 'academy'}" tabindex="0" aria-label="View ${item.title || 'gallery image'}">
         ${item.image
-          ? `<img src="${item.image}" alt="${item.title || 'Gallery image'}" class="gallery-item__image" loading="lazy">`
-          : `
-            <div class="gallery-item__placeholder" role="img" aria-label="${item.title || 'Gallery image'} placeholder">
-              <span class="gallery-item__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
-              <span class="gallery-item__placeholder-text">Gallery Image</span>
-            </div>
+          ? `<img src="${item.image}" alt="${item.alt_text || item.title || 'Gallery image'}" class="gallery-item__image" loading="lazy"
+               onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
           `
+          : ''
         }
+        <div class="gallery-item__placeholder" role="img" aria-label="${item.title || 'Gallery image'} placeholder"
+             style="${item.image ? 'display:none' : ''}">
+          <span class="gallery-item__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
+          <span class="gallery-item__placeholder-text">Gallery Image</span>
+        </div>
         <div class="gallery-item__overlay">
           <div class="gallery-item__info">
             <span class="gallery-item__category">${categoryLabel}</span>

@@ -233,18 +233,12 @@
   line-height: var(--line-height-relaxed);
   color: var(--color-text-secondary);
   flex: 1;
-  margin-bottom: var(--spacing-6);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
-.medalist-card__cta {
-  width: 100%;
-  justify-content: center;
-  padding-top: var(--spacing-4);
-  border-top: 1px solid var(--color-border-subtle);
+.medalist-card__medal-badge--participation {
+  background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+  color: var(--color-ivory);
 }
 
 .achievements-page__empty {
@@ -276,19 +270,6 @@
   color: var(--color-text-secondary);
   max-width: 500px;
   margin: 0 auto var(--spacing-8);
-}
-
-.achievements-page__cta-section {
-  text-align: center;
-  padding: var(--spacing-12) 0;
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.achievements-page__cta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-4);
-  justify-content: center;
 }
 
 @media (max-width: 1024px) {

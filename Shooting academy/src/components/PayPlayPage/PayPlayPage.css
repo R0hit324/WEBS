@@ -64,6 +64,21 @@
   transform: translateY(-2px);
 }
 
+.pay-play-session__link {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pay-play-session__contact-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: var(--spacing-4);
+  text-decoration: none;
+}
+
 .pay-play-session__header {
   margin-bottom: var(--spacing-6);
 }
@@ -105,6 +120,7 @@
   color: var(--color-text-secondary);
   flex: 1;
   margin-bottom: var(--spacing-6);
+  overflow-wrap: anywhere;
 }
 
 .pay-play-session__features {

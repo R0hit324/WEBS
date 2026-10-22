@@ -58,7 +58,7 @@ export class TrainingPage {
       this.options.ranges = (data || []).map(item => ({
         distance: item.distance,
         discipline: item.discipline,
-        description: item.short_description || item.description,
+        description: item.description || item.short_description || '',
         features: item.features || [],
         imageSrc: item.image_url || null,
         imageAlt: item.image_alt || `${item.distance} range`,
@@ -78,7 +78,13 @@ export class TrainingPage {
       <article class="training-range-card">
         <div class="training-range-card__visual">
           ${range.imageSrc
-            ? `<img src="${range.imageSrc}" alt="${range.imageAlt}" class="training-range-card__image" loading="lazy">`
+            ? `<img src="${range.imageSrc}" alt="${range.imageAlt || range.distance + ' range'}" class="training-range-card__image" loading="lazy"
+                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
+               >
+               <div class="training-range-card__placeholder" role="img" aria-label="${range.distance} range placeholder" style="display:none">
+                 <span class="training-range-card__placeholder-icon" aria-hidden="true">${range.placeholderIcon || range.icon}</span>
+                 <span class="training-range-card__placeholder-text">Range Image</span>
+               </div>`
             : `
               <div class="training-range-card__placeholder" role="img" aria-label="${range.distance} range placeholder">
                 <span class="training-range-card__placeholder-icon" aria-hidden="true">${range.placeholderIcon || range.icon}</span>
@@ -90,7 +96,7 @@ export class TrainingPage {
         <div class="training-range-card__content">
           <h3 class="training-range-card__distance">${range.distance}</h3>
           <p class="training-range-card__discipline">${range.discipline}</p>
-          <p class="training-range-card__desc">${range.description}</p>
+          ${range.description ? `<p class="training-range-card__desc">${range.description}</p>` : ''}
           <ul class="training-range-card__features" role="list">
             ${range.features.map(feature => `
               <li class="training-range-card__feature">
@@ -99,7 +105,6 @@ export class TrainingPage {
               </li>
             `).join('')}
           </ul>
-          <a href="/training#${range.distance.toLowerCase()}" class="btn btn--secondary training-range-card__cta">Learn More</a>
         </div>
       </article>
     `).join('');
@@ -116,9 +121,9 @@ export class TrainingPage {
       <section class="training-page" aria-labelledby="training-page-title">
         <div class="container">
           <header class="training-page__hero">
-            <div class="training-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="training-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="training-page-title" class="training-page__title">Training Programs & <span class="training-page__title-accent">Ranges</span></h1>
-            <p class="training-page__description">Three dedicated ranges meeting international standards â€” from beginner air gun to elite 50m competition. Programs structured for every level.</p>
+            <p class="training-page__description">Three dedicated ranges meeting international standards — from beginner air gun to elite 50m competition. Programs structured for every level.</p>
           </header>
 
           <div class="training-page__section" id="ranges">
@@ -138,10 +143,6 @@ export class TrainingPage {
           </div>
 
           <div class="training-page__cta-section">
-            <div class="training-page__cta-actions" role="group" aria-label="Training page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
             <p class="training-page__note">Specific program schedules, fees, and enrollment details are managed through our registration system. Contact us for current availability.</p>
           </div>
         </div>

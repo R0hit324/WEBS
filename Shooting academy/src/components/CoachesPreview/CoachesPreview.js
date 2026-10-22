@@ -6,7 +6,7 @@ export class CoachesPreview {
     this.options = {
       coaches: options.coaches || [],
       ctaLabel: options.ctaLabel || 'Meet Our Coaches',
-      ctaHref: options.ctaHref || '#coaches',
+      ctaHref: options.ctaHref || '/coaches',
       ...options
     };
     this.init();

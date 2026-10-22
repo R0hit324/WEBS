@@ -1,6 +1,6 @@
 .achievements-preview {
   padding: var(--spacing-16) 0;
-  background-color: var(--color-dark-surface);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .achievements-preview__header {
@@ -40,10 +40,22 @@
   margin-bottom: var(--spacing-4);
 }
 
+.achievement-card[data-medal="silver"] .achievement-card__medal {
+  color: #C0C0C0;
+}
+
+.achievement-card[data-medal="bronze"] .achievement-card__medal {
+  color: #CD7F32;
+}
+
+.achievement-card[data-medal="participation"] .achievement-card__medal {
+  color: var(--color-muted-ivory);
+}
+
 .achievement-card__event {
   font-family: var(--font-family-display);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: var(--spacing-2);
 }
@@ -57,8 +69,22 @@
 }
 
 .achievement-card__athlete {
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-muted-ivory);
+}
+
+.achievement-card__meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.achievement-card__description {
+  margin-top: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .achievement-card__year {

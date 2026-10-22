@@ -1,7 +1,8 @@
 ﻿const MEDAL_ICONS = {
-  gold: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
-  silver: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
-  bronze: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`
+  gold: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/><path d="M12 5v3l2 1"/></svg>`,
+  silver: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/><path d="M12 5v3l2 1"/></svg>`,
+  bronze: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/><path d="M12 5v3l2 1"/></svg>`,
+  participation: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`
 };
 
 const EMPTY_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
@@ -24,7 +25,7 @@ export class AchievementsPreview {
     this.options = {
       achievements: options.achievements || [],
       ctaLabel: options.ctaLabel || 'View Achievements',
-      ctaHref: options.ctaHref || '#achievements',
+      ctaHref: options.ctaHref || '/achievements',
       ...options
     };
     this.init();
@@ -78,17 +79,28 @@ export class AchievementsPreview {
       return;
     }
 
-    const achievementsHtml = achievements.map(a => `
-      <article class="achievement-card" data-medal="${a.medal}" role="listitem">
-        <div class="achievement-card__medal" aria-hidden="true">${MEDAL_ICONS[a.medal] || MEDAL_ICONS.gold}</span>
-        <h3 class="achievement-card__event">${a.event || '[Event]'}</h3>
-        <div class="achievement-card__details">
-          <span class="achievement-card__discipline">${a.discipline || '[Discipline]'}</span>
-          <span class="achievement-card__athlete">${a.athlete || '[Athlete Name]'}</span>
-          <span class="achievement-card__year">${a.year || '[Year]'}</span>
-        </div>
-      </article>
-    `).join('');
+    const achievementsHtml = achievements.map(a => {
+      const medal = a.medal || 'gold';
+      const medalIcon = MEDAL_ICONS[medal] || MEDAL_ICONS.gold;
+      const cardTitle = a.event || a.competition || a.athlete || '';
+      const metaItems = [
+        a.competition && a.event ? a.competition : '',
+        a.discipline || '',
+        a.year || ''
+      ].filter(Boolean);
+
+      return `
+        <article class="achievement-card" data-medal="${medal}" role="listitem">
+          <span class="achievement-card__medal" aria-hidden="true">${medalIcon}</span>
+          ${cardTitle ? `<h3 class="achievement-card__event">${cardTitle}</h3>` : ''}
+          <div class="achievement-card__details">
+            ${a.athlete ? `<span class="achievement-card__athlete">${a.athlete}</span>` : ''}
+            ${metaItems.map(item => `<span class="${item === a.year ? 'achievement-card__year' : 'achievement-card__meta'}">${item}</span>`).join('')}
+          </div>
+          ${a.description ? `<p class="achievement-card__description">${a.description}</p>` : ''}
+        </article>
+      `;
+    }).join('');
 
     this.container.innerHTML = `
       <section class="achievements-preview section" aria-labelledby="achievements-preview-title">

@@ -3,19 +3,22 @@
 const MEDAL_ICONS = {
   gold: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
   silver: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
-  bronze: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+  bronze: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  participation: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 12.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 12.27l6.91-1.01L12 2z"/></svg>`
 };
 
 const MEDAL_LABELS = {
   gold: 'Gold',
   silver: 'Silver',
-  bronze: 'Bronze'
+  bronze: 'Bronze',
+  participation: 'Participation'
 };
 
 const MEDAL_CLASSES = {
   gold: 'medalist-card__medal-badge--gold',
   silver: 'medalist-card__medal-badge--silver',
-  bronze: 'medalist-card__medal-badge--bronze'
+  bronze: 'medalist-card__medal-badge--bronze',
+  participation: 'medalist-card__medal-badge--participation'
 };
 
 const EMPTY_ICON = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
@@ -105,7 +108,7 @@ export class AchievementsPage {
       <section class="achievements-page" aria-labelledby="achievements-page-title">
         <div class="container">
           <header class="achievements-page__hero">
-            <div class="achievements-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="achievements-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="achievements-page-title" class="achievements-page__title">Achievements & <span class="achievements-page__title-accent">Medalists</span></h1>
             <p class="achievements-page__description">Celebrating the competitive success of our athletes across state, national, and international championships.</p>
           </header>
@@ -118,13 +121,6 @@ export class AchievementsPage {
           </div>
 
           <div class="achievements-page__grid" role="list">${achievementsHtml}</div>
-
-          <div class="achievements-page__cta-section">
-            <div class="achievements-page__cta-actions" role="group" aria-label="Achievements page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
-            </div>
-          </div>
         </div>
       </section>
     `;
@@ -140,9 +136,14 @@ export class AchievementsPage {
       <article class="medalist-card" data-medal="${medal}" role="listitem">
         <div class="medalist-card__visual">
           ${a.photo
-            ? `<img src="${a.photo}" alt="${a.athlete}" class="medalist-card__image" loading="lazy">`
+            ? `<img src="${a.photo}" alt="${a.photoAlt || a.athlete || 'Athlete photo'}" class="medalist-card__image" loading="lazy"
+                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
+               ><div class="medalist-card__placeholder" role="img" aria-label="${a.athlete || 'Athlete'} photo placeholder" style="display:none">
+                 <span class="medalist-card__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
+                 <span class="medalist-card__placeholder-text">Athlete Photo</span>
+               </div>`
             : `
-              <div class="medalist-card__placeholder" role="img" aria-label="${a.athlete} photo placeholder">
+              <div class="medalist-card__placeholder" role="img" aria-label="${a.athlete || 'Athlete'} photo placeholder">
                 <span class="medalist-card__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
                 <span class="medalist-card__placeholder-text">Athlete Photo</span>
               </div>
@@ -154,16 +155,15 @@ export class AchievementsPage {
         </div>
         <div class="medalist-card__content">
           <header class="medalist-card__header">
-            <h2 class="medalist-card__athlete">${a.athlete || '[Athlete Name]'}</h2>
-            <span class="medalist-card__year">${a.year || '[Year]'}</span>
+            ${a.athlete ? `<h2 class="medalist-card__athlete">${a.athlete}</h2>` : ''}
+            ${a.year ? `<span class="medalist-card__year">${a.year}</span>` : ''}
           </header>
-          <p class="medalist-card__event">${a.event || '[Event]'}</p>
-          <p class="medalist-card__competition">${a.competition || '[Competition]'}</p>
-          <p class="medalist-card__discipline">${a.discipline || '[Discipline]'}</p>
+          ${a.event ? `<p class="medalist-card__event">${a.event}</p>` : ''}
+          ${a.competition ? `<p class="medalist-card__competition">${a.competition}</p>` : ''}
+          ${a.discipline ? `<p class="medalist-card__discipline">${a.discipline}</p>` : ''}
           ${a.description ? `
             <p class="medalist-card__description">${a.description}</p>
           ` : ''}
-          <a href="/contact" class="btn btn--secondary medalist-card__cta">Enquire About This Achievement</a>
         </div>
       </article>
     `;
@@ -174,7 +174,7 @@ export class AchievementsPage {
       <section class="achievements-page" aria-labelledby="achievements-page-title">
         <div class="container">
           <header class="achievements-page__hero">
-            <div class="achievements-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
+            <div class="achievements-page__hero-badge badge">ALWAR • RAJASTHAN</div>
             <h1 id="achievements-page-title" class="achievements-page__title">Achievements & <span class="achievements-page__title-accent">Medalists</span></h1>
             <p class="achievements-page__description">Celebrating the competitive success of our athletes across state, national, and international championships.</p>
           </header>
@@ -184,13 +184,6 @@ export class AchievementsPage {
               <span class="achievements-page__empty-icon" aria-hidden="true">${EMPTY_ICON}</span>
               <h2 class="achievements-page__empty-title">No Achievements Yet</h2>
               <p class="achievements-page__empty-desc">Verified achievements and medalists will be displayed here once added through the CMS.</p>
-            </div>
-          </div>
-
-          <div class="achievements-page__cta-section">
-            <div class="achievements-page__cta-actions" role="group" aria-label="Achievements page actions">
-              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
-              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>

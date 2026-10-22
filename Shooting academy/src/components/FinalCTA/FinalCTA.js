@@ -5,7 +5,7 @@
       title: options.title || 'Ready to Take Your First Shot?',
       titleAccent: options.titleAccent || 'First Shot',
       description: options.description || 'Join Alwar\'s first RRA-certified academy. World-class ranges, expert coaches, and a community dedicated to your growth.',
-      primaryAction: options.primaryAction || { label: 'Register Now', href: '#register' },
+      primaryAction: options.primaryAction || { label: 'Register Now', href: '/register' },
       secondaryAction: options.secondaryAction || { label: 'Pay & Play', href: '/pay-play' },
       ...options
     };

@@ -53,21 +53,26 @@ export class PayPlayPage {
     }
 
     return this.sessions.map(s => `
-      <a href="/pay-play/${s.id}" class="pay-play-session" data-session-id="${s.id}">
-        <div class="pay-play-session__header">
-          <span class="pay-play-session__name">${s.name}</span>
-          <span class="pay-play-session__duration">${s.duration_minutes ? `${s.duration_minutes} min` : '-'}</span>
-        </div>
-        <div class="pay-play-session__price">
-          ₹${s.price_amount}
-          <span class="pay-play-session__price-currency">per person</span>
-        </div>
-        <p class="pay-play-session__description">
-          ${s.description || ''}
-          ${s.includes && s.includes.length > 0 ? `<br>Includes: ${s.includes.join(', ')}` : ''}
-          ${s.start_time && s.end_time ? `<br>Time: ${s.start_time} - ${s.end_time}` : ''}
-        </p>
-      </a>
+      <article class="pay-play-session" data-session-id="${s.id}">
+        <a href="/pay-play/${s.id}" class="pay-play-session__link" aria-label="${s.name} details">
+          <div class="pay-play-session__header">
+            <span class="pay-play-session__name">${s.name}</span>
+            ${s.duration_minutes ? `<span class="pay-play-session__duration">${s.duration_minutes} min</span>` : ''}
+          </div>
+          ${s.price_amount != null ? `
+          <div class="pay-play-session__price">
+            ₹${s.price_amount}
+            <span class="pay-play-session__price-currency">per person</span>
+          </div>
+          ` : ''}
+          <p class="pay-play-session__description">
+            ${s.description || ''}
+            ${s.includes && s.includes.length > 0 ? `<br>Includes: ${s.includes.join(', ')}` : ''}
+            ${s.start_time && s.end_time ? `<br>Time: ${s.start_time} - ${s.end_time}` : ''}
+          </p>
+        </a>
+        <a href="/contact?subject=pay_play" class="btn btn--secondary pay-play-session__contact-btn">Contact Us</a>
+      </article>
     `).join('');
   }
 

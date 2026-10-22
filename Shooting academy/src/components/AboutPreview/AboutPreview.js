@@ -29,7 +29,7 @@ export class AboutPreview {
     this.options = {
       features: options.features || ABOUT_FEATURES,
       ctaLabel: options.ctaLabel || 'Explore Academy',
-      ctaHref: options.ctaHref || '#about',
+      ctaHref: options.ctaHref || '/about',
       imageSrc: options.imageSrc || null,
       imageAlt: options.imageAlt || 'Academy training facility',
       ...options
@@ -50,14 +50,18 @@ export class AboutPreview {
       </div>
     `).join('');
 
-    const visualHtml = this.options.imageSrc
-      ? `<img src="${this.options.imageSrc}" alt="${this.options.imageAlt}" class="about-preview__image" loading="lazy">`
-      : `
-        <div class="about-preview__placeholder" role="img" aria-label="Academy facility placeholder">
-          <span class="about-preview__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
-          <span class="about-preview__placeholder-text">Academy Facility Image</span>
-        </div>
-      `;
+    const visualHtml = `
+      ${this.options.imageSrc
+        ? `<img src="${this.options.imageSrc}" alt="${this.options.imageAlt}" class="about-preview__image" loading="lazy"
+             onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">`
+        : ''
+      }
+      <div class="about-preview__placeholder" role="img" aria-label="Academy facility placeholder"
+           style="${this.options.imageSrc ? 'display:none' : ''}">
+        <span class="about-preview__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
+        <span class="about-preview__placeholder-text">Academy Facility Image</span>
+      </div>
+    `;
 
     this.container.innerHTML = `
       <section class="about-preview section" aria-labelledby="about-preview-title">

@@ -1,5 +1,6 @@
 .facilities-preview {
   padding: var(--spacing-16) 0;
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .facilities-preview__header {
@@ -76,6 +77,7 @@
   font-size: var(--font-size-sm);
   line-height: var(--line-height-relaxed);
   color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .facilities-preview__cta {

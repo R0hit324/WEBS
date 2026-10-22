@@ -198,7 +198,7 @@ export class CoachesPage {
       <section class="coaches-page" aria-labelledby="coaches-page-title">
         <div class="container">
           <header class="coaches-page__hero">
-            <div class="coaches-page__hero-badge badge">ALWAR Â· RAJASTHAN</div>
+            <div class="coaches-page__hero-badge badge">ALWAR · RAJASTHAN</div>
             <h1 id="coaches-page-title" class="coaches-page__title">
               Our <span class="coaches-page__title-accent">Coaches</span>
             </h1>
