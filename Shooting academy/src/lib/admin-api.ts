@@ -1,4 +1,5 @@
-import { getSupabaseConfig, TABLES, getAdminAuthHeaders } from '@/lib/supabase';
+﻿import { getSupabaseConfig, TABLES } from '@/lib/supabase';
+import { getAdminAuthHeaders } from '@/lib/admin-auth';
 
 export interface AdminListParams {
   page?: number;
@@ -87,13 +88,24 @@ export async function adminList<T>(table: string, params: AdminListParams = {}):
     headers: { ...headers, Prefer: 'count=exact' },
   });
 
+  if (!countResponse.ok) {
+    const errorText = await countResponse.text();
+    throw new Error(errorText || `Failed to load ${table} (${countResponse.status})`);
+  }
+
   const totalCount = parseInt(countResponse.headers.get('content-range')?.split('/')[1] || '0', 10);
 
   const response = await fetch(`${config.url}/rest/v1/${table}?${queryParams.toString()}`, { headers });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `Failed to load ${table} (${response.status})`);
+  }
+
   const data = await response.json();
 
   return {
-    data,
+    data: Array.isArray(data) ? data : [],
     count: totalCount,
     page,
     pageSize,
@@ -122,7 +134,11 @@ export async function adminCreate<T>(table: string, data: Partial<T>): Promise<T
 
   const response = await fetch(`${config.url}/rest/v1/${table}`, {
     method: 'POST',
-    headers: { ...headers, Prefer: 'return=representation' },
+    headers: {
+  ...headers,
+  'Content-Type': 'application/json',
+  Prefer: 'return=representation',
+},
     body: JSON.stringify(data),
   });
 
@@ -144,7 +160,11 @@ export async function adminUpdate<T>(table: string, id: string, data: Partial<T>
 
   const response = await fetch(`${config.url}/rest/v1/${table}?id=eq.${id}`, {
     method: 'PATCH',
-    headers: { ...headers, Prefer: 'return=representation' },
+    headers: {
+  ...headers,
+  'Content-Type': 'application/json',
+  Prefer: 'return=representation',
+},
     body: JSON.stringify(data),
   });
 
@@ -185,7 +205,11 @@ export async function adminReorder(table: string, items: { id: string; display_o
   await Promise.all(items.map(item =>
     fetch(`${config.url}/rest/v1/${table}?id=eq.${item.id}`, {
       method: 'PATCH',
-      headers: { ...headers, Prefer: 'return=minimal' },
+      headers: {
+  ...headers,
+  'Content-Type': 'application/json',
+  Prefer: 'return=minimal',
+},
       body: JSON.stringify({ display_order: item.display_order }),
     })
   ));
@@ -199,33 +223,51 @@ export async function adminToggleFeatured(table: string, id: string, isFeatured:
   await adminUpdate(table, id, { is_featured: isFeatured } as any);
 }
 
-export async function uploadImage(bucket: string, file: File, path: string): Promise<string> {
+
+export async function uploadImage(
+  bucket: string,
+  file: File,
+  path: string
+): Promise<string> {
   const headers = await getAdminAuthHeaders();
-  if (!headers) throw new Error('Not authenticated');
+
+  if (!headers) {
+    throw new Error('Not authenticated');
+  }
 
   const config = getSupabaseConfig();
-  if (!config.url) throw new Error('Supabase not configured');
 
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('path', path);
+  if (!config.url) {
+    throw new Error('Supabase not configured');
+  }
 
-  const response = await fetch(`${config.url}/storage/v1/object/${bucket}/${path}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': headers.Authorization,
-      'apikey': headers.apikey,
-    },
-    body: formData,
-  });
+  const cleanPath = path
+    .split('/')
+    .map(segment => encodeURIComponent(segment))
+    .join('/');
+
+  const response = await fetch(
+    `${config.url}/storage/v1/object/${encodeURIComponent(bucket)}/${cleanPath}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': headers.Authorization,
+        'apikey': headers.apikey,
+        'Content-Type': file.type || 'application/octet-stream',
+        'x-upsert': 'false',
+      },
+      body: file,
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText);
+    throw new Error(`Image upload failed (${response.status}): ${errorText}`);
   }
 
-  return `${config.url}/storage/v1/object/public/${bucket}/${path}`;
+  return `${config.url}/storage/v1/object/public/${encodeURIComponent(bucket)}/${cleanPath}`;
 }
+
 
 export async function deleteImage(bucket: string, path: string): Promise<void> {
   const headers = await getAdminAuthHeaders();

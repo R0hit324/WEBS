@@ -1,4 +1,4 @@
-import { BaseAdminModule } from '@/lib/admin-module';
+﻿import { BaseAdminModule } from '@/lib/admin-module';
 
 export class AdminTrainingModule extends BaseAdminModule {
   constructor(container) {
@@ -42,34 +42,25 @@ export class AdminTrainingModule extends BaseAdminModule {
   }
 
   getListHtml() {
-    return `
-      <div class="admin-module">
-        <div class="admin-module__header">
-          <h2 class="admin-module__title">${this.title}</h2>
-          <p class="admin-module__subtitle">Manage training ranges</p>
+    return `<div class="admin-module"><div class="admin-module__header"><h2 class="admin-module__title">${this.title}</h2><p class="admin-module__subtitle">Manage training ranges</p></div>${this.showForm ? this.getFormHtml() : `
+      <div class="admin-module__toolbar">
+        <div class="admin-module__search">
+          <input type="search" class="admin-search" placeholder="Search ranges..." value="${this.search}" aria-label="Search" />
         </div>
-        ${this.showForm ? this.getFormHtml() : `
-          <div class="admin-module__toolbar">
-            <div class="admin-module__search">
-              <input type="search" class="admin-search" placeholder="Search ranges..." value="${this.search}" aria-label="Search" />
-            </div>
-            <div class="admin-module__filters">
-              ${this.filters.map(filter => `
-                <select class="admin-filter" data-filter="${filter.key}" aria-label="${filter.label}">
-                  <option value="">${filter.label}</option>
-                  ${filter.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[filter.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
-                </select>
-              `).join('')}
-            </div>
-            <button class="btn btn--primary" data-action="create">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Range
-            </button>
-          </div>
-          ${this.getTableHtml()}
-        `}
-      </div>
-    `;
+        <div class="admin-module__filters">
+          ${this.filters.map(filter => `
+            <select class="admin-filter" data-filter="${filter.key}" aria-label="${filter.label}">
+              <option value="">${filter.label}</option>
+              ${filter.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[filter.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+            </select>
+          `).join('')}
+        </div>
+        <button class="btn btn--primary" data-action="create">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Range
+        </button>
+      </div>${this.getTableHtml()}
+    `}</div>`;
   }
 
   getTableHtml() {

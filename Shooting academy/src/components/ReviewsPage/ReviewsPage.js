@@ -1,4 +1,4 @@
-const DEFAULT_REVIEWS = [];
+﻿const DEFAULT_REVIEWS = [];
 
 const STAR_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
@@ -44,7 +44,7 @@ export class ReviewsPage {
       <section class="reviews-page" aria-labelledby="reviews-page-title">
         <div class="container">
           <header class="reviews-page__hero">
-            <div class="reviews-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="reviews-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="reviews-page-title" class="reviews-page__title">Reviews & <span class="reviews-page__title-accent">Testimonials</span></h1>
             <p class="reviews-page__description">Authentic feedback from athletes who have trained at Matsya Shooting Sports Academy.</p>
           </header>
@@ -53,7 +53,8 @@ export class ReviewsPage {
 
           <div class="reviews-page__cta-section">
             <div class="reviews-page__cta-actions" role="group" aria-label="Reviews page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>
@@ -95,7 +96,7 @@ export class ReviewsPage {
       <section class="reviews-page" aria-labelledby="reviews-page-title">
         <div class="container">
           <header class="reviews-page__hero">
-            <div class="reviews-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="reviews-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="reviews-page-title" class="reviews-page__title">Reviews & <span class="reviews-page__title-accent">Testimonials</span></h1>
             <p class="reviews-page__description">Authentic feedback from athletes who have trained at Matsya Shooting Sports Academy.</p>
           </header>
@@ -110,7 +111,8 @@ export class ReviewsPage {
 
           <div class="reviews-page__cta-section">
             <div class="reviews-page__cta-actions" role="group" aria-label="Reviews page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>

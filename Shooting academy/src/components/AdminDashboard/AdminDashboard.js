@@ -2,14 +2,14 @@ import { getSupabaseConfig, TABLES } from '@/lib/supabase';
 import { getAdminAuthHeaders } from '@/lib/admin-auth';
 
 const STAT_CARDS = [
-  { key: 'registrations_total', label: 'Total Registrations', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="9" r="7"/></svg>`, color: 'var(--color-accent-bright)' },
-  { key: 'registrations_new', label: 'New Registrations', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="9" r="7"/></svg>`, color: 'var(--color-gold-score)' },
-  { key: 'coaches', label: 'Coaches', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>`, color: '#ec4899' },
+  { key: 'registrations_total', label: 'Total Registrations', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`, color: 'var(--color-accent-bright)' },
+  { key: 'registrations_new', label: 'New Registrations', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>`, color: 'var(--color-gold-score)' },
+  { key: 'coaches', label: 'Coaches', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, color: '#ec4899' },
   { key: 'pay_play_pending', label: 'Pending Bookings', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, color: '#f59e0b' },
   { key: 'gallery_images', label: 'Gallery Images', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`, color: '#8b5cf6' },
-  { key: 'achievements', label: 'Achievements', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2z"/><path d="M22 11v-6a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v6"/><path d="M9 10a1 1 0 0 1 0-2h2v4H9v-2zm3 4V7"/></svg>`, color: '#f97316' },
-  { key: 'reviews', label: 'Reviews', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>`, color: '#06b6d4' },
-  { key: 'training_ranges', label: 'Training Ranges', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><circle cx="13" cy="13" r="6"/></svg>`, color: '#84cc16' },
+  { key: 'achievements', label: 'Achievements', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`, color: '#f97316' },
+  { key: 'reviews', label: 'Reviews', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`, color: '#06b6d4' },
+  { key: 'training_ranges', label: 'Training Ranges', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>`, color: '#84cc16' },
 ];
 
 export class AdminDashboard {
@@ -84,8 +84,11 @@ export class AdminDashboard {
         fetch(`${config.url}/rest/v1/${TABLES.PAY_PLAY_BOOKINGS}?select=full_name,email,session_id,created_at&order=created_at.desc&limit=5`, { headers }),
       ]);
 
-      const registrations = await regRes.json().catch(() => []);
-      const payPlay = await payPlayRes.json().catch(() => []);
+      const registrationsRaw = await regRes.json().catch(() => []);
+      const payPlayRaw = await payPlayRes.json().catch(() => []);
+
+      const registrations = Array.isArray(registrationsRaw) ? registrationsRaw : [];
+      const payPlay = Array.isArray(payPlayRaw) ? payPlayRaw : [];
 
       this.recentActivity = [
         ...registrations.map(r => ({ type: 'registration', label: 'New Registration', name: r.full_name, email: r.email, time: r.created_at })),

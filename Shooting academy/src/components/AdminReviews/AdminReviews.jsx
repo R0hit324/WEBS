@@ -1,4 +1,4 @@
-import { BaseAdminModule } from '@/lib/admin-module';
+﻿import { BaseAdminModule } from '@/lib/admin-module';
 
 export class AdminReviewsModule extends BaseAdminModule {
   constructor(container) {
@@ -44,7 +44,7 @@ export class AdminReviewsModule extends BaseAdminModule {
   }
 
   getTableHtml() {
-    const renderStars = function(r) { return '★'.repeat(r) + '☆'.repeat(5 - r); };
+    const renderStars = function(r) { return 'â˜…'.repeat(r) + 'â˜†'.repeat(5 - r); };
     if (this.isLoading) {
       return `<div class="admin-module__loading"><div class="admin-spinner"></div></div>`;
     }
@@ -83,7 +83,7 @@ export class AdminReviewsModule extends BaseAdminModule {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">
+        <tbody class="admin-table__body">
           ${rows}
         </tbody>
       </table>

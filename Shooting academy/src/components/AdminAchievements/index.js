@@ -1,1 +1,1 @@
-export { createAdminAchievements } from './AdminAchievements.jsx';
+﻿export { createAdminAchievements } from './AdminAchievements.js';

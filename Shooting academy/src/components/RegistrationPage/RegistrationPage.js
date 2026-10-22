@@ -1,11 +1,11 @@
-import { validateData, schemas, sanitizeForStorage } from '@/lib/validation';
+﻿import { validateData, schemas, sanitizeForStorage } from '@/lib/validation';
 import { Errors, tryCatch, isAppError } from '@/lib/errors';
 import { getSupabaseConfig, TABLES } from '@/lib/supabase';
 
 const RANGE_OPTIONS = [
-  { value: '10m', label: '10m — Air Pistol / Air Rifle' },
-  { value: '25m', label: '25m — Sport Pistol / Standard Pistol' },
-  { value: '50m', label: '50m — Free Pistol / Rifle 3 Positions' }
+  { value: '10m', label: '10m â€” Air Pistol / Air Rifle' },
+  { value: '25m', label: '25m â€” Sport Pistol / Standard Pistol' },
+  { value: '50m', label: '50m â€” Free Pistol / Rifle 3 Positions' }
 ];
 
 const EXPERIENCE_OPTIONS = [
@@ -47,7 +47,7 @@ export class RegistrationPage {
       <section class="registration-page" aria-labelledby="registration-page-title">
         <div class="container">
           <header class="registration-page__hero">
-            <div class="registration-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="registration-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="registration-page-title" class="registration-page__title">Register <span class="registration-page__title-accent">Now</span></h1>
             <p class="registration-page__description">Join Alwar's first RRA-certified academy. Fill out the form below and our team will contact you within 24-48 hours to discuss your training goals.</p>
           </header>
@@ -146,6 +146,7 @@ export class RegistrationPage {
           <div class="registration-page__cta-section">
             <div class="registration-page__cta-actions" role="group" aria-label="Registration page actions">
               <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
+              <a href="/admin/login" class="btn btn--ghost btn--large" style="--ghost-color: var(--color-accent-bright);">Admin Login</a>
             </div>
           </div>
         </div>
@@ -350,11 +351,11 @@ export class RegistrationPage {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Supabase error:', response.status, errorText);
-        
+
         if (response.status === 429) {
           return { success: false, error: 'Too many requests. Please wait a moment and try again.' };
         }
-        
+
         return { success: false, error: 'Failed to save registration. Please try again.' };
       }
 

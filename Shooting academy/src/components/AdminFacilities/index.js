@@ -1,1 +1,1 @@
-export { createAdminFacilities } from './AdminFacilities.jsx';
+﻿export { createAdminFacilities } from './AdminFacilities.js';

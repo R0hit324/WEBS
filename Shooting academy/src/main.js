@@ -1,4 +1,4 @@
-import './main.css';
+﻿import './main.css';
 import { createNavbar } from './components/Navbar/index.js';
 import { createHero } from './components/Hero/index.js';
 import { createHighlights } from './components/Highlights/index.js';
@@ -282,6 +282,12 @@ function renderPayPlaySession(mainContent, sessionId) {
   currentPageInstance = createPayPlaySessionPage(sessionContainer, { sessionId });
 }
 
+// Section-to-module mapping for admin pages
+// Note: pay_play folder is AdminPayPlay (not AdminPay_play)
+const ADMIN_MODULE_MAP = {
+  pay_play: 'AdminPayPlay',
+};
+
 // Admin render functions
 function renderAdminLogin(mainContent) {
   clearMainContent(mainContent);
@@ -337,28 +343,53 @@ async function renderAdminSection(mainContent, section) {
   // Clear and let the layout handle section rendering
   contentContainer.innerHTML = '';
 
-  // Dynamic import for admin modules
-  import(`./components/Admin${section.charAt(0).toUpperCase() + section.slice(1)}/index.js`)
-    .then(module => {
-      const createFn = module[`createAdmin${section.charAt(0).toUpperCase() + section.slice(1)}`];
-      if (createFn) {
-        currentPageInstance = createFn(contentContainer);
-      }
-    })
-    .catch(() => {
-      contentContainer.innerHTML = `
-        <div class="admin-coming-soon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <h3>${section.charAt(0).toUpperCase() + section.slice(1)} Management</h3>
-          <p>Coming soon...</p>
-        </div>
-      `;
-    });
+
+  // Dynamically load the selected admin module
+  const moduleName =
+    ADMIN_MODULE_MAP[section] ||
+    `Admin${section.charAt(0).toUpperCase()}${section.slice(1)}`;
+
+  try {
+    const module = await import(`./components/${moduleName}/index.js`);
+
+    // AdminGallery exports createAdminGallery, not createAdminAdminGallery.
+    const exportName = `create${moduleName}`;
+    const createFn = module[exportName];
+
+    if (typeof createFn !== 'function') {
+      throw new Error(
+        `Missing export "${exportName}" in ${moduleName}/index.js`
+      );
+    }
+
+    currentPageInstance = createFn(contentContainer);
+
+    // Management modules need initialization to load data and render.
+    // AdminDashboard initializes itself in its constructor.
+    if (
+      moduleName !== 'AdminDashboard' &&
+      typeof currentPageInstance?.init === 'function'
+    ) {
+      await currentPageInstance.init();
+    }
+  } catch (err) {
+    console.error(`Failed to render admin section "${section}":`, err);
+
+    contentContainer.innerHTML = `
+      <div class="admin-coming-soon">
+        <h3>${section.charAt(0).toUpperCase() + section.slice(1)} Management</h3>
+        <p>${err.message || 'Error loading section'}</p>
+      </div>
+    `;
+  }
+
 }
 
 function renderNotFound(mainContent) {
   clearMainContent(mainContent);
-  navbarInstance.updateCurrentPath(window.location.pathname);
+  if (navbarInstance) {
+    navbarInstance.updateCurrentPath(window.location.pathname);
+  }
 
   mainContent.innerHTML = `
     <section class="not-found" style="padding: var(--spacing-20) 0; text-align: center;">

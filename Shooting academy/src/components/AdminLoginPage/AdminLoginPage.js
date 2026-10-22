@@ -1,4 +1,4 @@
-import { adminLogin, adminLogout, getAdminSession } from '@/lib/admin-auth';
+﻿import { adminLogin, adminLogout, getAdminSession } from '@/lib/admin-auth';
 
 const LOGIN_ICON = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>`;
 
@@ -11,11 +11,26 @@ export class AdminLoginPage {
     this.init();
   }
 
-  init() {
-    const existingSession = getAdminSession();
+  async init() {
+    const existingSession = await getAdminSession();
     if (existingSession) {
-      window.location.href = '/admin/';
-      return;
+      // Verify the session is actually valid by checking admin role
+      // before redirecting to avoid infinite redirect loops
+      try {
+        const { checkAdminRole } = await import('@/lib/admin-auth');
+        const hasValidRole = await checkAdminRole();
+        if (hasValidRole) {
+          window.location.href = '/admin/';
+          return;
+        }
+        // Session exists but role check failed - show error instead of silent redirect
+        this.error = 'Access denied: Admin role not found. Please contact system administrator.';
+      } catch (err) {
+        console.error('Admin role verification failed:', err);
+        this.error = 'Authentication verification failed. Please try logging in again.';
+      }
+      // Clear invalid session
+      localStorage.removeItem('matsya_admin_session');
     }
     this.render();
     this.bindEvents();

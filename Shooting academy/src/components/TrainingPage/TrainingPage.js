@@ -1,44 +1,4 @@
-const RANGE_CARDS = [
-  {
-    distance: '10m',
-    discipline: 'Air Pistol / Air Rifle',
-    description: 'Olympic-standard 10m indoor range with electronic target systems. Climate-controlled environment for precision training and competition preparation.',
-    features: [
-      'Electronic scoring targets (SIUS/MEGALINK)',
-      '20 firing points',
-      'Climate-controlled',
-      'Beginner to elite programs'
-    ],
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    placeholderIcon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/><circle cx="12" cy="12" r="2"/></svg>`
-  },
-  {
-    distance: '25m',
-    discipline: 'Sport Pistol / Standard Pistol',
-    description: 'Professional 25m range with turning target systems for rapid fire and precision events. ISSF competition compliant.',
-    features: [
-      'Turning target systems',
-      'Rapid fire capability',
-      'Competition-grade lighting',
-      'Coaching bay available'
-    ],
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
-    placeholderIcon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
-  },
-  {
-    distance: '50m',
-    discipline: 'Free Pistol / Rifle 3 Positions',
-    description: 'Full-length 50m outdoor range with wind flags and target carriers. Supports rifle 3-positions and free pistol disciplines.',
-    features: [
-      'Outdoor range with wind flags',
-      'Rifle 3-positions capable',
-      'Free pistol discipline',
-      'Tournament ready'
-    ],
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
-    placeholderIcon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`
-  }
-];
+﻿const RANGE_CARDS = [];
 
 const AUDIENCES = [
   {
@@ -76,21 +36,52 @@ export class TrainingPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
+  }
+
+  async loadData() {
+    if (this.options.ranges && this.options.ranges.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.TRAINING_RANGES)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.ranges = (data || []).map(item => ({
+        distance: item.distance,
+        discipline: item.discipline,
+        description: item.short_description || item.description,
+        features: item.features || [],
+        imageSrc: item.image_url || null,
+        imageAlt: item.image_alt || `${item.distance} range`,
+        icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+        placeholderIcon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/><circle cx="12" cy="12" r="2"/></svg>`
+      }));
+    } catch (error) {
+      console.error('Failed to load training ranges:', error);
+      this.options.ranges = [];
+    }
   }
 
   render() {
     const { ranges, audiences } = this.options;
 
-    const rangesHtml = ranges.map(range => `
+    const rangesHtml = ranges.map((range, index) => `
       <article class="training-range-card">
         <div class="training-range-card__visual">
           ${range.imageSrc
-            ? `<img src="${range.imageSrc}" alt="${range.distance} range" class="training-range-card__image" loading="lazy">`
+            ? `<img src="${range.imageSrc}" alt="${range.imageAlt}" class="training-range-card__image" loading="lazy">`
             : `
               <div class="training-range-card__placeholder" role="img" aria-label="${range.distance} range placeholder">
-                <span class="training-range-card__placeholder-icon" aria-hidden="true">${range.placeholderIcon}</span>
+                <span class="training-range-card__placeholder-icon" aria-hidden="true">${range.placeholderIcon || range.icon}</span>
                 <span class="training-range-card__placeholder-text">Range Image</span>
               </div>
             `
@@ -125,9 +116,9 @@ export class TrainingPage {
       <section class="training-page" aria-labelledby="training-page-title">
         <div class="container">
           <header class="training-page__hero">
-            <div class="training-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="training-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="training-page-title" class="training-page__title">Training Programs & <span class="training-page__title-accent">Ranges</span></h1>
-            <p class="training-page__description">Three dedicated ranges meeting international standards — from beginner air gun to elite 50m competition. Programs structured for every level.</p>
+            <p class="training-page__description">Three dedicated ranges meeting international standards â€” from beginner air gun to elite 50m competition. Programs structured for every level.</p>
           </header>
 
           <div class="training-page__section" id="ranges">
@@ -148,7 +139,8 @@ export class TrainingPage {
 
           <div class="training-page__cta-section">
             <div class="training-page__cta-actions" role="group" aria-label="Training page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
             <p class="training-page__note">Specific program schedules, fees, and enrollment details are managed through our registration system. Contact us for current availability.</p>
           </div>

@@ -1,1 +1,1 @@
-export { createAdminRegistrations } from './AdminRegistrations.jsx';
+﻿export { createAdminRegistrations } from './AdminRegistrations.js';

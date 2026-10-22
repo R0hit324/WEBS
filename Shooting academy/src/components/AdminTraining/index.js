@@ -1,1 +1,1 @@
-export { createAdminTraining } from './AdminTraining.jsx';
+﻿export { createAdminTraining } from './AdminTraining.js';

@@ -1,9 +1,4 @@
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
-
-export class ShootingTarget {
+﻿export class ShootingTarget {
   constructor(container, options = {}) {
     this.container = container;
     this.options = {
@@ -31,9 +26,6 @@ export class ShootingTarget {
     this.render();
     this.bindElements();
     this.startAnimation();
-    if (!this.prefersReducedMotion) {
-      this.initScrollRotation();
-    }
     this.setupReducedMotionListener();
   }
 
@@ -47,7 +39,7 @@ export class ShootingTarget {
               <stop offset="100%" stop-color="var(--color-deep-charcoal)" stop-opacity="1"/>
             </radialGradient>
           </defs>
-          
+
           <circle class="shooting-target__ring shooting-target__ring--1" cx="250" cy="250" r="250"/>
           <circle class="shooting-target__ring shooting-target__ring--2" cx="250" cy="250" r="225"/>
           <circle class="shooting-target__ring shooting-target__ring--3" cx="250" cy="250" r="200"/>
@@ -58,7 +50,7 @@ export class ShootingTarget {
           <circle class="shooting-target__ring shooting-target__ring--8" cx="250" cy="250" r="75"/>
           <circle class="shooting-target__ring shooting-target__ring--9" cx="250" cy="250" r="50"/>
           <circle class="shooting-target__ring shooting-target__ring--10" cx="250" cy="250" r="25"/>
-          
+
           <g class="shooting-target__impacts" aria-hidden="true">
             <circle class="shooting-target__impact" cx="250" cy="250" r="3"/>
             <circle class="shooting-target__impact" cx="265" cy="242" r="2"/>
@@ -66,7 +58,7 @@ export class ShootingTarget {
             <circle class="shooting-target__impact" cx="258" cy="268" r="2.5"/>
             <circle class="shooting-target__impact" cx="232" cy="238" r="1.5"/>
           </g>
-          
+
           <text class="shooting-target__score shooting-target__score--10" x="250" y="250" aria-hidden="true">10</text>
           <text class="shooting-target__score shooting-target__score--9" x="250" y="250" aria-hidden="true">9</text>
           <text class="shooting-target__score shooting-target__score--8" x="250" y="250" aria-hidden="true">8</text>
@@ -86,50 +78,14 @@ export class ShootingTarget {
     this.impactElements = this.container.querySelectorAll('.shooting-target__impact');
   }
 
-  initScrollRotation() {
-    const heroSection = this.container.closest('.hero');
-    if (!heroSection) return;
-
-    const rings = this.container.querySelectorAll('.shooting-target__ring');
-    
-    rings.forEach((ring, index) => {
-      const rotationAmount = 180 + (index * 8);
-      gsap.to(ring, {
-        rotation: rotationAmount,
-        transformOrigin: '250px 250px',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1
-        }
-      });
-    });
-
-    gsap.to(this.svgEl, {
-      scale: 1.1,
-      y: -40,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.hero',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1
-      }
-    });
-  }
-
   setupReducedMotionListener() {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     mediaQuery.addEventListener('change', (e) => {
       this.prefersReducedMotion = e.matches;
       if (this.prefersReducedMotion) {
         this.stopAnimation();
-        ScrollTrigger.getAll().forEach(st => st.kill());
       } else {
         this.startAnimation();
-        this.initScrollRotation();
       }
     });
   }
@@ -154,7 +110,7 @@ export class ShootingTarget {
     const config = this.ringConfig[score];
     const angle = this.getRandomAngle();
     const offset = Math.random() * config.maxOffset;
-    
+
     return {
       x: config.cx + Math.cos(angle) * (config.radius + offset),
       y: config.cy + Math.sin(angle) * (config.radius + offset)
@@ -208,9 +164,9 @@ export class ShootingTarget {
   scheduleNext() {
     if (this.prefersReducedMotion) return;
 
-    const interval = this.options.intervalMin + 
+    const interval = this.options.intervalMin +
       Math.random() * (this.options.intervalMax - this.options.intervalMin);
-    
+
     this.timerId = setTimeout(() => {
       this.animate();
     }, interval);
@@ -236,7 +192,6 @@ export class ShootingTarget {
 
   destroy() {
     this.stopAnimation();
-    ScrollTrigger.getAll().forEach(st => st.kill());
     this.container.innerHTML = '';
   }
 }

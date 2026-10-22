@@ -1,4 +1,4 @@
-import { gsap } from 'gsap';
+﻿import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -149,10 +149,10 @@ render() {
     const heroSection = this.container.closest('.hero');
     if (!heroSection) return;
 
-    // Scale up and rotate slightly on scroll for cinematic effect
+    // Cinematic layered scroll effect
+    // Layer 1: Subtle scale growth from scroll progress
     gsap.to('.rotating-target', {
-      scale: 1.3,
-      rotation: 8,
+      scale: 1.1,
       ease: 'none',
       scrollTrigger: {
         trigger: '.hero',
@@ -162,9 +162,33 @@ render() {
       }
     });
 
-    // Subtle vertical parallax
+    // Layer 2: Controlled rotation based on scroll (subtle, -4Â° to +4Â°)
     gsap.to('.rotating-target', {
-      y: -40,
+      rotation: -4,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1
+      }
+    });
+
+    // Layer 3: Horizontal parallax movement
+    gsap.to('.rotating-target', {
+      x: 20,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1
+      }
+    });
+
+    // Layer 4: Subtle vertical parallax
+    gsap.to('.rotating-target', {
+      y: -20,
       ease: 'none',
       scrollTrigger: {
         trigger: '.hero',
@@ -186,7 +210,7 @@ render() {
         this.initScrollAnimations();
       }
     };
-    
+
     mediaQuery.addEventListener('change', handler);
     this._reducedMotionHandler = handler;
   }

@@ -1,4 +1,4 @@
-export interface AdminModuleConfig {
+﻿export interface AdminModuleConfig {
   container: HTMLElement;
   title: string;
   apiEndpoint: string;
@@ -54,11 +54,14 @@ export abstract class BaseAdminModule implements AdminModule {
   protected totalCount = 0;
   protected totalPages = 0;
   protected isLoading = false;
+  protected error: string | null = null;
   protected editingId: string | null = null;
   protected showForm = false;
   protected onCreate?: (data: any) => Promise<any>;
   protected onUpdate?: (id: string, data: any) => Promise<any>;
   protected onDelete?: (id: string) => Promise<void>;
+  private boundEvents: Set<string> = new Set();
+  private boundFormEvents: Set<string> = new Set();
 
   constructor(config: AdminModuleConfig) {
     this.container = config.container;
@@ -73,6 +76,59 @@ export abstract class BaseAdminModule implements AdminModule {
     this.onUpdate = config.onUpdate;
     this.onDelete = config.onDelete;
   }
+  isMobile(): boolean {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+
+unbindEvents() {
+  this.container.querySelectorAll('.js-admin-bound').forEach((el) => {
+    const listener = el._adminEventListener;
+
+    if (listener) {
+      el.removeEventListener('click', listener);
+      delete el._adminEventListener;
+    }
+  });
+}
+
+unbindFormEvents() {
+  this.container.querySelectorAll('.js-admin-bound').forEach((el) => {
+    const listener = el._adminFormListener;
+
+    if (listener) {
+      el.removeEventListener('change', listener);
+      delete el._adminFormListener;
+    }
+  });
+}
+
+
+  bindEvents(handlers: {selector: string; handler: EventListener}[] = []) {
+    this.unbindEvents();
+
+    for (const {selector, handler} of handlers) {
+      const elements = this.container.querySelectorAll(selector);
+      for (const el of elements) {
+        el._adminEventListener = handler;
+        el.addEventListener('click', handler);
+        el.classList.add('js-admin-bound');
+      }
+    }
+  }
+
+  bindFormEvents(handlers: {selector: string; handler: EventListener}[] = []) {
+    this.unbindFormEvents();
+
+    for (const {selector, handler} of handlers) {
+      const elements = this.container.querySelectorAll(selector);
+      for (const el of elements) {
+        el._adminFormListener = handler;
+        el.addEventListener('change', handler);
+        el.classList.add('js-admin-bound');
+      }
+    }
+  }
 
   abstract init(): Promise<void>;
   abstract render(): void;
@@ -80,6 +136,7 @@ export abstract class BaseAdminModule implements AdminModule {
 
   async loadData() {
     this.isLoading = true;
+    this.error = null;
     this.render();
     try {
       const { adminList } = await import('@/lib/admin-api');
@@ -91,11 +148,12 @@ export abstract class BaseAdminModule implements AdminModule {
         sortOrder: this.sortOrder,
         filters: this.activeFilters,
       });
-      this.items = response.data;
+      this.items = Array.isArray(response.data) ? response.data : [];
       this.totalCount = response.count;
       this.totalPages = response.totalPages;
     } catch (err) {
       console.error('Failed to load data:', err);
+      this.error = err.message || 'Failed to load data';
     } finally {
       this.isLoading = false;
       this.render();
@@ -260,7 +318,192 @@ export abstract class BaseAdminModule implements AdminModule {
     }).join('');
   }
 
+  formatFieldValue(item: any, key: string): string {
+    const field = this.fields.find(f => f.key === key);
+    const value = item?.[key];
+    if (value === null || value === undefined || value === '') return '-';
+    if (field?.type === 'select') {
+      const option = (field.options || []).find(opt => String(opt.value) === String(value));
+      return option ? option.label : String(value);
+    }
+    return String(value);
+  }
+
+  getMobileCardTitle(item: any): string {
+    const titleKeys = ['name', 'title', 'athlete_name', 'author_name', 'session_name', 'section_name', 'coach_name'];
+    for (const key of titleKeys) {
+      if (item?.[key]) return String(item[key]);
+    }
+    return 'Untitled';
+  }
+
+  getMobileCardSubtitle(item: any): string {
+    const subtitleKeys = ['author_role', 'competition', 'role', 'designation', 'email', 'category', 'event'];
+    for (const key of subtitleKeys) {
+      if (item?.[key]) return String(item[key]);
+    }
+    return '';
+  }
+
+  getMobileCardBadgeHtml(item: any): string {
+    return '';
+  }
+
+  getMobileCardMetaItems(item: any): { label: string; value: string }[] {
+    const titleKeys = ['name', 'title', 'athlete_name', 'author_name', 'session_name', 'section_name', 'coach_name'];
+    const subtitleKeys = ['author_role', 'competition', 'role', 'designation', 'email', 'category', 'event'];
+    const skipTypes: string[] = ['textarea', 'image', 'checkbox', 'hidden', 'file'];
+    const metaItems: { label: string; value: string }[] = [];
+    for (const field of this.fields) {
+      if (metaItems.length >= 3) break;
+      if (skipTypes.includes(field.type)) continue;
+      if (titleKeys.includes(field.key) || subtitleKeys.includes(field.key)) continue;
+      const value = this.formatFieldValue(item, field.key);
+      if (value === '-') continue;
+      metaItems.push({ label: field.label, value });
+    }
+    return metaItems;
+  }
+
+  getMobileCardMetaHtml(item: any): string {
+    const metaItems = this.getMobileCardMetaItems(item);
+    if (metaItems.length === 0) return '';
+    return `<div class="admin-card__meta">${metaItems.map(meta => `<span class="admin-card__meta-item"><strong>${meta.label}:</strong> ${meta.value}</span>`).join('')}</div>`;
+  }
+
+  getMobileCardTogglesHtml(item: any): string {
+    let html = '';
+    if ('is_visible' in item) {
+      html += `<label class="admin-card__toggle"><span class="admin-card__toggle-label">Visible</span><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></label>`;
+    }
+    if ('is_featured' in item) {
+      html += `<label class="admin-card__toggle"><span class="admin-card__toggle-label">Featured</span><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-featured" data-id="${item.id}" ${item.is_featured ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></label>`;
+    }
+    return html;
+  }
+
+  getMobileCardOrderHtml(item: any): string {
+    if (!this.reorderable || !('display_order' in item)) return '';
+    return `<input type="number" class="admin-order-input" value="${item.display_order ?? 0}" data-action="update-order" data-id="${item.id}" aria-label="Display order">`;
+  }
+
+  getMobileCardActionsHtml(item: any): string {
+    return `<div class="admin-card__actions">
+      <button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}" title="Delete">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </div>`;
+  }
+
+  getMobileCardItemHtml(item: any): string {
+    const subtitle = this.getMobileCardSubtitle(item);
+    const badge = this.getMobileCardBadgeHtml(item);
+    const meta = this.getMobileCardMetaHtml(item);
+    const toggles = this.getMobileCardTogglesHtml(item);
+    const order = this.getMobileCardOrderHtml(item);
+    const actions = this.getMobileCardActionsHtml(item);
+
+    return `
+      <div class="admin-card" data-id="${item.id}">
+        <div class="admin-card__body">
+          <div class="admin-card__header">
+            <h4 class="admin-card__title">${this.getMobileCardTitle(item)}</h4>
+            ${badge}
+          </div>
+          ${subtitle ? `<p class="admin-card__subtitle">${subtitle}</p>` : ''}
+          ${meta}
+        </div>
+        ${toggles || order ? `<div class="admin-card__controls">${toggles}${order}</div>` : ''}
+        ${actions}
+      </div>
+    `;
+  }
+
+  getMobileCardHtml(): string {
+    if (this.error) {
+      return `<div class="admin-module__error">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <h3>Failed to load data</h3>
+        <p>${this.error}</p>
+        <button class="btn btn--primary" data-action="retry">Retry</button>
+      </div>`;
+    }
+
+    if (this.isLoading) {
+      return `<div class="admin-module__loading"><div class="admin-spinner"></div></div>`;
+    }
+
+    if (this.items.length === 0) {
+      return `<div class="admin-cards__empty">No items found</div>`;
+    }
+
+    return `<div class="admin-cards-grid">${this.items.map(item => this.getMobileCardItemHtml(item)).join('')}</div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}`;
+  }
+
+  getPaginationHtml(): string {
+    return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`;
+  }
+
   destroy() {
     this.container.innerHTML = '';
+  }
+
+  // Default table rendering - can be overridden by subclasses
+  protected getDefaultTableHtml(): string {
+    if (this.error) {
+      return `
+        <div class="admin-module__error">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <h3>Failed to load data</h3>
+          <p>${this.error}</p>
+          <button class="btn btn--primary" data-action="retry">Retry</button>
+        </div>
+      `;
+    }
+
+    if (this.isLoading) {
+      return `<div class="admin-module__loading"><div class="admin-spinner"></div></div>`;
+    }
+
+    const columns = this.getTableColumns();
+    const rows = this.items.length > 0 ? this.items.map(item => `
+      <tr data-id="${item.id}" data-order="${item.display_order || 0}">
+        ${columns.map(field => {
+          let value = item[field.key];
+          if (value === null || value === undefined) return '<td>-</td>';
+          if (field.type === 'checkbox') return `<td>${value ? 'Yes' : 'No'}</td>`;
+          if (field.type === 'image' && value) return `<td><img src="${value}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>`;
+          if (typeof value === 'string' && value.length > 50) return `<td>${value.substring(0, 50)}...</td>`;
+          return `<td>${value}</td>`;
+        }).join('')}
+        <td>
+          <div class="admin-actions">
+            <button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}" title="Delete">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="${columns.length + 1}" class="admin-table__empty">No items found</td></tr>`;
+
+    return `<div class="admin-table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            ${columns.map(field => `<th data-sort="${field.key}">${field.label}</th>`).join('')}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">
+          ${rows}
+        </tbody>
+      </table>
+    </div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}`;
   }
 }

@@ -1,37 +1,8 @@
-const STAR_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+﻿const STAR_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
 const AVATAR_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`;
 
 const EMPTY_REVIEWS_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
-
-const DEFAULT_REVIEWS = [
-  {
-    rating: 5,
-    text: 'Exceptional coaching and world-class facilities. The 10m range is the best I\'ve trained at in North India.',
-    author: 'Rajesh K.',
-    role: 'State-level Shooter',
-    avatar: null
-  },
-  {
-    rating: 5,
-    text: 'Aman sir\'s attention to technique transformed my shooting. Went from district to state level in one season.',
-    author: 'Priya S.',
-    role: 'Junior Nationalist',
-    avatar: null
-  },
-  {
-    rating: 5,
-    text: 'Professional environment with genuine focus on athlete development. The 50m range is competition-ready.',
-    author: 'Vikram M.',
-    role: 'Senior Rifle Coach',
-    avatar: null
-  }
-];
-
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export class Reviews {
   constructor(container, options = {}) {
@@ -45,9 +16,36 @@ export class Reviews {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
-    this.initAnimations();
+  }
+
+  async loadData() {
+    if (this.options.reviews && this.options.reviews.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.REVIEWS)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.reviews = (data || []).map(item => ({
+        rating: item.rating || 5,
+        text: item.review_text,
+        author: item.author_name,
+        role: item.author_role,
+        avatar: item.photo_url
+      }));
+    } catch (error) {
+      console.error('Failed to load reviews:', error);
+      this.options.reviews = [];
+    }
   }
 
   render() {
@@ -123,98 +121,12 @@ export class Reviews {
     }
   }
 
-  initAnimations() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
-    const section = this.container.querySelector('.reviews');
-    const header = this.container.querySelector('.reviews__header');
-    const cards = this.container.querySelectorAll('.review-card');
-    const cta = this.container.querySelector('.reviews__cta');
-
-    if (!section) return;
-
-    // Header entrance
-    gsap.fromTo(header, 
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 85%',
-          end: 'top 55%',
-          scrub: false
-        }
-      }
-    );
-
-    // Cards staggered entrance
-    gsap.fromTo(cards, 
-      { opacity: 0, y: 50, scale: 0.95 },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.7,
-        ease: 'power3.out',
-        stagger: 0.15,
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 80%',
-          end: 'top 50%',
-          scrub: false
-        }
-      }
-    );
-
-    // CTA entrance
-    if (cta) {
-      gsap.fromTo(cta, 
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: 'power3.out',
-          delay: 0.3,
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 75%',
-            end: 'top 45%',
-            scrub: false
-          }
-        }
-      );
-    }
-
-    // Subtle floating animation on cards
-    cards.forEach((card, index) => {
-      gsap.to(card, {
-        y: -10,
-        ease: 'sine.inOut',
-        duration: 2.5 + index * 0.3,
-        repeat: -1,
-        yoyo: true,
-        delay: index * 0.3
-      });
-    });
-  }
-
   updateReviews(reviews) {
     this.options.reviews = reviews;
     this.render();
-    this.initAnimations();
   }
 
   destroy() {
-    ScrollTrigger.getAll().forEach(st => {
-      if (st.trigger === this.container.querySelector('.reviews')) {
-        st.kill();
-      }
-    });
     this.container.innerHTML = '';
   }
 }

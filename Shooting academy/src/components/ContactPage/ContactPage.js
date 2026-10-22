@@ -1,11 +1,11 @@
-const DEFAULT_CONTACT = {
-  address: null,
-  phone: null,
-  whatsapp: null,
-  email: null,
-  hours: null,
-  mapUrl: null,
-  mapEmbed: null
+﻿const DEFAULT_CONTACT = {
+  address: 'Building Number C 74, Near Gst Office, Near Central GST Commissionerate, Kherado, Surya Nagar, Alwar-301001, Rajasthan',
+  phone: '8282821519, 7734057123',
+  whatsapp: '8282821519',
+  email: 'alwarshooting@gmail.com',
+  hours: 'Mon-Sat: 6:00 AM - 8:00 PM | Sun: 7:00 AM - 6:00 PM',
+  mapUrl: '',
+  mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3574.127095276154!2d76.64980147546191!3d27.553806176270847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x397291a458a82b11%3A0x71a9c69e830e2c17!2sMatsya%20shooting%20sports%20academy%20alwar%20rajasthan!5e1!3m2!1sen!2sin!4v1792401697639!5m2!1sen!2sin'
 };
 
 const CONTACT_ICONS = {
@@ -33,9 +33,41 @@ export class ContactPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadContactSettings();
     this.render();
     this.bindFormEvents();
+  }
+
+  async loadContactSettings() {
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.CONTACT_SETTINGS)
+        .select('*')
+        .eq('is_public', true);
+
+      if (error) throw error;
+
+      const contactMap = {};
+      (data || []).forEach(item => {
+        contactMap[item.setting_key] = item.setting_value;
+      });
+
+      this.options.contact = {
+        address: contactMap.address || '',
+        phone: contactMap.phone || '',
+        whatsapp: contactMap.whatsapp || '',
+        email: contactMap.email || '',
+        hours: contactMap.hours || '',
+        mapUrl: contactMap.map_url || '',
+        mapEmbed: contactMap.map_embed || ''
+      };
+    } catch (error) {
+      console.error('Failed to load contact settings:', error);
+      this.options.contact = { ...DEFAULT_CONTACT };
+    }
   }
 
   render() {
@@ -102,7 +134,7 @@ export class ContactPage {
       <section class="contact-page" aria-labelledby="contact-page-title">
         <div class="container">
           <header class="contact-page__hero">
-            <div class="contact-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="contact-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="contact-page-title" class="contact-page__title">Get in <span class="contact-page__title-accent">Touch</span></h1>
             <p class="contact-page__description">Have questions? We'd love to hear from you. Reach out for admissions, inquiries, or to schedule a visit.</p>
           </header>

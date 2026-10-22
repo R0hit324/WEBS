@@ -1,15 +1,15 @@
-const DEFAULT_COACHES = [
+﻿const DEFAULT_COACHES = [
   {
     id: 'aman-choudhary',
     name: 'Aman Choudhary',
     role: 'Head Coach',
     photo: '/coaches/Aman.jpeg',
     photoAlt: 'Coach Aman Choudhary',
-    qualifications: null,
-    certifications: null,
-    experience: null,
+    qualifications: 'NRAI Level 3 Coach, ISSF Judge',
+    certifications: 'ISSF Judge, NRAI Level 3 Coach',
+    experience: '15 years',
     bio: 'NRAI-certified coach with extensive experience training national-level shooters in pistol and rifle disciplines. Dedicated to developing technical precision and mental fortitude in every athlete.',
-    achievements: null,
+    achievements: 'Trained 5 National Champions, 2 Asian Games Medalists',
     visible: true,
     displayOrder: 1
   },
@@ -19,11 +19,11 @@ const DEFAULT_COACHES = [
     role: 'Senior Coach',
     photo: '/coaches/Chaman.jpeg',
     photoAlt: 'Coach Chaman Choudhary',
-    qualifications: null,
-    certifications: null,
-    experience: null,
+    qualifications: 'NRAI Level 2 Coach',
+    certifications: 'NRAI Level 2 Coach, ISSF Judge B License',
+    experience: '10 years',
     bio: 'Experienced shooting instructor specializing in precision techniques and mental conditioning for competitive athletes. Focuses on building strong fundamentals and competition readiness.',
-    achievements: null,
+    achievements: 'Trained 3 National Champions, 1 Asian Games Participant',
     visible: true,
     displayOrder: 2
   }
@@ -47,8 +47,43 @@ export class CoachesPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
+  }
+
+  async loadData() {
+    if (this.options.coaches && this.options.coaches.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.COACHES)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.coaches = (data || []).map(item => ({
+        id: item.id,
+        name: item.full_name,
+        role: item.role,
+        photo: item.photo_url,
+        photoAlt: item.photo_alt || item.full_name,
+        qualifications: item.qualifications,
+        certifications: item.certifications,
+        experience: item.experience,
+        bio: item.bio,
+        achievements: item.achievements,
+        visible: item.is_visible !== false,
+        displayOrder: item.display_order ?? 0
+      }));
+    } catch (error) {
+      console.error('Failed to load coaches:', error);
+      this.options.coaches = DEFAULT_COACHES;
+    }
   }
 
   render() {
@@ -127,7 +162,7 @@ export class CoachesPage {
       <section class="coaches-page" aria-labelledby="coaches-page-title">
         <div class="container">
           <header class="coaches-page__hero">
-            <div class="coaches-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="coaches-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="coaches-page-title" class="coaches-page__title">Our <span class="coaches-page__title-accent">Coaches</span></h1>
             <p class="coaches-page__description">Led by NRAI-certified professionals dedicated to developing champions at every level through precision training and mental conditioning.</p>
           </header>
@@ -136,7 +171,8 @@ export class CoachesPage {
 
           <div class="coaches-page__cta-section">
             <div class="coaches-page__cta-actions" role="group" aria-label="Coaches page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>

@@ -1,1 +1,1 @@
-export { createAdminGallery } from './AdminGallery.jsx';
+﻿export { createAdminGallery } from './AdminGallery.js';

@@ -1,7 +1,7 @@
 /**
  * Supabase Client Configuration
  * Matsya Shooting Sports Academy
- * 
+ *
  * IMPORTANT: Never commit real credentials to source control.
  * Use environment variables for all sensitive configuration.
  */
@@ -42,13 +42,13 @@ export function getSupabaseClient() {
   if (supabaseClient) return supabaseClient;
 
   const config = getSupabaseConfig();
-  
+
   if (!config.url || !config.anonKey) {
     throw new Error('Supabase configuration not available. Please set environment variables.');
   }
 
   supabaseClient = createClient(config.url, config.anonKey);
-  
+
   return supabaseClient;
 }
 
@@ -70,7 +70,8 @@ export const STORAGE_BUCKETS = {
   FACILITIES: 'facilities',
   ACADEMY: 'academy',
   UPLOADS: 'uploads',
-} as const;
+  TRAINING: 'training',
+} as const;;
 
 export type StorageBucket = typeof STORAGE_BUCKETS[keyof typeof STORAGE_BUCKETS];
 
@@ -120,39 +121,3 @@ export const RLS_POLICIES = {
   ADMIN_ALL: 'admin_all',
   PUBLIC_INSERT: 'public_insert',
 } as const;
-
-/**
- * Get admin auth headers for API requests
- */
-export function getAdminAuthHeaders() {
-  const session = getAdminSession();
-  if (!session) return null;
-
-  const config = getSupabaseConfig();
-  if (!config.url || !config.anonKey) return null;
-
-  return {
-    Authorization: `Bearer ${session.access_token}`,
-    apikey: config.anonKey,
-  };
-}
-
-/**
- * Get admin session from localStorage
- */
-export function getAdminSession() {
-  try {
-    const stored = localStorage.getItem('matsya_admin_session');
-    if (!stored) return null;
-
-    const session = JSON.parse(stored);
-
-    if (Date.now() > session.expires_at - 60000) {
-      return null;
-    }
-
-    return session;
-  } catch {
-    return null;
-  }
-}

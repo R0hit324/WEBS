@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --color-deep-charcoal: #111315;
   --color-dark-surface: #191D1B;
   --color-dark-surface-2: #202522;
@@ -197,12 +197,12 @@ h1, h2, h3, h4, h5, h6 {
 .btn--primary:hover {
   background-color: var(--color-accent-bright);
   border-color: var(--color-accent-bright);
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02);
   box-shadow: var(--shadow-md);
 }
 
 .btn--primary:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .btn--secondary {
@@ -214,11 +214,28 @@ h1, h2, h3, h4, h5, h6 {
 .btn--secondary:hover {
   background-color: var(--color-bg-tertiary);
   border-color: var(--color-muted-ivory);
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .btn--secondary:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+}
+
+.btn--ghost {
+  background-color: transparent;
+  border: 1px solid var(--ghost-color, var(--color-accent-bright));
+  color: var(--ghost-color, var(--color-accent-bright));
+}
+
+.btn--ghost:hover {
+  background-color: var(--ghost-color, var(--color-accent-bright));
+  color: var(--color-deep-charcoal);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--ghost:active {
+  transform: translateY(0) scale(1);
 }
 
 .btn--large {

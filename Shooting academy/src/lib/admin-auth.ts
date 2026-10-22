@@ -1,4 +1,4 @@
-import { getSupabaseConfig, TABLES } from './supabase';
+﻿import { getSupabaseConfig, TABLES } from './supabase';
 
 export interface AdminSession {
   user: {
@@ -145,7 +145,7 @@ export async function getAdminAuthHeaders(): Promise<{ Authorization: string; ap
 }
 
 export async function fetchAdminUser(): Promise<AdminSession['user'] | null> {
-  const session = getAdminSession();
+  const session = await getAdminSession();
   if (!session) return null;
 
   const config = getSupabaseConfig();
@@ -167,7 +167,7 @@ export async function fetchAdminUser(): Promise<AdminSession['user'] | null> {
 }
 
 export async function checkAdminRole(): Promise<boolean> {
-  const session = getAdminSession();
+  const session = await getAdminSession();
   if (!session) return false;
 
   const config = getSupabaseConfig();

@@ -24,7 +24,7 @@
 
 .admin-dashboard__stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--spacing-6);
 }
 
@@ -51,8 +51,7 @@
   width: 48px;
   height: 48px;
   border-radius: var(--radius-lg);
-  background-color: var(--stat-color);
-  color: white;
+  color: var(--stat-color);
   flex-shrink: 0;
 }
 
@@ -229,21 +228,49 @@
 
 @media (max-width: 1024px) {
   .admin-dashboard__stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .admin-dashboard__stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-3);
   }
 
   .admin-stat-card {
-    padding: var(--spacing-5);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    aspect-ratio: 1 / 1;
+  }
+
+  .admin-stat-card--loading {
+    aspect-ratio: 1 / 1;
+  }
+
+  .admin-stat-card__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+  }
+
+  .admin-stat-card__icon svg {
+    width: 20px;
+    height: 20px;
   }
 
   .admin-stat-card__value {
     font-size: var(--font-size-2xl);
+  }
+
+  .admin-stat-card__label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
   }
 
   .admin-activity__item {

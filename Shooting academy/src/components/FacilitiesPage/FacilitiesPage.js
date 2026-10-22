@@ -1,67 +1,7 @@
-const DEFAULT_FACILITIES = [
-  {
-    id: '10m-range',
-    name: '10m Indoor Range',
-    category: 'Shooting Range',
-    description: 'Olympic-standard 10m indoor range with electronic target systems. Climate-controlled environment for precision training and competition preparation.',
-    image: null,
-    imageAlt: '10m indoor shooting range',
-    specifications: null,
-    equipment: null,
-    capacity: null,
-    features: [
-      'Electronic scoring targets (SIUS/MEGALINK)',
-      '20 firing points',
-      'Climate-controlled environment',
-      'Air pistol & air rifle disciplines'
-    ],
-    visible: true,
-    displayOrder: 1
-  },
-  {
-    id: '25m-range',
-    name: '25m Range',
-    category: 'Shooting Range',
-    description: 'Professional 25m range with turning target systems for rapid fire and precision events. ISSF competition compliant.',
-    image: null,
-    imageAlt: '25m shooting range',
-    specifications: null,
-    equipment: null,
-    capacity: null,
-    features: [
-      'Turning target systems',
-      'Rapid fire capability',
-      'Competition-grade lighting',
-      'Sport pistol & standard pistol disciplines'
-    ],
-    visible: true,
-    displayOrder: 2
-  },
-  {
-    id: '50m-range',
-    name: '50m Outdoor Range',
-    category: 'Shooting Range',
-    description: 'Full-length 50m outdoor range with wind flags and target carriers. Supports rifle 3-positions and free pistol disciplines.',
-    image: null,
-    imageAlt: '50m outdoor shooting range',
-    specifications: null,
-    equipment: null,
-    capacity: null,
-    features: [
-      'Outdoor range with wind flags',
-      'Rifle 3-positions capable',
-      'Free pistol discipline',
-      'Tournament ready'
-    ],
-    visible: true,
-    displayOrder: 3
-  }
-];
-
-const FACILITY_ICONS = {
+﻿const FACILITY_ICONS = {
   '10m Indoor Range': `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/><circle cx="12" cy="12" r="2"/></svg>`,
   '25m Range': `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-  '50m Outdoor Range': `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`
+  '50m Outdoor Range': `<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
 };
 
 const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -76,14 +16,49 @@ export class FacilitiesPage {
   constructor(container, options = {}) {
     this.container = container;
     this.options = {
-      facilities: options.facilities || DEFAULT_FACILITIES,
+      facilities: options.facilities || [],
       ...options
     };
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
+  }
+
+  async loadData() {
+    if (this.options.facilities && this.options.facilities.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.FACILITIES)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.facilities = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        category: item.category || 'Facility',
+        description: item.description || item.short_description || '',
+        image: item.image_url || null,
+        imageAlt: item.image_alt || item.name,
+        specifications: item.specifications || null,
+        equipment: item.equipment || null,
+        capacity: item.capacity || null,
+        features: Array.isArray(item.features) ? item.features : [],
+        visible: item.is_visible !== false,
+        displayOrder: item.display_order ?? 0
+      }));
+    } catch (error) {
+      console.error('Failed to load facilities:', error);
+      this.options.facilities = [];
+    }
   }
 
   render() {
@@ -157,16 +132,17 @@ export class FacilitiesPage {
       <section class="facilities-page" aria-labelledby="facilities-page-title">
         <div class="container">
           <header class="facilities-page__hero">
-            <div class="facilities-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="facilities-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="facilities-page-title" class="facilities-page__title">Our <span class="facilities-page__title-accent">Facilities</span></h1>
-            <p class="facilities-page__description">Three dedicated ranges meeting international standards — from beginner air gun to elite 50m competition. Designed for training excellence.</p>
+            <p class="facilities-page__description">Three dedicated ranges meeting international standards â€” from beginner air gun to elite 50m competition. Designed for training excellence.</p>
           </header>
 
           <div class="facilities-page__grid" role="list">${facilitiesHtml}</div>
 
           <div class="facilities-page__cta-section">
             <div class="facilities-page__cta-actions" role="group" aria-label="Facilities page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>

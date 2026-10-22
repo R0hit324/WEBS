@@ -1,1 +1,1 @@
-export { createAdminReviews } from './AdminReviews.jsx';
+﻿export { createAdminReviews } from './AdminReviews.js';

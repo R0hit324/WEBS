@@ -1,54 +1,10 @@
-const TRAINING_CARDS = [
-  {
-    distance: '10m',
-    discipline: 'Air Pistol / Air Rifle',
-    description: 'Olympic-standard 10m range with electronic target systems. Ideal for precision training and competition preparation.',
-    features: [
-      'Electronic scoring targets',
-      'Climate-controlled environment',
-      'Precision training programs',
-      'Beginner to elite levels'
-    ],
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
-  },
-  {
-    distance: '25m',
-    discipline: 'Sport Pistol / Standard Pistol',
-    description: 'Professional 25m range for rapid fire and precision events. Equipped for ISSF-standard competitions.',
-    features: [
-      'Turning target systems',
-      'Rapid fire capability',
-      'Competition-grade lighting',
-      'Coaching bay available'
-    ],
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`
-  },
-  {
-    distance: '50m',
-    discipline: 'Free Pistol / Rifle 3 Positions',
-    description: 'Full-length 50m outdoor range for rifle and free pistol disciplines. Meets international competition standards.',
-    features: [
-      'Outdoor range with wind flags',
-      'Rifle 3-positions capable',
-      'Free pistol discipline',
-      'Tournament ready'
-    ],
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`
-  }
-];
-
-const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+﻿const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 export class TrainingPreview {
   constructor(container, options = {}) {
     this.container = container;
     this.options = {
-      cards: options.cards || TRAINING_CARDS,
+      cards: options.cards || [],
       ctaLabel: options.ctaLabel || 'View Training',
       ctaHref: options.ctaHref || '#training',
       ...options
@@ -56,9 +12,36 @@ export class TrainingPreview {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
-    this.initAnimations();
+  }
+
+  async loadData() {
+    if (this.options.cards && this.options.cards.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.TRAINING_RANGES)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.cards = (data || []).map(item => ({
+        distance: item.distance,
+        discipline: item.discipline,
+        description: item.short_description || item.description,
+        features: item.features || [],
+        icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+      }));
+    } catch (error) {
+      console.error('Failed to load training ranges:', error);
+      this.options.cards = [];
+    }
   }
 
   render() {
@@ -87,7 +70,7 @@ export class TrainingPreview {
             <div class="section-heading">
               <p class="section-heading__pretitle">Training Programs</p>
               <h2 id="training-preview-title" class="section-heading__title">Ranges for Every <span class="section-heading__title-accent">Discipline</span></h2>
-              <p class="section-heading__subtitle">Three dedicated ranges meeting international standards — from beginner air gun to elite 50m competition.</p>
+              <p class="section-heading__subtitle">Three dedicated ranges meeting international standards â€” from beginner air gun to elite 50m competition.</p>
             </div>
           </div>
           <div class="training-preview__cards" role="list">${cardsHtml}</div>
@@ -99,95 +82,7 @@ export class TrainingPreview {
     `;
   }
 
-  initAnimations() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
-    const section = this.container.querySelector('.training-preview');
-    const header = this.container.querySelector('.training-preview__header');
-    const cards = this.container.querySelectorAll('.training-card');
-    const cta = this.container.querySelector('.training-preview__cta');
-
-    if (!section) return;
-
-    // Header entrance
-    gsap.fromTo(header, 
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 85%',
-          end: 'top 55%',
-          scrub: false
-        }
-      }
-    );
-
-    // Cards staggered entrance
-    gsap.fromTo(cards, 
-      { opacity: 0, y: 50, scale: 0.95 },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.7,
-        ease: 'power3.out',
-        stagger: 0.15,
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 80%',
-          end: 'top 50%',
-          scrub: false
-        }
-      }
-    );
-
-    // CTA entrance
-    if (cta) {
-      gsap.fromTo(cta, 
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: 'power3.out',
-          delay: 0.3,
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 75%',
-            end: 'top 45%',
-            scrub: false
-          }
-        }
-      );
-    }
-
-    // Subtle parallax on cards
-    cards.forEach((card, index) => {
-      const direction = index % 2 === 0 ? -1 : 1;
-      gsap.to(card, {
-        y: -20 * direction,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1
-        }
-      });
-    });
-  }
-
   destroy() {
-    ScrollTrigger.getAll().forEach(st => {
-      if (st.trigger === this.container.querySelector('.training-preview')) {
-        st.kill();
-      }
-    });
     this.container.innerHTML = '';
   }
 }

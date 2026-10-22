@@ -1,28 +1,4 @@
-const ACHIEVEMENTS_PLACEHOLDER = [
-  {
-    event: 'State Championship',
-    discipline: '10m Air Pistol',
-    athlete: '[Athlete Name]',
-    year: '2024',
-    medal: 'gold'
-  },
-  {
-    event: 'District Tournament',
-    discipline: '25m Sport Pistol',
-    athlete: '[Athlete Name]',
-    year: '2024',
-    medal: 'silver'
-  },
-  {
-    event: 'Regional Meet',
-    discipline: '50m Rifle 3P',
-    athlete: '[Athlete Name]',
-    year: '2023',
-    medal: 'bronze'
-  }
-];
-
-const MEDAL_ICONS = {
+﻿const MEDAL_ICONS = {
   gold: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
   silver: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
   bronze: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`
@@ -30,10 +6,17 @@ const MEDAL_ICONS = {
 
 const EMPTY_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
 
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+const MEDAL_LABELS = {
+  gold: 'Gold',
+  silver: 'Silver',
+  bronze: 'Bronze'
+};
 
-gsap.registerPlugin(ScrollTrigger);
+const MEDAL_CLASSES = {
+  gold: 'medalist-card__medal-badge--gold',
+  silver: 'medalist-card__medal-badge--silver',
+  bronze: 'medalist-card__medal-badge--bronze'
+};
 
 export class AchievementsPreview {
   constructor(container, options = {}) {
@@ -47,174 +30,117 @@ export class AchievementsPreview {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
-    this.initAnimations();
+  }
+
+  async loadData() {
+    if (this.options.achievements && this.options.achievements.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.ACHIEVEMENTS)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.achievements = (data || []).map(item => ({
+        id: item.id,
+        athlete: item.athlete_name,
+        photo: item.photo_url || '',
+        photoAlt: item.photo_alt || item.athlete_name,
+        event: item.event || '',
+        discipline: item.discipline || '',
+        competition: item.competition || '',
+        year: item.year || '',
+        medal: item.medal,
+        description: item.description || '',
+        featured: Boolean(item.is_featured),
+        visible: item.is_visible !== false,
+        displayOrder: item.display_order ?? 0
+      }));
+    } catch (error) {
+      console.error('Failed to load achievements:', error);
+      this.options.achievements = [];
+    }
   }
 
   render() {
-    const achievements = this.options.achievements.length > 0
-      ? this.options.achievements
-      : ACHIEVEMENTS_PLACEHOLDER;
+    const achievements = this.options.achievements;
 
-    const isPlaceholder = this.options.achievements.length === 0;
-
-    if (isPlaceholder) {
-      this.container.innerHTML = `
-        <section class="achievements-preview section" aria-labelledby="achievements-preview-title">
-          <div class="container">
-            <div class="achievements-preview__header">
-              <div class="section-heading">
-                <p class="section-heading__pretitle">Achievements</p>
-                <h2 id="achievements-preview-title" class="section-heading__title">Celebrating <span class="section-heading__title-accent">Excellence</span></h2>
-                <p class="section-heading__subtitle">Our shooters consistently podium at state, national, and international competitions.</p>
-              </div>
-            </div>
-            <div class="achievements-preview__grid" role="list">
-              ${achievements.map(a => `
-                <article class="achievement-card" data-placeholder="true">
-                  <span class="achievement-card__medal" aria-hidden="true">${MEDAL_ICONS[a.medal] || MEDAL_ICONS.gold}</span>
-                  <h3 class="achievement-card__event">${a.event}</h3>
-                  <div class="achievement-card__details">
-                    <span class="achievement-card__discipline">${a.discipline}</span>
-                    <span class="achievement-card__athlete">${a.athlete}</span>
-                    <span class="achievement-card__year">${a.year}</span>
-                  </div>
-                </article>
-              `).join('')}
-            </div>
-            <div class="achievements-preview__cta">
-              <a href="${this.options.ctaHref}" class="btn btn--primary btn--large">${this.options.ctaLabel}</a>
-            </div>
-          </div>
-        </section>
-      `;
-    } else {
-      this.container.innerHTML = `
-        <section class="achievements-preview section" aria-labelledby="achievements-preview-title">
-          <div class="container">
-            <div class="achievements-preview__header">
-              <div class="section-heading">
-                <p class="section-heading__pretitle">Achievements</p>
-                <h2 id="achievements-preview-title" class="section-heading__title">Celebrating <span class="section-heading__title-accent">Excellence</span></h2>
-                <p class="section-heading__subtitle">Our shooters consistently podium at state, national, and international competitions.</p>
-              </div>
-            </div>
-            <div class="achievements-preview__grid" role="list">
-              ${achievements.map(a => `
-                <article class="achievement-card">
-                  <span class="achievement-card__medal" aria-hidden="true">${MEDAL_ICONS[a.medal] || MEDAL_ICONS.gold}</span>
-                  <h3 class="achievement-card__event">${a.event}</h3>
-                  <div class="achievement-card__details">
-                    <span class="achievement-card__discipline">${a.discipline}</span>
-                    <span class="achievement-card__athlete">${a.athlete}</span>
-                    <span class="achievement-card__year">${a.year}</span>
-                  </div>
-                </article>
-              `).join('')}
-            </div>
-            <div class="achievements-preview__cta">
-              <a href="${this.options.ctaHref}" class="btn btn--primary btn--large">${this.options.ctaLabel}</a>
-            </div>
-          </div>
-        </section>
-      `;
+    if (achievements.length === 0) {
+      this.renderEmptyState();
+      return;
     }
+
+    const achievementsHtml = achievements.map(a => `
+      <article class="achievement-card" data-medal="${a.medal}" role="listitem">
+        <div class="achievement-card__medal" aria-hidden="true">${MEDAL_ICONS[a.medal] || MEDAL_ICONS.gold}</span>
+        <h3 class="achievement-card__event">${a.event || '[Event]'}</h3>
+        <div class="achievement-card__details">
+          <span class="achievement-card__discipline">${a.discipline || '[Discipline]'}</span>
+          <span class="achievement-card__athlete">${a.athlete || '[Athlete Name]'}</span>
+          <span class="achievement-card__year">${a.year || '[Year]'}</span>
+        </div>
+      </article>
+    `).join('');
+
+    this.container.innerHTML = `
+      <section class="achievements-preview section" aria-labelledby="achievements-preview-title">
+        <div class="container">
+          <div class="achievements-preview__header">
+            <div class="section-heading">
+              <p class="section-heading__pretitle">Achievements</p>
+              <h2 id="achievements-preview-title" class="section-heading__title">Celebrating <span class="section-heading__title-accent">Excellence</span></h2>
+              <p class="section-heading__subtitle">Our shooters consistently podium at state, national, and international competitions.</p>
+            </div>
+          </div>
+          <div class="achievements-preview__grid" role="list">${achievementsHtml}</div>
+          <div class="achievements-preview__cta">
+            <a href="${this.options.ctaHref}" class="btn btn--primary btn--large">${this.options.ctaLabel}</a>
+          </div>
+        </div>
+      </section>
+    `;
   }
 
-  initAnimations() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
-    const section = this.container.querySelector('.achievements-preview');
-    const header = this.container.querySelector('.achievements-preview__header');
-    const cards = this.container.querySelectorAll('.achievement-card');
-    const cta = this.container.querySelector('.achievements-preview__cta');
-
-    if (!section) return;
-
-    // Header entrance
-    gsap.fromTo(header, 
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 85%',
-          end: 'top 55%',
-          scrub: false
-        }
-      }
-    );
-
-    // Cards staggered entrance
-    gsap.fromTo(cards, 
-      { opacity: 0, y: 50, scale: 0.95 },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.6,
-        ease: 'power3.out',
-        stagger: 0.12,
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 80%',
-          end: 'top 50%',
-          scrub: false
-        }
-      }
-    );
-
-    // CTA entrance
-    if (cta) {
-      gsap.fromTo(cta, 
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: 'power3.out',
-          delay: 0.3,
-          scrollTrigger: {
-            trigger: section,
-            start: 'top 75%',
-            end: 'top 45%',
-            scrub: false
-          }
-        }
-      );
-    }
-
-    // Subtle floating animation on cards
-    cards.forEach((card, index) => {
-      const delay = index * 0.5;
-      gsap.to(card, {
-        y: -10,
-        ease: 'sine.inOut',
-        duration: 2 + index * 0.5,
-        repeat: -1,
-        yoyo: true,
-        delay
-      });
-    });
+  renderEmptyState() {
+    this.container.innerHTML = `
+      <section class="achievements-preview section" aria-labelledby="achievements-preview-title">
+        <div class="container">
+          <div class="achievements-preview__header">
+            <div class="section-heading">
+              <p class="section-heading__pretitle">Achievements</p>
+              <h2 id="achievements-preview-title" class="section-heading__title">Celebrating <span class="section-heading__title-accent">Excellence</span></h2>
+              <p class="section-heading__subtitle">Our shooters consistently podium at state, national, and international competitions.</p>
+            </div>
+          </div>
+          <div class="achievements-preview__grid">
+            <div class="achievements-preview__empty" role="status">
+              <span class="achievements-preview__empty-icon" aria-hidden="true">${EMPTY_ICON}</span>
+              <h3 class="achievements-preview__empty-title">No Achievements Yet</h3>
+              <p class="achievements-preview__empty-desc">Verified achievements and medalists will be displayed here once added through the CMS.</p>
+            </div>
+          </div>
+          <div class="achievements-preview__cta">
+            <a href="${this.options.ctaHref}" class="btn btn--primary btn--large">${this.options.ctaLabel}</a>
+          </div>
+        </div>
+      </section>
+    `;
   }
 
   updateAchievements(achievements) {
     this.options.achievements = achievements;
     this.render();
-    this.initAnimations();
   }
 
   destroy() {
-    ScrollTrigger.getAll().forEach(st => {
-      if (st.trigger === this.container.querySelector('.achievements-preview')) {
-        st.kill();
-      }
-    });
     this.container.innerHTML = '';
   }
 }

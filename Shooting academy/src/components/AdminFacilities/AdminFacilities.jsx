@@ -1,4 +1,6 @@
-import { BaseAdminModule } from '@/lib/admin-module';
+﻿import { BaseAdminModule } from '@/lib/admin-module';
+import { uploadImage, deleteImage } from '@/lib/admin-api';
+import { STORAGE_BUCKETS } from '@/lib/supabase';
 
 export class AdminFacilitiesModule extends BaseAdminModule {
   constructor(container) {
@@ -38,13 +40,73 @@ export class AdminFacilitiesModule extends BaseAdminModule {
 
   async init() { await this.loadData(); this.render(); this.bindEvents(); }
 
+  bindEvents() {
+    if (this.showForm) {
+      this.bindFormEvents();
+      return;
+    }
+
+    // Visibility filter
+    this.bindEvents([
+      { selector: '.admin-filter[data-filter="is_visible"]', handler: (e) => {
+        const key = e.currentTarget.dataset.filter;
+        const value = e.currentTarget.value;
+        if (value) this.activeFilters[key] = value;
+        else delete this.activeFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+      }},
+      { selector: '.admin-filter[data-filter="is_featured"]', handler: (e) => {
+        const key = e.currentTarget.dataset.filter;
+        const value = e.currentTarget.value;
+        if (value) this.activeFilters[key] = value;
+        else delete this.activeFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+      }},
+      { selector: '.admin-filter[data-filter="category"]', handler: (e) => {
+        const key = e.currentTarget.dataset.filter;
+        const value = e.currentTarget.value;
+        if (value) this.activeFilters[key] = value;
+        else delete this.activeFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+      }},
+    ]);
+
+    // Action buttons (edit, delete) on table rows + toggle-visibility + toggle-featured + update-order
+    this.bindEvents([
+      { selector: '[data-action]', handler: (e) => {
+        const action = e.currentTarget.dataset.action;
+        const id = e.currentTarget.dataset.id;
+
+        switch (action) {
+          case 'edit':
+            this.showEditForm(this.items.find(i => i.id === id));
+            break;
+          case 'delete':
+            this.handleDelete(id);
+            break;
+          case 'toggle-visibility':
+            this.handleToggleVisibility(id, e.currentTarget.checked);
+            break;
+          case 'toggle-featured':
+            this.handleToggleFeatured(id, e.currentTarget.checked);
+            break;
+          case 'update-order':
+            this.handleReorder([{ id: id, display_order: parseInt(e.currentTarget.value) }]);
+            break;
+        }
+      }},
+    ]);
+  }
+
   render() {
     this.container.innerHTML = `<div class="admin-module"><div class="admin-module__header"><h2 class="admin-module__title">${this.title}</h2><p class="admin-module__subtitle">Manage facilities</p></div>${this.showForm ? this.getFormHtml() : this.getListHtml()}</div>`;
   }
 
   getListHtml() {
-    return `
-      <div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search facilities..." value="${this.search}" aria-label="Search" />
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search facilities..." value="${this.search}" aria-label="Search" />
         <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
         <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="indoor" ${this.activeFilters.category === 'indoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${this.activeFilters.category === 'outdoor' ? 'selected' : ''}>Outdoor</option><option value="equipment" ${this.activeFilters.category === 'equipment' ? 'selected' : ''}>Equipment</option><option value="amenity" ${this.activeFilters.category === 'amenity' ? 'selected' : ''}>Amenity</option></select>
         <button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Facility</button>
@@ -59,7 +121,100 @@ export class AdminFacilitiesModule extends BaseAdminModule {
       `).join('') : `<tr><td colspan="6" class="admin-table__empty">No facilities found</td></tr>`}</tbody></table></div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}`}`;
   }
 
-  getFormHtml() { const item = this.editingId ? this.items.find(i => i.id === this.editingId) : null; const isEdit = !!this.editingId; return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Add'} Facility</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" id="admin-form" novalidate><div class="admin-form__grid">${this.fields.map(field => `<div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};"><label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}><option value="">Select</option>${field.options.map(opt => `<option value="${opt.value}" ${item?.[field.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>` : field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` : field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${item?.[field.key] || ''}</textarea>` : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`}</div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary">${isEdit ? 'Update' : 'Create'}</button></div></form></div>`; }
+  getFormHtml() { const item = this.editingId ? this.items.find(i => i.id === this.editingId) : null; const isEdit = !!this.editingId; return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Add'} Facility</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" novalidate><div class="admin-form__grid">${this.fields.map(field => `<div class="admin-form__field"><label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}<option value="">Select</option>${field.options.map(opt => `<option value="${opt.value}" ${item?.[field.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>` : field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` : field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${item?.[field.key] || ''}</textarea>` : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`}</div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary">${isEdit ? 'Update' : 'Create'}</button></div></form></div>`; }
+
+  getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
+
+  bindFormEvents() {
+    super.bindFormEvents();
+
+    const fileInput = this.container.querySelector('#image_file');
+    const pickButton = this.container.querySelector('[data-action="pick-image"]');
+    const preview = this.container.querySelector('#facility-image-preview');
+    const filename = this.container.querySelector('#facility-image-name');
+
+    pickButton?.addEventListener('click', () => fileInput?.click());
+
+    fileInput?.addEventListener('change', event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif'
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        alert('Choose a JPG, PNG, WebP, or GIF image.');
+        event.target.value = '';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be 5 MB or less.');
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        if (preview) {
+          preview.src = reader.result;
+          preview.style.display = 'block';
+        }
+        if (filename) filename.textContent = file.name;
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async uploadFacilityImage(file) {
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const safeExtension = /^[a-z0-9]+$/.test(extension) ? extension : 'jpg';
+
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExtension}`;
+
+    return await uploadImage(STORAGE_BUCKETS.FACILITIES, file, path);
+  }
+
+  async handleCreate(data) {
+    const file = data.image_file;
+    delete data.image_file;
+
+    if (file instanceof File && file.size > 0) {
+      try {
+        data.image_url = await this.uploadFacilityImage(file);
+      } catch (error) {
+        console.error('Facility image upload failed:', error);
+        alert('Image upload failed. Check the Supabase facilities bucket and permissions.');
+        throw error;
+      }
+    }
+
+    await super.handleCreate(data);
+  }
+
+  async handleUpdate(id, data) {
+    const file = data.image_file;
+    delete data.image_file;
+
+    if (file instanceof File && file.size > 0) {
+      try {
+        data.image_url = await this.uploadFacilityImage(file);
+      } catch (error) {
+        console.error('Facility image update failed:', error);
+        alert('Image upload failed. Check the Supabase facilities bucket and permissions.');
+        throw error;
+      }
+    }
+
+    await super.handleUpdate(id, data);
+  }
+
 
   getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
 }

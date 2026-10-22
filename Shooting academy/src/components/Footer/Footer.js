@@ -1,4 +1,4 @@
-const FOOTER_NAV = {
+﻿const FOOTER_NAV = {
   quickLinks: [
     { label: 'Home', href: '#' },
     { label: 'About', href: '#about' },
@@ -20,14 +20,9 @@ const FOOTER_NAV = {
 };
 
 const FOOTER_CTAS = [
-  { label: 'Contact Us', variant: 'primary', href: '/contact' }
+  { label: 'Register Now', variant: 'primary', href: '#register' },
+  { label: 'Pay & Play', variant: 'secondary', href: '/pay-play' }
 ];
-
-const FOOTER_CONTACT = {
-  address: { label: 'Address', value: 'Matsya Shooting Sports Academy, 74, Near Central GST Commissionerate, Surya Nagar, Kherado, Diwakari, Rajasthan 301001', icon: 'location' },
-  phone: { label: 'Phone', value: '8282821519, 7734057123', icon: 'phone' },
-  email: { label: 'Email', value: 'alwarshooting@gmail.com', icon: 'mail' }
-};
 
 const CONTACT_ICONS = {
   location: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
@@ -35,18 +30,57 @@ const CONTACT_ICONS = {
   mail: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
 };
 
+const DEFAULT_FOOTER_CONTACT = {
+  address: { label: 'Address', value: 'Building Number C 74, Near Gst Office, Near Central GST Commissionerate, Kherado, Surya Nagar, Alwar-301001, Rajasthan', icon: 'location' },
+  phone: { label: 'Phone', value: '8282821519, 7734057123', icon: 'phone' },
+  email: { label: 'Email', value: 'alwarshooting@gmail.com', icon: 'mail' },
+  whatsapp: { label: 'WhatsApp', value: '8282821519', icon: 'whatsapp' },
+  hours: { label: 'Hours', value: 'Mon-Sat: 6:00 AM - 8:00 PM | Sun: 7:00 AM - 6:00 PM', icon: 'hours' }
+};
+
 export class Footer {
   constructor(container, options = {}) {
     this.container = container;
     this.options = {
-      contactData: options.contactData || FOOTER_CONTACT,
+      contactData: options.contactData || DEFAULT_FOOTER_CONTACT,
       ...options
     };
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadContactSettings();
     this.render();
+  }
+
+  async loadContactSettings() {
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.CONTACT_SETTINGS)
+        .select('*')
+        .eq('is_public', true);
+
+      if (error) throw error;
+
+      const contactMap = {};
+      (data || []).forEach(item => {
+        contactMap[item.setting_key] = item.setting_value;
+      });
+
+      this.options.contactData = {
+        address: { label: 'Address', value: contactMap.address || '', icon: 'location' },
+        phone: { label: 'Phone', value: contactMap.phone || '', icon: 'phone' },
+        email: { label: 'Email', value: contactMap.email || '', icon: 'mail' },
+        whatsapp: { label: 'WhatsApp', value: contactMap.whatsapp || '', icon: 'whatsapp' },
+        hours: { label: 'Hours', value: contactMap.hours || '', icon: 'hours' }
+      };
+    } catch (error) {
+      console.error('Failed to load contact settings:', error);
+      // Use defaults (empty strings)
+      this.options.contactData = DEFAULT_FOOTER_CONTACT;
+    }
   }
 
   render() {

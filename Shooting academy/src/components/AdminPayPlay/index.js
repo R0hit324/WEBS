@@ -1,1 +1,1 @@
-export { createAdminPayPlay } from './AdminPayPlay.jsx';
+﻿export { createAdminPayPlay } from './AdminPayPlay.js';

@@ -1,4 +1,4 @@
-import { BaseAdminModule } from '@/lib/admin-module';
+﻿import { BaseAdminModule } from '@/lib/admin-module';
 import { uploadImage, deleteImage } from '@/lib/admin-api';
 import { STORAGE_BUCKETS } from '@/lib/supabase';
 
@@ -45,6 +45,87 @@ export class AdminGalleryModule extends BaseAdminModule {
     this.bindEvents();
   }
 
+  bindEvents() {
+    if (this.showForm) {
+      this.bindFormEvents();
+      return;
+    }
+
+    // Category filter
+    this.bindEvents([
+      { selector: '.admin-filter[data-filter="category"]', handler: (e) => {
+        const key = e.currentTarget.dataset.filter;
+        const value = e.currentTarget.value;
+        if (value) this.activeFilters[key] = value;
+        else delete this.activeFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+      }},
+      { selector: '.admin-filter[data-filter="is_visible"]', handler: (e) => {
+        const key = e.currentTarget.dataset.filter;
+        const value = e.currentTarget.value;
+        if (value) this.activeFilters[key] = value;
+        else delete this.activeFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+      }},
+      { selector: '.admin-filter[data-filter="is_featured"]', handler: (e) => {
+        const key = e.currentTarget.dataset.filter;
+        const value = e.currentTarget.value;
+        if (value) this.activeFilters[key] = value;
+        else delete this.activeFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+      }},
+    ]);
+
+    // Action buttons (edit, delete) on table rows
+    this.bindEvents([
+      { selector: '[data-action]', handler: (e) => {
+        const action = e.currentTarget.dataset.action;
+        const id = e.currentTarget.dataset.id;
+
+        switch (action) {
+          case 'edit':
+            this.showEditForm(this.items.find(i => i.id === id));
+            break;
+          case 'delete':
+            this.handleDelete(id);
+            break;
+        }
+      }},
+    ]);
+
+    // Search input
+    this.bindEvents([
+      { selector: '.admin-search', handler: (e) => {
+        this.search = e.currentTarget.value;
+        this.currentPage = 1;
+        this.loadData();
+      }},
+    ]);
+
+    // Pagination controls
+    this.bindEvents([
+      { selector: '[data-action="prev-page"]', handler: (e) => {
+        e.currentTarget.disabled = true;
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.render();
+          this.bindEvents();
+        }
+      }},
+      { selector: '[data-action="next-page"]', handler: (e) => {
+        e.currentTarget.disabled = this.currentPage >= this.totalPages;
+        if (this.currentPage < this.totalPages) {
+          this.currentPage++;
+          this.render();
+          this.bindEvents();
+        }
+      }},
+    ]);
+  }
+
   render() {
     this.container.innerHTML = `<div class="admin-module"><div class="admin-module__header"><h2 class="admin-module__title">${this.title}</h2><p class="admin-module__subtitle">Manage gallery images</p></div>${this.showForm ? this.getFormHtml() : this.getListHtml()}</div>`;
   }
@@ -52,10 +133,14 @@ export class AdminGalleryModule extends BaseAdminModule {
   getListHtml() {
     return `
       <div class="admin-module__toolbar">
-        <input type="search" class="admin-search" placeholder="Search images..." value="${this.search}" aria-label="Search" />
-        <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
-        <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="academy" ${this.activeFilters.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${this.activeFilters.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${this.activeFilters.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${this.activeFilters.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${this.activeFilters.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${this.activeFilters.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>
-        <button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Upload Image</button>
+        <div class="admin-module__toolbar-left">
+          <input type="search" class="admin-search" placeholder="Search images..." value="${this.search}" aria-label="Search" />
+          <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
+          <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="academy" ${this.activeFilters.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${this.activeFilters.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${this.activeFilters.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${this.activeFilters.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${this.activeFilters.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${this.activeFilters.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>
+        </div>
+        <div class="admin-module__toolbar-right">
+          <button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Upload Image</button>
+        </div>
       </div>${this.getTableHtml()}`;
   }
 
@@ -66,7 +151,7 @@ export class AdminGalleryModule extends BaseAdminModule {
 
     const rows = this.items.length > 0 ? this.items.map(item => `
       <tr data-id="${item.id}" data-order="${item.display_order}">
-        <td><img src="${item.image_url || ''}" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>
+        <td><img src="${item.image_url || ''}" alt="${item.title || ''}" style="width: 56px; height: 56px; object-fit: cover; border-radius: var(--radius-sm); border: 2px solid var(--color-border);"></td>
         <td>${item.title || '-'}</td>
         <td>${item.category}</td>
         <td>
@@ -115,21 +200,21 @@ export class AdminGalleryModule extends BaseAdminModule {
     </div>${this.totalPages > 1 ? this.getPaginationHtml() : ''}`;
   }
 
+  getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
+
   getFormHtml() {
     const item = this.editingId ? this.items.find(i => i.id === this.editingId) : null;
     const isEdit = !!this.editingId;
     return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Upload'} Image</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" id="admin-form" novalidate enctype="multipart/form-data"><div class="admin-form__grid">${this.fields.map(field => `
       <div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};">
         <label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>
-        ${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}><option value="">Select category</option><option value="academy" ${item?.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${item?.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${item?.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${item?.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${item?.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${item?.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>` :
+        ${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}<option value="">Select category</option><option value="academy" ${item?.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${item?.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${item?.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${item?.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${item?.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${item?.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>` :
         field.type === 'image' ? `<div class="admin-image-upload"><input type="file" name="${field.key}" id="${field.key}" accept="image/*" ${!isEdit && field.required ? 'required' : ''} style="display: none;"><button type="button" class="btn btn--secondary admin-image-upload__btn" data-action="pick-image">${item?.image_url ? 'Change Image' : 'Select Image'}</button>${item?.image_url ? `<img src="${item.image_url}" alt="Preview" class="admin-image-upload__preview">` : ''}<input type="hidden" name="image_url" value="${item?.image_url || ''}"><input type="hidden" name="storage_path" value="${item?.storage_path || ''}"></div>` :
         field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` :
         field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}">${item?.[field.key] || ''}</textarea>` :
         `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required && !isEdit ? 'required' : ''}>`}
       </div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary" ${this.uploading ? 'disabled' : ''}>${this.uploading ? `Uploading ${this.uploadProgress}%...` : (this.editingId ? 'Update' : 'Upload')}</button></div></form></div>`;
   }
-
-  getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }
 
   async handleCreate(data) {
     if (data.image_file) {
@@ -141,12 +226,11 @@ export class AdminGalleryModule extends BaseAdminModule {
       try {
         const timestamp = Date.now();
         const ext = data.image_file.name.split('.').pop();
-        const path = `gallery/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const path = `${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
 
-        await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
+        const imageUrl = await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
 
-        const supabaseModule = await import('@/lib/supabase');
-        data.image_url = `${supabaseModule.getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
+        data.image_url = imageUrl;
         data.storage_path = path;
       } catch (err) {
         this.uploading = false;
@@ -171,12 +255,11 @@ export class AdminGalleryModule extends BaseAdminModule {
       try {
         const timestamp = Date.now();
         const ext = data.image_file.name.split('.').pop();
-        const path = `gallery/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const path = `${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
 
-        await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
+        const imageUrl = await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
 
-        const supabaseModule = await import('@/lib/supabase');
-        data.image_url = `${supabaseModule.getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
+        data.image_url = imageUrl;
         data.storage_path = path;
       } catch (err) {
         this.uploading = false;

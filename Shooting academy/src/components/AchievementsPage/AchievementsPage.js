@@ -1,4 +1,4 @@
-const DEFAULT_ACHIEVEMENTS = [];
+﻿const DEFAULT_ACHIEVEMENTS = [];
 
 const MEDAL_ICONS = {
   gold: `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
@@ -48,9 +48,45 @@ export class AchievementsPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
     this.bindFilterEvents();
+  }
+
+  async loadData() {
+    if (this.options.achievements && this.options.achievements.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.ACHIEVEMENTS)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.achievements = (data || []).map(item => ({
+        id: item.id,
+        athlete: item.athlete_name,
+        photo: item.photo_url || '',
+        photoAlt: item.photo_alt || item.athlete_name,
+        event: item.event || '',
+        discipline: item.discipline || '',
+        competition: item.competition || '',
+        year: item.year || '',
+        medal: item.medal,
+        description: item.description || '',
+        featured: Boolean(item.is_featured),
+        visible: item.is_visible !== false,
+        displayOrder: item.display_order ?? 0
+      }));
+    } catch (error) {
+      console.error('Failed to load achievements:', error);
+      this.options.achievements = [];
+    }
   }
 
   render() {
@@ -69,7 +105,7 @@ export class AchievementsPage {
       <section class="achievements-page" aria-labelledby="achievements-page-title">
         <div class="container">
           <header class="achievements-page__hero">
-            <div class="achievements-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="achievements-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="achievements-page-title" class="achievements-page__title">Achievements & <span class="achievements-page__title-accent">Medalists</span></h1>
             <p class="achievements-page__description">Celebrating the competitive success of our athletes across state, national, and international championships.</p>
           </header>
@@ -85,7 +121,8 @@ export class AchievementsPage {
 
           <div class="achievements-page__cta-section">
             <div class="achievements-page__cta-actions" role="group" aria-label="Achievements page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>
@@ -137,7 +174,7 @@ export class AchievementsPage {
       <section class="achievements-page" aria-labelledby="achievements-page-title">
         <div class="container">
           <header class="achievements-page__hero">
-            <div class="achievements-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="achievements-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="achievements-page-title" class="achievements-page__title">Achievements & <span class="achievements-page__title-accent">Medalists</span></h1>
             <p class="achievements-page__description">Celebrating the competitive success of our athletes across state, national, and international championships.</p>
           </header>
@@ -152,7 +189,8 @@ export class AchievementsPage {
 
           <div class="achievements-page__cta-section">
             <div class="achievements-page__cta-actions" role="group" aria-label="Achievements page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>

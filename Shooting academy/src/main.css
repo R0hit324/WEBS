@@ -1,4 +1,4 @@
-@import './styles/design-system.css';
+﻿@import './styles/design-system.css';
 @import './components/ShootingTarget/ShootingTarget.css';
 @import './components/RotatingTarget/RotatingTarget.css';
 @import './components/Hero/Hero.css';
@@ -28,4 +28,5 @@
 @import './components/PayPlayPage/PayPlayPage.css';
 @import './components/AdminLoginPage/AdminLoginPage.css';
 @import './components/AdminLayout/AdminLayout.css';
+@import './components/AdminLayout/AdminModule.css';
 @import './components/AdminDashboard/AdminDashboard.css';

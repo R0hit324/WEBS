@@ -1,4 +1,4 @@
-const DEFAULT_GALLERY = [];
+﻿const DEFAULT_GALLERY = [];
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },
@@ -49,9 +49,37 @@ export class GalleryPage {
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.loadData();
     this.render();
     this.bindEvents();
+  }
+
+  async loadData() {
+    if (this.options.items && this.options.items.length > 0) {
+      return; // Data already provided
+    }
+    try {
+      const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(TABLES.GALLERY_IMAGES)
+        .select('*')
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      this.options.items = (data || []).map(item => ({
+        ...item,
+        image: item.image_url,
+        featured: Boolean(item.is_featured),
+        visible: item.is_visible !== false,
+        displayOrder: item.display_order ?? 0
+      }));
+    } catch (error) {
+      console.error('Failed to load gallery images:', error);
+      this.options.items = [];
+    }
   }
 
   render() {
@@ -70,7 +98,7 @@ export class GalleryPage {
       <section class="gallery-page" aria-labelledby="gallery-page-title">
         <div class="container">
           <header class="gallery-page__hero">
-            <div class="gallery-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="gallery-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="gallery-page-title" class="gallery-page__title">Photo <span class="gallery-page__title-accent">Gallery</span></h1>
             <p class="gallery-page__description">Training sessions, competitions, events, and daily life at Matsya Shooting Sports Academy.</p>
           </header>
@@ -85,7 +113,8 @@ export class GalleryPage {
 
           <div class="gallery-page__cta-section">
             <div class="gallery-page__cta-actions" role="group" aria-label="Gallery page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
 
@@ -149,7 +178,7 @@ export class GalleryPage {
       <section class="gallery-page" aria-labelledby="gallery-page-title">
         <div class="container">
           <header class="gallery-page__hero">
-            <div class="gallery-page__hero-badge badge">ALWAR • RAJASTHAN</div>
+            <div class="gallery-page__hero-badge badge">ALWAR â€¢ RAJASTHAN</div>
             <h1 id="gallery-page-title" class="gallery-page__title">Photo <span class="gallery-page__title-accent">Gallery</span></h1>
             <p class="gallery-page__description">Training sessions, competitions, events, and daily life at Matsya Shooting Sports Academy.</p>
           </header>
@@ -164,7 +193,8 @@ export class GalleryPage {
 
           <div class="gallery-page__cta-section">
             <div class="gallery-page__cta-actions" role="group" aria-label="Gallery page actions">
-              <a href="/contact" class="btn btn--primary btn--large">Contact Us</a>
+              <a href="/register" class="btn btn--primary btn--large">Register Now</a>
+              <a href="/contact" class="btn btn--secondary btn--large">Contact Academy</a>
             </div>
           </div>
         </div>
