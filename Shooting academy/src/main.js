@@ -24,6 +24,7 @@ import { createAdminLayout } from './components/AdminLayout/index.js';
 import { createAdminDashboard } from './components/AdminDashboard/index.js';
 import { isAdminAuthenticated } from './lib/admin-auth.ts';
 import { router } from './router/index.js';
+import { activateScrollReveal, destroyScrollReveal } from './lib/scroll-reveal.js';
 
 const app = document.getElementById('app');
 
@@ -104,6 +105,7 @@ function setupRoutes(mainContent) {
 }
 
 function clearMainContent(mainContent) {
+  destroyScrollReveal();
   if (currentPageInstance && typeof currentPageInstance.destroy === 'function') {
     currentPageInstance.destroy();
   }
@@ -155,6 +157,8 @@ function renderHome(mainContent) {
   const motivationalContainer = document.createElement('div');
   mainContent.appendChild(motivationalContainer);
   createMotivational(motivationalContainer);
+
+  activateScrollReveal(app);
 }
 
 function renderAbout(mainContent) {
@@ -164,6 +168,7 @@ function renderAbout(mainContent) {
   const aboutContainer = document.createElement('div');
   mainContent.appendChild(aboutContainer);
   currentPageInstance = createAboutPage(aboutContainer);
+  activateScrollReveal(app);
 }
 
 function renderTraining(mainContent) {
@@ -173,6 +178,7 @@ function renderTraining(mainContent) {
   const trainingContainer = document.createElement('div');
   mainContent.appendChild(trainingContainer);
   currentPageInstance = createTrainingPage(trainingContainer);
+  activateScrollReveal(app);
 }
 
 function renderCoaches(mainContent) {
@@ -182,6 +188,7 @@ function renderCoaches(mainContent) {
   const coachesContainer = document.createElement('div');
   mainContent.appendChild(coachesContainer);
   currentPageInstance = createCoachesPage(coachesContainer);
+  activateScrollReveal(app);
 }
 
 function renderFacilities(mainContent) {
@@ -191,6 +198,7 @@ function renderFacilities(mainContent) {
   const facilitiesContainer = document.createElement('div');
   mainContent.appendChild(facilitiesContainer);
   currentPageInstance = createFacilitiesPage(facilitiesContainer);
+  activateScrollReveal(app);
 }
 
 function renderAchievements(mainContent) {
@@ -200,6 +208,7 @@ function renderAchievements(mainContent) {
   const achievementsContainer = document.createElement('div');
   mainContent.appendChild(achievementsContainer);
   currentPageInstance = createAchievementsPage(achievementsContainer);
+  activateScrollReveal(app);
 }
 
 function renderGallery(mainContent) {
@@ -209,6 +218,7 @@ function renderGallery(mainContent) {
   const galleryContainer = document.createElement('div');
   mainContent.appendChild(galleryContainer);
   currentPageInstance = createGalleryPage(galleryContainer);
+  activateScrollReveal(app);
 }
 
 function renderReviews(mainContent) {
@@ -218,6 +228,7 @@ function renderReviews(mainContent) {
   const reviewsContainer = document.createElement('div');
   mainContent.appendChild(reviewsContainer);
   currentPageInstance = createReviewsPage(reviewsContainer);
+  activateScrollReveal(app);
 }
 
 function renderContact(mainContent) {
@@ -236,6 +247,7 @@ function renderContact(mainContent) {
       mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3537.2804241908266!2d76.64980147550403!3d27.553806176271056!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x397291a458a82b11%3A0x71a9c69e830e2c17!2sMatsya%20shooting%20sports%20academy%20alwar%20rajasthan!5e0!3m2!1sen!2sin!4v1791442142353!5m2!1sen!2sin'
     }
   });
+  activateScrollReveal(app);
 }
 
 function renderRegistration(mainContent) {
@@ -245,6 +257,7 @@ function renderRegistration(mainContent) {
   const registrationContainer = document.createElement('div');
   mainContent.appendChild(registrationContainer);
   currentPageInstance = createRegistrationPage(registrationContainer);
+  activateScrollReveal(app);
 }
 
 function renderPayPlay(mainContent) {
@@ -254,6 +267,7 @@ function renderPayPlay(mainContent) {
   const payPlayContainer = document.createElement('div');
   mainContent.appendChild(payPlayContainer);
   currentPageInstance = createPayPlayPage(payPlayContainer);
+  activateScrollReveal(app);
 }
 
 function renderPayPlaySession(mainContent, sessionId) {
@@ -263,6 +277,7 @@ function renderPayPlaySession(mainContent, sessionId) {
   const sessionContainer = document.createElement('div');
   mainContent.appendChild(sessionContainer);
   currentPageInstance = createPayPlaySessionPage(sessionContainer, { sessionId });
+  activateScrollReveal(app);
 }
 
 // Section-to-module mapping for admin pages
@@ -381,8 +396,9 @@ function renderNotFound(mainContent) {
         <p style="font-size: var(--font-size-xl); color: var(--color-text-secondary); margin-bottom: var(--spacing-8);">Page Not Found</p>
         <a href="/" class="btn btn--primary btn--large">Return Home</a>
       </div>
-    </section>
-  `;
+      </section>
+    `;
+  activateScrollReveal(app);
 }
 
 if (document.readyState === 'loading') {
