@@ -25,6 +25,7 @@ import { createAdminDashboard } from './components/AdminDashboard/index.js';
 import { isAdminAuthenticated } from './lib/admin-auth.ts';
 import { router } from './router/index.js';
 import { activateScrollReveal, destroyScrollReveal } from './lib/scroll-reveal.js';
+import { activatePrecisionChamber, destroyPrecisionChamber } from './lib/precision-chamber.js';
 
 const app = document.getElementById('app');
 
@@ -106,6 +107,7 @@ function setupRoutes(mainContent) {
 
 function clearMainContent(mainContent) {
   destroyScrollReveal();
+  destroyPrecisionChamber();
   if (currentPageInstance && typeof currentPageInstance.destroy === 'function') {
     currentPageInstance.destroy();
   }
@@ -124,6 +126,7 @@ function renderHome(mainContent) {
   const heroContainer = document.createElement('div');
   mainContent.appendChild(heroContainer);
   createHero(heroContainer);
+  activatePrecisionChamber();
 
   const highlightsContainer = document.createElement('div');
   mainContent.appendChild(highlightsContainer);

@@ -118,7 +118,7 @@
   }
   .hero__container {
     grid-template-columns: 1fr;
-    gap: var(--spacing-10);
+    gap: var(--spacing-8);
     text-align: center;
   }
   .hero__content {
@@ -137,17 +137,17 @@
   .hero__actions {
     justify-content: center;
   }
-  .hero__visual {
-    order: -1;
-  }
   .hero__target-wrapper {
-    max-width: 360px;
+    max-width: 300px;
   }
 }
 
 @media (max-width: 480px) {
   .hero {
     padding: var(--spacing-12) 0;
+  }
+  .hero__container {
+    gap: var(--spacing-6);
   }
   .hero__headline {
     font-size: var(--font-size-3xl);
@@ -163,6 +163,138 @@
     width: 100%;
   }
   .hero__target-wrapper {
-    max-width: 280px;
+    max-width: 220px;
+  }
+}
+
+/* ---- Precision Chamber: fixed shooting room + scroll-driven spotlight ----
+   Room stage is a fixed-composition SVG environment; a single ScrollTrigger
+   pin (see lib/precision-chamber.js) drives only LIGHTING layers. The room
+   art, board and target never move, scale or crop during the sequence. */
+
+.hero--chamber {
+  overflow: hidden;
+}
+
+.pc-roomstage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.pc-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  min-width: 100%;
+  aspect-ratio: 1659 / 900;
+}
+
+.pc-roomart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pc-roomphoto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pc-targetlight,
+.pc-pool,
+.pc-beam,
+.pc-ambient {
+  position: absolute;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.pc-targetlight {
+  left: 50.3%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  width: 30%;
+  aspect-ratio: 1 / 1;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 50%, rgba(244, 197, 66, 0.34) 0%, rgba(244, 197, 66, 0.1) 48%, rgba(244, 197, 66, 0) 70%);
+}
+
+.pc-pool {
+  left: 49.5%;
+  top: 88.5%;
+  transform: translate(-50%, -50%);
+  width: 46%;
+  height: 26%;
+  mix-blend-mode: screen;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(244, 197, 66, 0.32) 0%, rgba(244, 197, 66, 0.12) 45%, rgba(244, 197, 66, 0) 72%);
+}
+
+.pc-beam {
+  left: 50.2%;
+  top: 14.5%;
+  width: 38%;
+  height: 44%;
+  transform-origin: 50% 0%;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(ellipse 40% 100% at 50% 0%, rgba(244, 197, 66, 0.2) 0%, rgba(244, 197, 66, 0) 74%),
+    linear-gradient(180deg, rgba(244, 197, 66, 0.26) 0%, rgba(244, 197, 66, 0.11) 40%, rgba(244, 197, 66, 0.03) 78%, rgba(244, 197, 66, 0) 96%);
+  -webkit-mask-image:
+    linear-gradient(180deg, transparent 0%, #000 11%, #000 72%, transparent 96%),
+    radial-gradient(ellipse 52% 100% at 50% 0%, #000 30%, transparent 76%);
+  mask-image:
+    linear-gradient(180deg, transparent 0%, #000 11%, #000 72%, transparent 96%),
+    radial-gradient(ellipse 52% 100% at 50% 0%, #000 30%, transparent 76%);
+}
+
+.pc-ambient {
+  inset: 0;
+  background: #07090c;
+}
+
+/* Static lit-state fallback (prefers-reduced-motion: no pin, no timeline) */
+.hero--chamber.pc-static .pc-ambient { opacity: 0.42; }
+.hero--chamber.pc-static .pc-beam { opacity: 0.95; }
+.hero--chamber.pc-static .pc-pool { opacity: 0.9; }
+.hero--chamber.pc-static .pc-targetlight { opacity: 0.55; }
+
+.hero--chamber .hero__container {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .hero--chamber {
+    min-height: 100vh;
+    padding-top: calc(var(--spacing-20) + 48px);
+  }
+  .hero--chamber .hero__container {
+    padding-top: var(--spacing-4);
+  }
+  .pc-stage {
+    top: auto;
+    bottom: -6%;
+    height: 45%;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-targetlight,
+  .pc-pool,
+  .pc-beam,
+  .pc-ambient {
+    transition: none;
   }
 }
