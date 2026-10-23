@@ -75,6 +75,7 @@ export class Navbar {
     this.navEl = this.container.querySelector('.navbar__nav');
     this.toggleBtn = this.container.querySelector('.navbar__mobile-toggle');
     this.navLinks = this.container.querySelectorAll('.navbar__link');
+    this.ctaButtons = this.container.querySelectorAll('.navbar__actions .btn');
   }
 
   bindEvents() {
@@ -83,11 +84,16 @@ export class Navbar {
     this.handleNavLinkClick = this.handleNavLinkClick.bind(this);
     this.handleKeydown = this.handleKeydown.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this.handleDocumentClick = this.handleDocumentClick.bind(this);
 
     window.addEventListener('scroll', this.handleScroll, { passive: true });
     this.toggleBtn.addEventListener('click', this.handleToggleClick);
     this.navLinks.forEach(link => link.addEventListener('click', this.handleNavLinkClick));
+    if (this.ctaButtons) {
+      this.ctaButtons.forEach(btn => btn.addEventListener('click', this.handleNavLinkClick));
+    }
     document.addEventListener('keydown', this.handleKeydown);
+    document.addEventListener('click', this.handleDocumentClick);
     window.addEventListener('resize', this.handleResize);
   }
 
@@ -103,7 +109,20 @@ export class Navbar {
     this.isMobileOpen = !this.isMobileOpen;
     this.navEl.classList.toggle('navbar__nav--open', this.isMobileOpen);
     this.toggleBtn.setAttribute('aria-expanded', this.isMobileOpen);
-    document.body.style.overflow = this.isMobileOpen ? 'hidden' : '';
+    this.setMenuScrollLock(this.isMobileOpen);
+  }
+
+  // Only the tall tablet drawer (769-1024px) covers the screen, so locking
+  // background scrolling is only needed there. The compact mobile dropdown
+  // must never lock the user onto the page.
+  setMenuScrollLock(open) {
+    document.body.style.overflow = open && window.innerWidth > 768 ? 'hidden' : '';
+  }
+
+  handleDocumentClick(event) {
+    if (this.isMobileOpen && !this.container.contains(event.target)) {
+      this.closeMobileMenu();
+    }
   }
 
   handleNavLinkClick() {
@@ -129,7 +148,7 @@ export class Navbar {
     this.isMobileOpen = false;
     this.navEl.classList.remove('navbar__nav--open');
     this.toggleBtn.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
+    this.setMenuScrollLock(false);
   }
 
   setActiveLink(href) {
@@ -153,7 +172,11 @@ export class Navbar {
     window.removeEventListener('scroll', this.handleScroll);
     this.toggleBtn.removeEventListener('click', this.handleToggleClick);
     this.navLinks.forEach(link => link.removeEventListener('click', this.handleNavLinkClick));
+    if (this.ctaButtons) {
+      this.ctaButtons.forEach(btn => btn.removeEventListener('click', this.handleNavLinkClick));
+    }
     document.removeEventListener('keydown', this.handleKeydown);
+    document.removeEventListener('click', this.handleDocumentClick);
     window.removeEventListener('resize', this.handleResize);
     this.container.innerHTML = '';
   }

@@ -250,3 +250,124 @@
     height: 40px;
   }
 }
+
+/* ---- Compact mobile navbar (≤768px): fixed floating pill, top center ----
+   Shorter bar, inset from the screen edges. Root cause of the previous
+   failure: the menu panel reused the tablet drawer's `position: fixed;
+   bottom: 0` full-screen geometry, so opening it still covered the whole
+   viewport. The menu is now a compact dropdown attached directly below the
+   pill — width-matched, capped at ~half the viewport, internally scrollable.
+   Later in the file on purpose: these rules must win the cascade over the
+   ≤1024/≤480 blocks above at narrow widths. */
+@media (max-width: 768px) {
+  .navbar {
+    position: fixed;
+    top: calc(0.625rem + env(safe-area-inset-top, 0px));
+    left: var(--spacing-4);
+    right: var(--spacing-4);
+    max-width: 36rem;
+    margin-inline: auto;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-2xl);
+    background-color: rgba(25, 29, 27, 0.92);
+    box-shadow: var(--shadow-md);
+  }
+
+  .navbar--scrolled,
+  .navbar--chamber-fixed {
+    background-color: rgba(25, 29, 27, 0.94);
+  }
+
+  .navbar__container {
+    height: calc(3.5rem - 2px);
+    gap: var(--spacing-2);
+    padding: 0 0.75rem;
+  }
+
+  .navbar__brand {
+    gap: var(--spacing-2);
+    min-width: 0;
+  }
+
+  .navbar__logo {
+    height: 2rem;
+  }
+
+  .navbar__brand-name {
+    font-size: 1rem;
+  }
+
+  .navbar__brand-tagline {
+    font-size: 0.5rem;
+  }
+
+  .navbar__mobile-toggle {
+    width: 40px;
+    height: 42px;
+    flex-shrink: 0;
+    margin-right: -0.25rem;
+  }
+
+  /* Compact dropdown: attached under the pill with matching width and
+     alignment; capped at half the viewport and scrolls internally when the
+     link list runs long. */
+  .navbar__nav {
+    top: calc(0.625rem + env(safe-area-inset-top, 0px) + 3.5rem + 0.625rem);
+    left: var(--spacing-4);
+    right: var(--spacing-4);
+    bottom: auto;
+    max-width: 36rem;
+    margin-inline: auto;
+    max-height: calc(50dvh - 0.625rem - env(safe-area-inset-top, 0px) - 3.5rem - 0.625rem);
+    padding: var(--spacing-2);
+    gap: 2px;
+    background-color: rgba(15, 19, 17, 0.97);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+    overscroll-behavior: contain;
+  }
+
+  .navbar__nav--open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .navbar__link {
+    padding: 0.7em 1em;
+    font-size: 0.95rem;
+    text-align: left;
+    border-radius: 0.5rem;
+  }
+
+  /* CTA buttons sit side by side in one compact row. */
+  .navbar__actions {
+    flex-direction: row;
+    width: auto;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
+  }
+
+  .navbar__btn {
+    width: auto;
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 0.65em 0.9em;
+    font-size: 0.9rem;
+  }
+
+  /* The chamber pin's fixed state must not widen the pill to full vw —
+     width + both insets would be over-constrained and ignore `right`. */
+  .navbar--chamber-fixed {
+    width: auto;
+    max-width: 36rem;
+    left: var(--spacing-4);
+    right: var(--spacing-4);
+    top: calc(0.625rem + env(safe-area-inset-top, 0px));
+  }
+}
