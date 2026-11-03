@@ -1,4 +1,8 @@
 import { getSupabaseConfig, TABLES } from '@/lib/supabase';
+import { NS } from '@/lib/escape-html';
+import { checkRateLimitAction, formatRetryAfter } from '@/lib/rate-limit';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
 
 export class PayPlaySessionPage {
   constructor(container, options = {}) {
@@ -81,48 +85,48 @@ export class PayPlaySessionPage {
     return `
       <div class="pay-play-session-detail">
         <div class="pay-play-session-detail__header">
-          <h2 class="pay-play-session-detail__name">${this.session.name}</h2>
+          <h2 class="pay-play-session-detail__name">${ESC(this.session.name)}</h2>
           <div class="pay-play-session-detail__meta">
-            <span class="pay-play-session-detail__duration">${this.session.duration_minutes ? `${this.session.duration_minutes} min` : ''}</span>
-            ${this.session.price_amount != null ? `<span class="pay-play-session-detail__price">₹${this.session.price_amount} / person</span>` : ''}
-            <span class="pay-play-session-detail__availability ${availabilityColor}">${availabilityLabel}</span>
+            <span class="pay-play-session-detail__duration">${this.session.duration_minutes ? `${ESC(this.session.duration_minutes)} min` : ''}</span>
+            ${this.session.price_amount != null ? `<span class="pay-play-session-detail__price">₹${ESC(this.session.price_amount)} / person</span>` : ''}
+            <span class="pay-play-session-detail__availability ${availabilityColor}">${ESC(availabilityLabel)}</span>
           </div>
         </div>
         ${this.session.start_time && this.session.end_time ? `
         <div class="pay-play-session-detail__time">
           <h3>Time Slot</h3>
-          <p>${this.session.start_time} - ${this.session.end_time}</p>
+          <p>${ESC(this.session.start_time)} - ${ESC(this.session.end_time)}</p>
         </div>
         ` : ''}
         ${this.session.description ? `
         <div class="pay-play-session-detail__description">
           <h3>Description</h3>
-          <p>${this.session.description}</p>
+          <p>${ESC(this.session.description)}</p>
         </div>
         ` : ''}
         ${this.session.instructions ? `
         <div class="pay-play-session-detail__instructions">
           <h3>Instructions</h3>
-          <p>${this.session.instructions}</p>
+          <p>${ESC(this.session.instructions)}</p>
         </div>
         ` : ''}
         ${this.session.rules ? `
         <div class="pay-play-session-detail__rules">
           <h3>Rules</h3>
-          <p>${this.session.rules}</p>
+          <p>${ESC(this.session.rules)}</p>
         </div>
         ` : ''}
         ${this.session.notices ? `
         <div class="pay-play-session-detail__notices">
           <h3>Important Notices</h3>
-          <p>${this.session.notices}</p>
+          <p>${ESC(this.session.notices)}</p>
         </div>
         ` : ''}
         ${this.session.includes && this.session.includes.length > 0 ? `
         <div class="pay-play-session-detail__includes">
           <h3>Includes</h3>
           <ul>
-            ${this.session.includes.map(item => `<li>${item}</li>`).join('')}
+            ${this.session.includes.map(item => `<li>${ESC(item)}</li>`).join('')}
           </ul>
         </div>
         ` : ''}
@@ -138,7 +142,7 @@ export class PayPlaySessionPage {
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           </div>
           <h3>Booking Request Submitted</h3>
-          <p>Your booking request for <strong>${this.session.name}</strong> has been sent to our admin team for verification.</p>
+          <p>Your booking request for <strong>${ESC(this.session.name)}</strong> has been sent to our admin team for verification.</p>
           <p class="booking-success__note">You will receive a confirmation call/email within 24 hours.</p>
           <a href="/pay-play" class="btn btn--primary" style="margin-top: var(--spacing-6);">Browse Other Sessions</a>
         </div>
@@ -152,24 +156,24 @@ export class PayPlaySessionPage {
           <div class="form-row">
             <div class="form-group">
               <label for="pp_full_name">Full Name <span class="required-indicator">*</span></label>
-              <input type="text" id="pp_full_name" name="full_name" value="${this.formData.full_name}" required />
+              <input type="text" id="pp_full_name" name="full_name" value="${ESC(this.formData.full_name)}" required />
               <p class="form-group__error" id="pp_full_name-error">This field is required</p>
             </div>
             <div class="form-group">
               <label for="pp_phone">Phone <span class="required-indicator">*</span></label>
-              <input type="tel" id="pp_phone" name="phone" value="${this.formData.phone}" required />
+              <input type="tel" id="pp_phone" name="phone" value="${ESC(this.formData.phone)}" required />
               <p class="form-group__error" id="pp_phone-error">This field is required</p>
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label for="pp_email">Email <span class="required-indicator">*</span></label>
-              <input type="email" id="pp_email" name="email" value="${this.formData.email}" required />
+              <input type="email" id="pp_email" name="email" value="${ESC(this.formData.email)}" required />
               <p class="form-group__error" id="pp_email-error">This field is required</p>
             </div>
             <div class="form-group">
               <label for="pp_city">City <span class="required-indicator">*</span></label>
-              <input type="text" id="pp_city" name="city" value="${this.formData.city}" required />
+              <input type="text" id="pp_city" name="city" value="${ESC(this.formData.city)}" required />
               <p class="form-group__error" id="pp_city-error">This field is required</p>
             </div>
           </div>
@@ -188,7 +192,7 @@ export class PayPlaySessionPage {
           <div class="form-row">
             <div class="form-group">
               <label for="pp_preferred_date">Preferred Date <span class="required-indicator">*</span></label>
-              <input type="date" id="pp_preferred_date" name="preferred_date" value="${this.formData.preferred_date}" required min="${new Date().toISOString().split('T')[0]}" />
+              <input type="date" id="pp_preferred_date" name="preferred_date" value="${ESC(this.formData.preferred_date)}" required min="${new Date().toISOString().split('T')[0]}" />
               <p class="form-group__error" id="pp_preferred_date-error">Please select a date</p>
             </div>
             <div class="form-group">
@@ -211,11 +215,11 @@ export class PayPlaySessionPage {
           <h3 class="booking-form__section-title">Additional Information</h3>
           <div class="form-group">
             <label for="pp_message">Message (Optional)</label>
-            <textarea id="pp_message" name="message" rows="3" placeholder="Any special requests, group booking details, or questions...">${this.formData.message}</textarea>
+            <textarea id="pp_message" name="message" rows="3" placeholder="Any special requests, group booking details, or questions...">${ESC(this.formData.message)}</textarea>
           </div>
         </div>
 
-        ${this.error ? `<div class="booking-form__error">${this.error}</div>` : ''}
+        ${this.error ? `<div class="booking-form__error">${ESC(this.error)}</div>` : ''}
 
         <div class="booking-form__actions">
           <a href="/pay-play" class="btn btn--secondary">Back to Sessions</a>
@@ -236,15 +240,15 @@ export class PayPlaySessionPage {
             <span>Back to Sessions</span>
           </a>
           <div class="pay-play-session-page__badge">PAY & PLAY</div>
-          <h1 class="pay-play-session-page__title">${this.session?.name || 'Loading...'}</h1>
+          <h1 class="pay-play-session-page__title">${this.session?.name ? ESC(this.session.name) : 'Loading...'}</h1>
         </div>
 
         <div class="pay-play-session-page__content">
           <div class="pay-play-session-page__sidebar">
             ${this.getSessionDetailsHtml()}
             <div class="pay-play-session-page__price-card">
-              <div class="pay-play-session-page__price-amount">₹${this.session?.price_amount ?? '-'}</div>
-              <div class="pay-play-session-page__price-label">per person${this.session?.duration_minutes ? ` / ${this.session.duration_minutes} min` : ''}</div>
+              <div class="pay-play-session-page__price-amount">₹${this.session?.price_amount != null ? ESC(this.session.price_amount) : '-'}</div>
+              <div class="pay-play-session-page__price-label">per person${this.session?.duration_minutes ? ` / ${ESC(this.session.duration_minutes)} min` : ''}</div>
             </div>
           </div>
 
@@ -334,6 +338,15 @@ export class PayPlaySessionPage {
       return;
     }
 
+    // Client-side rate limit
+    const rl = checkRateLimitAction('booking');
+    if (!rl.allowed) {
+      this.error = `Too many booking attempts. Please wait ${formatRetryAfter(rl.retryAfterMs)} and try again.`;
+      this.render();
+      this.bindEvents();
+      return;
+    }
+
     this.submitting = true;
     this.error = '';
     this.render();
@@ -353,8 +366,6 @@ export class PayPlaySessionPage {
         preferred_date: this.formData.preferred_date,
         preferred_time: this.formData.preferred_time,
         message: this.formData.message,
-        amount: this.session.price_amount,
-        booking_status: 'pending',
       };
 
       const response = await fetch(`${config.url}/rest/v1/${TABLES.PAY_PLAY_BOOKINGS}`, {
