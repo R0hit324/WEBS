@@ -31,6 +31,7 @@ export class Navbar {
     this.bindElements();
     this.bindEvents();
     this.setActiveLink(this.options.currentPath);
+    this.syncFixedWidths();
   }
 
   render() {
@@ -95,6 +96,33 @@ export class Navbar {
     document.addEventListener('keydown', this.handleKeydown);
     document.addEventListener('click', this.handleDocumentClick);
     window.addEventListener('resize', this.handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', this.handleResize);
+    }
+  }
+
+  // On mobile (<=768px) the floating pill and its dropdown are position:fixed
+  // with left/right insets, so their width resolves against the *visual*
+  // viewport. When the visual viewport is ever wider than the layout viewport
+  // (zoom/DPI edge cases on real devices), the pill stretches past the screen
+  // edge and widens the document — the recorded header clipping plus a
+  // horizontal scrollbar. No CSS unit can pin a fixed element's width to the
+  // layout viewport, so it is pinned here to documentElement.clientWidth and
+  // cleared above 768px. In the normal case this equals exactly what
+  // width:auto resolves to, so geometry and design are unchanged.
+  syncFixedWidths() {
+    if (!this.navbarEl || !this.navEl) return;
+    if (window.innerWidth > 768) {
+      this.navbarEl.style.width = '';
+      this.navEl.style.width = '';
+      return;
+    }
+    const clientWidth = document.documentElement.clientWidth;
+    for (const el of [this.navbarEl, this.navEl]) {
+      const cs = getComputedStyle(el);
+      const inset = (parseFloat(cs.left) || 0) + (parseFloat(cs.right) || 0);
+      el.style.width = Math.max(0, clientWidth - inset) + 'px';
+    }
   }
 
   handleScroll() {
@@ -139,6 +167,7 @@ export class Navbar {
   }
 
   handleResize() {
+    this.syncFixedWidths();
     if (window.innerWidth > 768 && this.isMobileOpen) {
       this.closeMobileMenu();
     }
@@ -178,6 +207,9 @@ export class Navbar {
     document.removeEventListener('keydown', this.handleKeydown);
     document.removeEventListener('click', this.handleDocumentClick);
     window.removeEventListener('resize', this.handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this.handleResize);
+    }
     this.container.innerHTML = '';
   }
 }

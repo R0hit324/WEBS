@@ -84,6 +84,14 @@
   margin: 0 auto;
 }
 
+/* Keep 1fr tracks at their track size: the mobile typography pass's
+   `overflow-wrap: break-word` does not shrink min-content, so long
+   unbreakable description words would otherwise stretch the card
+   past the viewport. */
+.training-page__ranges-grid > .training-range-card {
+  min-width: 0;
+}
+
 .training-range-card {
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border-subtle);
@@ -180,6 +188,11 @@
   flex-direction: column;
   gap: var(--spacing-2);
   margin-bottom: var(--spacing-6);
+}
+
+/* Ranges with no features list should not reserve its bottom margin. */
+.training-range-card__features:not(:has(li)) {
+  display: none;
 }
 
 .training-range-card__feature {

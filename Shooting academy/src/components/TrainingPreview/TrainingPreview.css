@@ -14,6 +14,19 @@
   gap: var(--spacing-6);
 }
 
+/* The global mobile typography pass sets `overflow-wrap: break-word` on <p>,
+   which (unlike `anywhere`) does not shrink min-content sizing, so a long
+   unbreakable description string stretches the 1fr track past the viewport.
+   min-width: 0 lets the track stay at its 1fr size and lets break-word wrap. */
+.training-preview__cards > .training-card {
+  min-width: 0;
+}
+
+/* Ranges with no features list should not reserve its bottom margin. */
+.training-card__features:not(:has(li)) {
+  display: none;
+}
+
 .training-card {
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border-subtle);
