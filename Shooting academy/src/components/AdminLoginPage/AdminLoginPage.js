@@ -1,4 +1,6 @@
-﻿import { adminLogin, adminLogout, getAdminSession } from '@/lib/admin-auth';
+﻿import { adminLogin, adminLogout, getAdminSession, getAdminRole, rememberAdminRole } from '@/lib/admin-auth';
+import { NS } from '@/lib/escape-html';
+import { checkRateLimitAction, formatRetryAfter, resetRateLimitAction } from '@/lib/rate-limit';
 
 const LOGIN_ICON = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>`;
 
@@ -14,17 +16,25 @@ export class AdminLoginPage {
   async init() {
     const existingSession = await getAdminSession();
     if (existingSession) {
-      // Verify the session is actually valid by checking admin role
-      // before redirecting to avoid infinite redirect loops
+      // Verify the session is actually valid (has an active admin role)
+      // before redirecting, to avoid infinite redirect loops
       try {
-        const { checkAdminRole } = await import('@/lib/admin-auth');
-        const hasValidRole = await checkAdminRole();
-        if (hasValidRole) {
+        const check = await getAdminRole();
+        if (check.status === 'allowed') {
+          rememberAdminRole(check.role);
           window.location.href = '/admin/';
           return;
         }
-        // Session exists but role check failed - show error instead of silent redirect
-        this.error = 'Access denied: Admin role not found. Please contact system administrator.';
+        if (check.status === 'unavailable') {
+          // Transient failure: show the form (retry) without clearing the
+          // session and WITHOUT redirecting, so no loop can form.
+          this.error = 'Authentication verification failed. Please try logging in again.';
+          this.render();
+          this.bindEvents();
+          return;
+        }
+        // Session exists but role check denied (no row / inactive): show error
+        this.error = 'Access denied: Admin role not found or inactive. Please contact system administrator.';
       } catch (err) {
         console.error('Admin role verification failed:', err);
         this.error = 'Authentication verification failed. Please try logging in again.';
@@ -52,7 +62,7 @@ export class AdminLoginPage {
             ${this.error ? `
               <div class="admin-login-page__error" role="alert">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                <span>${this.error}</span>
+                <span>${NS.escapeHtml(String(this.error ?? ''))}</span>
               </div>
             ` : ''}
 
@@ -129,12 +139,47 @@ export class AdminLoginPage {
       return;
     }
 
+    // Client-side rate limit for admin login (strict)
+    const rl = checkRateLimitAction('adminLogin');
+    if (!rl.allowed) {
+      this.error = `Too many login attempts. Please wait ${formatRetryAfter(rl.retryAfterMs)} and try again.`;
+      this.render();
+      this.bindEvents();
+      return;
+    }
+
     this.isLoading = true;
     this.render();
     this.bindEvents();
 
     try {
       await adminLogin(email, password);
+      const check = await getAdminRole();
+      if (check.status === 'unavailable') {
+        // Role could not be verified right now: revoke the freshly issued
+        // (and unverified) session rather than entering unverified. No data
+        // access occurs without it regardless (RLS), this is UI hardening.
+        await adminLogout();
+        this.isLoading = false;
+        this.error = 'Authentication verification failed. Please try logging in again.';
+        this.render();
+        this.bindEvents();
+        return;
+      }
+      if (check.status !== 'allowed') {
+        // Valid Supabase account but not an active admin/editor/viewer: revoke
+        // the session so the dashboard shell cannot open (data stays
+        // RLS-protected regardless, this is defense-in-depth for the UI surface).
+        await adminLogout();
+        this.isLoading = false;
+        this.error = 'Access denied: Admin role not found or inactive. Please contact system administrator.';
+        this.render();
+        this.bindEvents();
+        return;
+      }
+      rememberAdminRole(check.role);
+      // Successful login — reset rate limit for this session
+      resetRateLimitAction('adminLogin');
       window.location.href = '/admin/';
     } catch (err) {
       this.isLoading = false;

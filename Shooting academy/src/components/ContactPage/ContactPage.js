@@ -1,4 +1,10 @@
-﻿const DEFAULT_CONTACT = {
+﻿import { NS } from '@/lib/escape-html';
+import { checkRateLimitAction, formatRetryAfter } from '@/lib/rate-limit';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
+const DEFAULT_CONTACT = {
   address: 'Building Number C 74, Near Gst Office, Near Central GST Commissionerate, Kherado, Surya Nagar, Alwar-301001, Rajasthan',
   phone: '8282821519, 7734057123',
   whatsapp: '8282821519',
@@ -79,13 +85,14 @@ export class ContactPage {
   render() {
     const { contact } = this.options;
 
+    const digitsOnly = (v) => String(v == null ? '' : v).replace(/[^\d+]/g, '');
     const contactDetailsHtml = `
       <div class="contact-detail">
         <span class="contact-detail__icon" aria-hidden="true">${CONTACT_ICONS.address}</span>
         <div class="contact-detail__content">
           <span class="contact-detail__label">Address</span>
           <span class="contact-detail__value ${contact.address ? '' : 'contact-detail__value--empty'}">
-            ${contact.address || '[Academy Address Placeholder]'}
+            ${contact.address ? ESC(contact.address) : '[Academy Address Placeholder]'}
           </span>
         </div>
       </div>
@@ -96,8 +103,8 @@ export class ContactPage {
           <span class="contact-detail__value ${contact.phone ? '' : 'contact-detail__value--empty'}">
             ${contact.phone
               ? contact.phone.split(',').map(part => {
-                  const digits = part.replace(/[^\d+]/g, '');
-                  return `<a href="tel:${digits}" class="contact-detail__link">${part.trim()}</a>`;
+                  const digits = digitsOnly(part).replace(/[+\-() ]/g, '');
+                  return `<a href="tel:${digitsOnly(part)}" class="contact-detail__link">${ESC(part.trim())}</a>`;
                 }).join(', ')
               : '[Phone Placeholder]'}
           </span>
@@ -108,7 +115,7 @@ export class ContactPage {
         <div class="contact-detail__content">
           <span class="contact-detail__label">WhatsApp</span>
           <span class="contact-detail__value ${contact.whatsapp ? '' : 'contact-detail__value--empty'}">
-            ${contact.whatsapp ? `<a href="https://wa.me/${contact.whatsapp.replace(/\D/g, '')}" class="contact-detail__link" target="_blank" rel="noopener">${contact.whatsapp}</a>` : '[WhatsApp Placeholder]'}
+            ${contact.whatsapp ? `<a href="https://wa.me/${String(contact.whatsapp).replace(/\D/g, '')}" class="contact-detail__link" target="_blank" rel="noopener">${ESC(contact.whatsapp)}</a>` : '[WhatsApp Placeholder]'}
           </span>
         </div>
       </div>
@@ -117,7 +124,7 @@ export class ContactPage {
         <div class="contact-detail__content">
           <span class="contact-detail__label">Email</span>
           <span class="contact-detail__value ${contact.email ? '' : 'contact-detail__value--empty'}">
-            ${contact.email ? `<a href="mailto:${contact.email}" class="contact-detail__link">${contact.email}</a>` : '[Email Placeholder]'}
+            ${contact.email ? `<a href="mailto:${ESC(contact.email)}" class="contact-detail__link">${ESC(contact.email)}</a>` : '[Email Placeholder]'}
           </span>
         </div>
       </div>
@@ -126,14 +133,15 @@ export class ContactPage {
           <span class="contact-detail__icon" aria-hidden="true">${CONTACT_ICONS.hours}</span>
           <div class="contact-detail__content">
             <span class="contact-detail__label">Opening Hours</span>
-            <span class="contact-detail__value">${contact.hours}</span>
+            <span class="contact-detail__value">${ESC(contact.hours)}</span>
           </div>
         </div>
       ` : ''}
     `;
 
-    const mapHtml = contact.mapEmbed
-      ? `<iframe src="${contact.mapEmbed}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Academy Location"></iframe>`
+    const mapEmbedSrc = SAFEURL(contact.mapEmbed);
+    const mapHtml = mapEmbedSrc
+      ? `<iframe src="${mapEmbedSrc}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Academy Location"></iframe>`
       : `
         <div class="contact-page__map-placeholder" role="img" aria-label="Academy location map placeholder">
           <span class="contact-page__map-icon" aria-hidden="true">${MAP_PLACEHOLDER_ICON}</span>
@@ -303,6 +311,13 @@ export class ContactPage {
       return;
     }
 
+    // Client-side rate limit (matches Edge Function limit)
+    const rl = checkRateLimitAction('contact');
+    if (!rl.allowed) {
+      this.showError(form, `Too many messages sent. Please wait ${formatRetryAfter(rl.retryAfterMs)} and try again.`);
+      return;
+    }
+
     this.setLoadingState(submitBtn, true);
 
     const formData = new FormData(form);
@@ -320,15 +335,29 @@ export class ContactPage {
   }
 
   async submitForm(data) {
-    const response = await fetch('/api/contact', {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !anonKey) {
+      throw new Error('Message service is not available right now. Please contact us directly at alwarshooting@gmail.com.');
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/contact-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`
+      },
       body: JSON.stringify(data)
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to submit form');
+      let message = 'Failed to send message. Please try again, or contact us directly at alwarshooting@gmail.com.';
+      if (response.status === 429) {
+        message = 'Too many messages in a short time. Please wait a minute and try again.';
+      }
+      throw new Error(message);
     }
 
     return response.json();

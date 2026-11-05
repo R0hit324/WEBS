@@ -21,6 +21,11 @@
   }
 ];
 
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
 const PLACEHOLDER_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
 export class AboutPreview {
@@ -51,13 +56,13 @@ export class AboutPreview {
     `).join('');
 
     const visualHtml = `
-      ${this.options.imageSrc
-        ? `<img src="${this.options.imageSrc}" alt="${this.options.imageAlt}" class="about-preview__image" loading="lazy"
-             onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">`
+      ${this.options.imageSrc && SAFEURL(this.options.imageSrc)
+        ? `<img src="${SAFEURL(this.options.imageSrc)}" alt="${ESC(this.options.imageAlt || '')}" class="about-preview__image" loading="lazy"
+              >`
         : ''
       }
       <div class="about-preview__placeholder" role="img" aria-label="Academy facility placeholder"
-           style="${this.options.imageSrc ? 'display:none' : ''}">
+           style="${this.options.imageSrc && SAFEURL(this.options.imageSrc) ? 'display:none' : ''}">
         <span class="about-preview__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
         <span class="about-preview__placeholder-text">Academy Facility Image</span>
       </div>

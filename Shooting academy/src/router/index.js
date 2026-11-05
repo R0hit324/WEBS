@@ -39,7 +39,18 @@ export class Router {
   handleRouteChange() {
     const path = window.location.pathname;
     this.currentRoute = path;
-    const handler = this.handlers.get(path) || this.handlers.get('*');
+    let handler = this.handlers.get(path);
+    if (!handler) {
+      // Support registered prefix routes such as '/pay-play/' (dynamic
+      // detail pages /pay-play/:id). Exact routes still win.
+      for (const [key, fn] of this.handlers) {
+        if (key !== '*' && key !== '/' && key.endsWith('/') && path.startsWith(key)) {
+          handler = fn;
+          break;
+        }
+      }
+    }
+    handler = handler || this.handlers.get('*');
     if (handler) {
       handler(path);
     }

@@ -1,4 +1,6 @@
-﻿const MOTIVATIONAL_WORDS = [
+﻿import { NS } from '@/lib/escape-html';
+
+const MOTIVATIONAL_WORDS = [
   { word: 'Focus', number: '01' },
   { word: 'Discipline', number: '02' },
   { word: 'Precision', number: '03' },
@@ -22,8 +24,8 @@ export class Motivational {
   render() {
     const itemsHtml = this.options.words.map((item, index) => `
       <div class="motivational__item">
-        <span class="motivational__number">${item.number}</span>
-        <span class="motivational__word">${item.word}</span>
+        <span class="motivational__number">${NS.escapeHtml(String(item.number == null ? '' : item.number))}</span>
+        <span class="motivational__word">${NS.escapeHtml(String(item.word == null ? '' : item.word))}</span>
         ${index < this.options.words.length - 1 ? '<span class="motivational__divider" aria-hidden="true"></span>' : ''}
       </div>
     `).join('');

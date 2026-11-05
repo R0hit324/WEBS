@@ -1,4 +1,9 @@
-﻿const MEDAL_ICONS = {
+﻿import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
+const MEDAL_ICONS = {
   gold: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/><path d="M12 5v3l2 1"/></svg>`,
   silver: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/><path d="M12 5v3l2 1"/></svg>`,
   bronze: `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/><path d="M12 5v3l2 1"/></svg>`,
@@ -94,10 +99,10 @@ export class AchievementsPreview {
           <span class="achievement-card__medal" aria-hidden="true">${medalIcon}</span>
           ${cardTitle ? `<h3 class="achievement-card__event">${cardTitle}</h3>` : ''}
           <div class="achievement-card__details">
-            ${a.athlete ? `<span class="achievement-card__athlete">${a.athlete}</span>` : ''}
-            ${metaItems.map(item => `<span class="${item === a.year ? 'achievement-card__year' : 'achievement-card__meta'}">${item}</span>`).join('')}
+            ${a.athlete ? `<span class="achievement-card__athlete">${ESC(a.athlete)}</span>` : ''}
+            ${metaItems.map(item => `<span class="${item === String(a.year || '') ? 'achievement-card__year' : 'achievement-card__meta'}">${ESC(item)}</span>`).join('')}
           </div>
-          ${a.description ? `<p class="achievement-card__description">${a.description}</p>` : ''}
+          ${a.description ? `<p class="achievement-card__description">${ESC(a.description)}</p>` : ''}
         </article>
       `;
     }).join('');

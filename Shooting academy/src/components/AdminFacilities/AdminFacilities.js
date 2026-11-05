@@ -1,5 +1,6 @@
 ﻿import { BaseAdminModule } from '@/lib/admin-module';
-import { uploadImage, deleteImage } from '@/lib/admin-api';
+import { NS } from '@/lib/escape-html';
+import { uploadImage, deleteImage, prepareImageUpload } from '@/lib/admin-api';
 import { STORAGE_BUCKETS } from '@/lib/supabase';
 
 export class AdminFacilitiesModule extends BaseAdminModule {
@@ -36,6 +37,8 @@ export class AdminFacilitiesModule extends BaseAdminModule {
       sortable: true,
       reorderable: true,
     });
+
+    this.auditTableName = 'facilities';
   }
 
   async init() { await this.loadData(); this.render(); this.bindEvents(); }
@@ -234,14 +237,14 @@ bindEvents() {
   getListHtml() {
     if (this.isMobile()) {
       return `
-      <div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search facilities..." value="${this.search}" aria-label="Search" />
+      <div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search facilities..." value="${NS.escapeHtml(this.search)}" aria-label="Search" />
         <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
         <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="indoor" ${this.activeFilters.category === 'indoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${this.activeFilters.category === 'outdoor' ? 'selected' : ''}>Outdoor</option><option value="equipment" ${this.activeFilters.category === 'equipment' ? 'selected' : ''}>Equipment</option><option value="amenity" ${this.activeFilters.category === 'amenity' ? 'selected' : ''}>Amenity</option></select>
         <button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Facility</button>
       </div>${this.getMobileCardHtml()}`;
     }
     return `
-      <div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search facilities..." value="${this.search}" aria-label="Search" />
+      <div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search facilities..." value="${NS.escapeHtml(this.search)}" aria-label="Search" />
         <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
         <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="indoor" ${this.activeFilters.category === 'indoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${this.activeFilters.category === 'outdoor' ? 'selected' : ''}>Outdoor</option><option value="equipment" ${this.activeFilters.category === 'equipment' ? 'selected' : ''}>Equipment</option><option value="amenity" ${this.activeFilters.category === 'amenity' ? 'selected' : ''}>Amenity</option></select>
         <button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Facility</button>
@@ -260,13 +263,13 @@ bindEvents() {
     const cards = this.items.map(item => `
       <div class="admin-gallery-card" data-id="${item.id}" data-order="${item.display_order}">
         <div class="admin-gallery-card__thumb">
-          <img src="${item.image_url || ''}" alt="${item.name}" loading="lazy">
+          <img src="${NS.safeUrl(item.image_url || '')}" alt="${NS.escapeHtml(item.name || '')}" loading="lazy">
           ${item.is_featured ? '<span class="admin-gallery-card__badge">Featured</span>' : ''}
         </div>
         <div class="admin-gallery-card__body">
           <div class="admin-gallery-card__info">
-            <h4 class="admin-gallery-card__title">${item.name || 'Untitled'}</h4>
-            <span class="admin-gallery-card__category">${item.category || '-'}</span>
+<h4 class="admin-gallery-card__title">${item.name ? NS.escapeHtml(item.name) : 'Untitled'}</h4>
+<span class="admin-gallery-card__category">${item.category ? NS.escapeHtml(item.category) : '-'}</span>
           </div>
           <div class="admin-gallery-card__toggles">
             <label class="admin-gallery-card__toggle">
@@ -311,8 +314,8 @@ bindEvents() {
     const rows = this.items.length > 0
       ? this.items.map(item => `
           <tr data-id="${item.id}" data-order="${item.display_order}">
-            <td><strong>${item.name}</strong></td>
-            <td>${item.category || '-'}</td>
+<td><strong>${item.name ? NS.escapeHtml(item.name) : ''}</strong></td>
+<td>${item.category ? NS.escapeHtml(item.category) : '-'}</td>
             <td>
               <label class="admin-toggle">
                 <input type="checkbox" class="admin-toggle__input"
@@ -415,7 +418,7 @@ bindEvents() {
       type="hidden"
       name="image_url"
       id="image_url"
-      value="${item?.image_url || ''}"
+      value="${NS.escapeHtml(item?.image_url || '')}"
     >
 
     <input
@@ -440,7 +443,7 @@ bindEvents() {
 
     <img
       id="facility-image-preview"
-      src="${item?.image_url || ''}"
+      src="${NS.safeUrl(item?.image_url || '')}"
       alt="Facility image preview"
       style="display:${item?.image_url ? 'block' : 'none'};max-width:220px;max-height:160px;object-fit:contain;margin-top:12px;"
     >
@@ -462,8 +465,8 @@ bindEvents() {
                           ${field.label}
                         </label>`
                       : field.type === 'textarea'
-                        ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${item?.[field.key] || ''}</textarea>`
-                        : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`
+                        ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${NS.escapeHtml(item?.[field.key] || '')}</textarea>`
+                        : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${NS.escapeHtml(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`
                 }
               </div>
             `).join('')}
@@ -549,12 +552,8 @@ bindEvents() {
 
 
   async uploadFacilityImage(file) {
-    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const safeExtension = /^[a-z0-9]+$/.test(extension) ? extension : 'jpg';
-
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExtension}`;
-
-    return await uploadImage(STORAGE_BUCKETS.FACILITIES, file, path);
+    const { blob, path } = await prepareImageUpload(file, '');
+    return await uploadImage(STORAGE_BUCKETS.FACILITIES, blob, path);
   }
 
   async handleCreate(data) {

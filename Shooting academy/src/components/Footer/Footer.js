@@ -1,4 +1,6 @@
-﻿const FOOTER_NAV = {
+﻿import { NS } from '@/lib/escape-html';
+
+const FOOTER_NAV = {
   quickLinks: [
     { label: 'Home', href: '/' },
     { label: 'About', href: '/about' },
@@ -121,23 +123,23 @@ export class Footer {
       .filter(([, item]) => item.value)
       .map(([key, item]) => {
         let valueHtml;
+        const escVal = (v) => NS.escapeHtml(String(v == null ? '' : v));
         if (key === 'phone') {
-          const telNumber = item.value.split(/[,&]/)[0].replace(/[^\d+]/g, '');
           valueHtml = item.value.split(',').map(part => {
             const digits = part.replace(/[^\d+]/g, '');
-            return `<a href="tel:${digits}" class="footer__contact-link">${part.trim()}</a>`;
+            return `<a href="tel:${digits}" class="footer__contact-link">${escVal(part.trim())}</a>`;
           }).join(', ');
         } else if (key === 'email') {
-          valueHtml = `<a href="mailto:${item.value.trim()}" class="footer__contact-link">${item.value}</a>`;
+          valueHtml = `<a href="mailto:${escVal(item.value.trim())}" class="footer__contact-link">${escVal(item.value)}</a>`;
         } else if (key === 'whatsapp') {
-          valueHtml = `<a href="https://wa.me/${String(item.value).replace(/\D/g, '')}" class="footer__contact-link" target="_blank" rel="noopener">${item.value}</a>`;
+          valueHtml = `<a href="https://wa.me/${String(item.value).replace(/\D/g, '')}" class="footer__contact-link" target="_blank" rel="noopener">${escVal(item.value)}</a>`;
         } else {
-          valueHtml = item.value;
+          valueHtml = escVal(item.value);
         }
         return `
           <div class="footer__contact-item">
             <span class="footer__contact-icon" aria-hidden="true">${CONTACT_ICONS[item.icon] || ''}</span>
-            <span class="footer__contact-label">${item.label}</span>
+            <span class="footer__contact-label">${escVal(item.label)}</span>
             <span class="footer__contact-value">${valueHtml}</span>
           </div>
         `;

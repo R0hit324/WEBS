@@ -81,7 +81,7 @@ export class Hero {
               <line x1="230" y1="668" x2="770" y2="668" stroke="rgba(226,232,240,0.05)" stroke-width="2"/>
             </svg>
 
-            <img class="pc-roomphoto" src="/assets/precision-chamber-room.png" alt="" loading="eager" decoding="async" onerror="this.remove()"/>
+            <img class="pc-roomphoto" src="/assets/precision-chamber-room.webp" alt="" loading="eager" decoding="async"/>
 
             <div class="pc-ambient"></div>
             <div class="pc-targetlight"></div>

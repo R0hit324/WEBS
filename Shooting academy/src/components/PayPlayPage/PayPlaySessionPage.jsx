@@ -134,7 +134,52 @@ export class PayPlaySessionPage {
     `;
   }
 
+  // A session is bookable only when it is publicly visible and marked
+  // available. This mirrors the server-side rule enforced by
+  // enforce_guest_booking_state() (see migration
+  // 20261103000000_guest_booking_scope.sql): hidden or unavailable
+  // sessions must not be bookable. The client check is UX; the
+  // database trigger remains the real boundary.
+  isBookable() {
+    if (!this.session) return false;
+    if (this.session.is_visible === false) return false;
+    const status = this.session.availability_status == null ? 'available' : this.session.availability_status;
+    return status === 'available';
+  }
+
   getFormHtml() {
+    if (!this.isBookable()) {
+      if (this.submitted) {
+        // Keep the success screen for a submitted request even if an
+        // admin has since marked the session unavailable.
+        const sessionName = ESC(this.session && this.session.name ? this.session.name : 'the selected session');
+        return `
+        <div class="booking-success">
+          <div class="booking-success__icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3>Booking Request Submitted</h3>
+          <p>Your booking request for <strong>${sessionName}</strong> has been sent to our admin team for verification.</p>
+          <p class="booking-success__note">You will receive a confirmation call/email within 24 hours.</p>
+          <a href="/pay-play" class="btn btn--primary" style="margin-top: var(--spacing-6);">Browse Other Sessions</a>
+        </div>
+      `;
+      }
+      if (!this.session) {
+        return `
+          <div class="pay-play-session-detail">
+            <p>Session not available for booking.</p>
+            <a href="/pay-play" class="btn btn--secondary" style="margin-top: var(--spacing-4);">Back to Sessions</a>
+          </div>
+        `;
+      }
+      return `
+          <div class="pay-play-session-detail">
+            <p>This session is currently not available for booking. Please check back soon.</p>
+            <a href="/pay-play" class="btn btn--secondary" style="margin-top: var(--spacing-4);">Back to Sessions</a>
+          </div>
+        `;
+    }
     if (this.submitted) {
       return `
         <div class="booking-success">
@@ -374,7 +419,7 @@ export class PayPlaySessionPage {
           'Content-Type': 'application/json',
           'apikey': config.anonKey,
           'Authorization': `Bearer ${config.anonKey}`,
-          'Prefer': 'return=representation',
+          'Prefer': 'return=minimal',
         },
         body: JSON.stringify(bookingData),
       });

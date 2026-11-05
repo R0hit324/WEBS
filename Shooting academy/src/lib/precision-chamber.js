@@ -48,14 +48,17 @@ export function activatePrecisionChamber() {
 
   const mobile = window.innerWidth <= 768;
   const lights = mobile
-    ? { beamHint: 0.08, beamPeak: 0.5, beamHold: 0.4, pool: 0.8, poolHold: 0.85, target: 0.4, ambientMid: 0.62, ambientLate: 0.55, ambientHold: 0.52, copy: 0.8 }
-    : { beamHint: 0.12, beamPeak: 1, beamHold: 0.92, pool: 0.85, poolHold: 1, target: 0.55, ambientMid: 0.62, ambientLate: 0.34, ambientHold: 0.3, copy: 0.7 };
+    ? { beamHint: 0.12, beamPeak: 0.62, beamHold: 0.52, pool: 0.85, poolHold: 0.9, target: 0.5, ambientEarly: 0.58, ambientMid: 0.5, ambientLate: 0.46, ambientHold: 0.42 }
+    : { beamHint: 0.12, beamPeak: 1, beamHold: 0.92, pool: 0.85, poolHold: 1, target: 0.55, ambientEarly: 0.88, ambientMid: 0.62, ambientLate: 0.34, ambientHold: 0.3, copy: 0.7 };
 
-  gsap.set(ambient, { opacity: 0.95 });
+  gsap.set(ambient, { opacity: mobile ? 0.85 : 0.95 });
   gsap.set(beam, { opacity: 0, scaleY: 0.94 });
   gsap.set(pool, { opacity: 0 });
   gsap.set(targetlight, { opacity: 0 });
-  gsap.set(copy, { autoAlpha: 1 });
+  // Mobile: hero copy stays hidden for the whole lighting sequence and is
+  // revealed only after it completes (stage 3), rising gently into place
+  // over the room. Desktop keeps copy visible.
+  gsap.set(copy, mobile ? { autoAlpha: 0, y: 12 } : { autoAlpha: 1 });
 
   const timeline = gsap.timeline({
     scrollTrigger: {
@@ -76,7 +79,7 @@ export function activatePrecisionChamber() {
 
   timeline
     .to(beam, { opacity: lights.beamHint, duration: 0.18, ease: 'power1.out' }, 0)
-    .to(ambient, { opacity: 0.88, duration: 0.18 }, 0)
+    .to(ambient, { opacity: lights.ambientEarly, duration: 0.18 }, 0)
 
     .to(ambient, { opacity: lights.ambientMid, duration: 0.25, ease: 'power1.out' }, 0.2)
     .to(beam, { opacity: lights.beamPeak, duration: 0.25, ease: 'power1.out' }, 0.2)
@@ -85,11 +88,18 @@ export function activatePrecisionChamber() {
     .to(targetlight, { opacity: lights.target, duration: 0.3, ease: 'power1.out' }, 0.45)
     .to(pool, { opacity: lights.pool, duration: 0.3, ease: 'power1.out' }, 0.48)
     .to(ambient, { opacity: lights.ambientLate, duration: 0.3, ease: 'power1.out' }, 0.45)
-    .to(copy, { autoAlpha: lights.copy, duration: 0.3 }, 0.45)
 
     .to(beam, { opacity: lights.beamHold, duration: 0.25, ease: 'power1.inOut' }, 0.75)
     .to(pool, { opacity: lights.poolHold, duration: 0.25, ease: 'power1.inOut' }, 0.75)
     .to(ambient, { opacity: lights.ambientHold, duration: 0.25 }, 0.75);
+
+  if (mobile) {
+    // Stage 3 on mobile: reveal hero copy, overlaying the room's floor band,
+    // only after the lighting completes; hold steady until the pin releases.
+    timeline.to(copy, { autoAlpha: 1, y: 0, duration: 0.2, ease: 'power2.out' }, 0.8);
+  } else {
+    timeline.to(copy, { autoAlpha: lights.copy, duration: 0.3 }, 0.45);
+  }
 
   active = { hero, timeline, ambient, beam, pool, targetlight, copy, navbar };
 }

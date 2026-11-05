@@ -139,3 +139,54 @@
     justify-content: center;
   }
 }
+
+@media (max-width: 480px) {
+  .about-preview {
+    padding: var(--spacing-10) 0;
+  }
+  .about-preview__grid {
+    gap: var(--spacing-6);
+  }
+  .about-preview__features {
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-6);
+  }
+  .about-preview__feature {
+    padding: var(--spacing-4);
+  }
+  .about-preview__feature-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .about-preview__feature-title {
+    font-size: var(--font-size-base);
+  }
+  .about-preview__feature-desc {
+    font-size: var(--font-size-xs);
+  }
+  .about-preview__visual {
+    aspect-ratio: 16 / 9;
+  }
+  .about-preview__placeholder-icon {
+    width: 44px;
+    height: 44px;
+  }
+  .about-preview__placeholder-text {
+    font-size: var(--font-size-sm);
+  }
+  .about-preview__placeholder {
+    padding: var(--spacing-5);
+  }
+}
+
+@media (max-width: 360px) {
+  .about-preview {
+    padding: var(--spacing-8) 0;
+  }
+  .about-preview__feature {
+    padding: var(--spacing-3);
+  }
+  .about-preview__feature-title {
+    font-size: var(--font-size-sm);
+  }
+}

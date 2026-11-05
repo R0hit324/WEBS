@@ -1,4 +1,7 @@
 import { BaseAdminModule } from '@/lib/admin-module';
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
 
 const HOMEPAGE_SECTIONS = [
   { key: 'hero', label: 'Hero Section', order: 1 },
@@ -68,7 +71,7 @@ export class AdminHomepageModule extends BaseAdminModule {
           const rows = this.items.length > 0 ? this.items.map(item => `
             <tr data-id="${item.id}" data-order="${item.display_order}">
               <td><strong>${this.getSectionLabel(item.section_key)}</strong></td>
-              <td>${item.title || '-'}</td>
+              <td>${item.title ? ESC(item.title) : '-'}</td>
               <td>
                 <label class="admin-toggle">
                   <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
@@ -125,7 +128,7 @@ export class AdminHomepageModule extends BaseAdminModule {
             type="search"
             class="admin-search"
             placeholder="Search sections..."
-            value="${this.search}"
+            value="${ESC(this.search)}"
             aria-label="Search"
           />
         </div>
@@ -164,7 +167,7 @@ export class AdminHomepageModule extends BaseAdminModule {
               <div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};">
                 <label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>
                 ${field.type === 'hidden' ? `
-                  <input type="hidden" name="${field.key}" value="${item?.[field.key] || ''}">
+                  <input type="hidden" name="${field.key}" value="${ESC(item?.[field.key] || '')}">
                 ` : field.type === 'select' ? `
                   <select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}>
                     <option value="">Select section</option>
@@ -179,9 +182,9 @@ export class AdminHomepageModule extends BaseAdminModule {
                     ${field.label}
                   </label>
                 ` : field.type === 'textarea' ? `
-                  <textarea name="${field.key}" id="${field.key}" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${item?.[field.key] || ''}</textarea>
+                  <textarea name="${field.key}" id="${field.key}" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${ESC(item?.[field.key] || '')}</textarea>
                 ` : `
-                  <input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''} ${field.readonly ? 'readonly' : ''}>
+                  <input type="${field.type}" name="${field.key}" id="${field.key}" value="${ESC(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''} ${field.readonly ? 'readonly' : ''}>
                 `}
                 ${field.required ? '<span class="admin-form__required">Required</span>' : ''}
               </div>

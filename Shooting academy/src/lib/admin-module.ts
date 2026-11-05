@@ -1,4 +1,8 @@
-﻿export interface AdminModuleConfig {
+﻿import { NS } from '@/lib/escape-html';
+import { getRememberedAdminRole } from '@/lib/admin-auth';
+import { logAdminAction, createAuditHelpers, type AdminAction } from '@/lib/admin-audit';
+
+export interface AdminModuleConfig {
   container: HTMLElement;
   title: string;
   apiEndpoint: string;
@@ -62,6 +66,33 @@ export abstract class BaseAdminModule implements AdminModule {
   protected onDelete?: (id: string) => Promise<void>;
   private boundEvents: Set<string> = new Set();
   private boundFormEvents: Set<string> = new Set();
+
+  /** Table name for audit logging (e.g., 'gallery_images'). Set in subclass constructor. */
+  protected auditTableName: string = '';
+
+  /** Audit helpers bound to this module's table name. */
+  protected get audit() {
+    return this.auditTableName ? createAuditHelpers(this.auditTableName) : null;
+  }
+
+  /** Internal: log an admin action (fire-and-forget, never throws). */
+  protected async logAudit(
+    action: AdminAction,
+    recordId: string | null,
+    oldData: Record<string, unknown> | null,
+    newData: Record<string, unknown> | null,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
+    if (!this.auditTableName) return;
+    await logAdminAction({
+      action,
+      tableName: this.auditTableName,
+      recordId,
+      oldData,
+      newData,
+      metadata,
+    });
+  }
 
   constructor(config: AdminModuleConfig) {
     this.container = config.container;
@@ -134,6 +165,30 @@ unbindFormEvents() {
   abstract render(): void;
   abstract bindEvents(): void;
 
+  // UX-level write gate for read-only roles (viewer, or role unknown because
+  // the role check was unavailable when the route was entered). The database
+  // RLS policy `can_admin_write()` is the actual security enforcement.
+  protected canWrite(): boolean {
+    const role = getRememberedAdminRole();
+    return role === 'admin' || role === 'editor';
+  }
+
+  protected denyWrite(action: string): void {
+    alert(`Read-only access: your role does not permit ${action}.`);
+  }
+
+  // Set by modules whose detail dialog doubles as a read-only viewer
+  // (Registrations, Pay & Play bookings): viewers may open it to READ.
+  protected viewReadOnlyAllowed = false;
+
+  protected markFormReadOnly(): void {
+    const formEl = this.container.querySelector('.admin-form-container');
+    if (formEl) formEl.classList.add('admin-form--view');
+    this.container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('.admin-form input, .admin-form select, .admin-form textarea').forEach(el => {
+      el.disabled = true;
+    });
+  }
+
   async loadData() {
     this.isLoading = true;
     this.error = null;
@@ -161,12 +216,18 @@ unbindFormEvents() {
   }
 
   async handleCreate(data: any) {
+    if (!this.canWrite()) return this.denyWrite('creating records');
     try {
+      let result: any;
       if (this.onCreate) {
-        await this.onCreate(data);
+        result = await this.onCreate(data);
       } else {
         const { adminCreate } = await import('@/lib/admin-api');
-        await adminCreate(this.apiEndpoint, data);
+        result = await adminCreate(this.apiEndpoint, data);
+      }
+      // Audit log
+      if (result?.id) {
+        await this.logAudit('create', result.id, null, result);
       }
       this.showForm = false;
       this.editingId = null;
@@ -177,13 +238,25 @@ unbindFormEvents() {
   }
 
   async handleUpdate(id: string, data: any) {
+    if (!this.canWrite()) return this.denyWrite('updating records');
+    // Fetch old data for audit
+    let oldData: Record<string, unknown> | null = null;
     try {
+      const { adminGet } = await import('@/lib/admin-api');
+      oldData = await adminGet(this.apiEndpoint, id);
+    } catch {
+      // Ignore fetch errors
+    }
+    try {
+      let result: any;
       if (this.onUpdate) {
-        await this.onUpdate(id, data);
+        result = await this.onUpdate(id, data);
       } else {
         const { adminUpdate } = await import('@/lib/admin-api');
-        await adminUpdate(this.apiEndpoint, id, data);
+        result = await adminUpdate(this.apiEndpoint, id, data);
       }
+      // Audit log
+      await this.logAudit('update', id, oldData, result ?? { ...data, id });
       this.showForm = false;
       this.editingId = null;
       await this.loadData();
@@ -193,7 +266,16 @@ unbindFormEvents() {
   }
 
   async handleDelete(id: string) {
+    if (!this.canWrite()) return this.denyWrite('deleting records');
     if (!confirm('Are you sure you want to delete this item?')) return;
+    // Fetch old data for audit
+    let oldData: Record<string, unknown> | null = null;
+    try {
+      const { adminGet } = await import('@/lib/admin-api');
+      oldData = await adminGet(this.apiEndpoint, id);
+    } catch {
+      // Ignore fetch errors
+    }
     try {
       if (this.onDelete) {
         await this.onDelete(id);
@@ -201,6 +283,8 @@ unbindFormEvents() {
         const { adminDelete } = await import('@/lib/admin-api');
         await adminDelete(this.apiEndpoint, id);
       }
+      // Audit log
+      await this.logAudit('delete', id, oldData, null);
       await this.loadData();
     } catch (err) {
       alert(err.message || 'Failed to delete');
@@ -208,9 +292,25 @@ unbindFormEvents() {
   }
 
   async handleToggleVisibility(id: string, isVisible: boolean) {
+    if (!this.canWrite()) return this.denyWrite('changing visibility');
+    // Fetch old data for audit
+    let oldData: Record<string, unknown> | null = null;
+    try {
+      const { adminGet } = await import('@/lib/admin-api');
+      oldData = await adminGet(this.apiEndpoint, id);
+    } catch {
+      // Ignore fetch errors
+    }
     try {
       const { adminToggleVisibility } = await import('@/lib/admin-api');
       await adminToggleVisibility(this.apiEndpoint, id, isVisible);
+      // Audit log
+      await this.logAudit(
+        'toggle_visibility',
+        id,
+        oldData ? { is_visible: oldData.is_visible } : null,
+        { is_visible: isVisible }
+      );
       await this.loadData();
     } catch (err) {
       alert(err.message || 'Failed to update visibility');
@@ -218,9 +318,25 @@ unbindFormEvents() {
   }
 
   async handleToggleFeatured(id: string, isFeatured: boolean) {
+    if (!this.canWrite()) return this.denyWrite('changing featured status');
+    // Fetch old data for audit
+    let oldData: Record<string, unknown> | null = null;
+    try {
+      const { adminGet } = await import('@/lib/admin-api');
+      oldData = await adminGet(this.apiEndpoint, id);
+    } catch {
+      // Ignore fetch errors
+    }
     try {
       const { adminToggleFeatured } = await import('@/lib/admin-api');
       await adminToggleFeatured(this.apiEndpoint, id, isFeatured);
+      // Audit log
+      await this.logAudit(
+        'toggle_featured',
+        id,
+        oldData ? { is_featured: oldData.is_featured } : null,
+        { is_featured: isFeatured }
+      );
       await this.loadData();
     } catch (err) {
       alert(err.message || 'Failed to update featured status');
@@ -228,9 +344,12 @@ unbindFormEvents() {
   }
 
   async handleReorder(items: { id: string; display_order: number }[]) {
+    if (!this.canWrite()) return this.denyWrite('reordering records');
     try {
       const { adminReorder } = await import('@/lib/admin-api');
       await adminReorder(this.apiEndpoint, items);
+      // Audit log
+      await this.logAudit('reorder', null, null, { items });
       await this.loadData();
     } catch (err) {
       alert(err.message || 'Failed to reorder');
@@ -238,6 +357,7 @@ unbindFormEvents() {
   }
 
   showCreateForm() {
+    if (!this.canWrite()) return this.denyWrite('creating records');
     this.editingId = null;
     this.showForm = true;
     this.render();
@@ -245,6 +365,20 @@ unbindFormEvents() {
   }
 
   showEditForm(item: any) {
+    if (!this.canWrite()) {
+      // Read-only detail dialogs (used as "View ..." by Registrations and
+      // Pay & Play bookings) stay openable for viewers, fully disabled.
+      if (this.viewReadOnlyAllowed) {
+        this.editingId = item.id;
+        this.showForm = true;
+        this.render();
+        this.bindFormEvents();
+        this.populateForm(item);
+        this.markFormReadOnly();
+        return;
+      }
+      return this.denyWrite('editing records');
+    }
     this.editingId = item.id;
     this.showForm = true;
     this.render();
@@ -312,8 +446,9 @@ unbindFormEvents() {
       let value = item[field.key];
       if (value === null || value === undefined) return '-';
       if (field.type === 'checkbox') return value ? 'Yes' : 'No';
-      if (field.type === 'image' && value) return `<img src="${value}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);">`;
-      if (typeof value === 'string' && value.length > 50) return value.substring(0, 50) + '...';
+      if (field.type === 'image' && value) return `<img src="${NS.safeUrl(String(value))}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);">`;
+      if (typeof value === 'string' && value.length > 50) return NS.escapeHtml(value.substring(0, 50)) + '...';
+      if (typeof value === 'string') return NS.escapeHtml(value);
       return value;
     }).join('');
   }
@@ -324,15 +459,15 @@ unbindFormEvents() {
     if (value === null || value === undefined || value === '') return '-';
     if (field?.type === 'select') {
       const option = (field.options || []).find(opt => String(opt.value) === String(value));
-      return option ? option.label : String(value);
+      return NS.escapeHtml(option ? option.label : String(value));
     }
-    return String(value);
+    return NS.escapeHtml(String(value));
   }
 
   getMobileCardTitle(item: any): string {
-    const titleKeys = ['name', 'title', 'athlete_name', 'author_name', 'session_name', 'section_name', 'coach_name'];
+    const titleKeys = ['name', 'title', 'athlete_name', 'author_name', 'full_name', 'session_name', 'section_name', 'coach_name'];
     for (const key of titleKeys) {
-      if (item?.[key]) return String(item[key]);
+      if (item?.[key]) return NS.escapeHtml(String(item[key]));
     }
     return 'Untitled';
   }
@@ -340,7 +475,7 @@ unbindFormEvents() {
   getMobileCardSubtitle(item: any): string {
     const subtitleKeys = ['author_role', 'competition', 'role', 'designation', 'email', 'category', 'event'];
     for (const key of subtitleKeys) {
-      if (item?.[key]) return String(item[key]);
+      if (item?.[key]) return NS.escapeHtml(String(item[key]));
     }
     return '';
   }
@@ -350,7 +485,7 @@ unbindFormEvents() {
   }
 
   getMobileCardMetaItems(item: any): { label: string; value: string }[] {
-    const titleKeys = ['name', 'title', 'athlete_name', 'author_name', 'session_name', 'section_name', 'coach_name'];
+    const titleKeys = ['name', 'title', 'athlete_name', 'author_name', 'full_name', 'session_name', 'section_name', 'coach_name'];
     const subtitleKeys = ['author_role', 'competition', 'role', 'designation', 'email', 'category', 'event'];
     const skipTypes: string[] = ['textarea', 'image', 'checkbox', 'hidden', 'file'];
     const metaItems: { label: string; value: string }[] = [];
@@ -427,7 +562,7 @@ unbindFormEvents() {
       return `<div class="admin-module__error">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <h3>Failed to load data</h3>
-        <p>${this.error}</p>
+        <p>${NS.escapeHtml(String(this.error ?? ''))}</p>
         <button class="btn btn--primary" data-action="retry">Retry</button>
       </div>`;
     }
@@ -475,9 +610,9 @@ unbindFormEvents() {
           let value = item[field.key];
           if (value === null || value === undefined) return '<td>-</td>';
           if (field.type === 'checkbox') return `<td>${value ? 'Yes' : 'No'}</td>`;
-          if (field.type === 'image' && value) return `<td><img src="${value}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>`;
-          if (typeof value === 'string' && value.length > 50) return `<td>${value.substring(0, 50)}...</td>`;
-          return `<td>${value}</td>`;
+          if (field.type === 'image' && value) return `<td><img src="${NS.safeUrl(String(value))}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>`;
+          if (typeof value === 'string' && value.length > 50) return `<td>${NS.escapeHtml(value.substring(0, 50))}...</td>`;
+          return `<td>${NS.escapeHtml(String(value))}</td>`;
         }).join('')}
         <td>
           <div class="admin-actions">

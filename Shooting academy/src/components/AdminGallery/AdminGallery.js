@@ -1,5 +1,6 @@
 ﻿import { BaseAdminModule } from '@/lib/admin-module';
-import { uploadImage, deleteImage } from '@/lib/admin-api';
+import { NS } from '@/lib/escape-html';
+import { uploadImage, deleteImage, prepareImageUpload } from '@/lib/admin-api';
 import { STORAGE_BUCKETS } from '@/lib/supabase';
 
 export class AdminGalleryModule extends BaseAdminModule {
@@ -35,6 +36,7 @@ export class AdminGalleryModule extends BaseAdminModule {
       reorderable: true,
     });
 
+    this.auditTableName = 'gallery_images';
     this.uploading = false;
     this.uploadProgress = 0;
   }
@@ -179,7 +181,7 @@ export class AdminGalleryModule extends BaseAdminModule {
     if (this.isMobile()) {
       return `
         <div class="admin-module__toolbar">
-          <input type="search" class="admin-search" placeholder="Search images..." value="${this.search}" aria-label="Search" />
+          <input type="search" class="admin-search" placeholder="Search images..." value="${NS.escapeHtml(this.search)}" aria-label="Search" />
           <div class="admin-gallery__mobile-controls">
             <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
             <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="academy" ${this.activeFilters.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${this.activeFilters.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${this.activeFilters.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${this.activeFilters.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${this.activeFilters.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${this.activeFilters.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>
@@ -189,7 +191,7 @@ export class AdminGalleryModule extends BaseAdminModule {
     }
     return `
       <div class="admin-module__toolbar">
-        <input type="search" class="admin-search" placeholder="Search images..." value="${this.search}" aria-label="Search" />
+        <input type="search" class="admin-search" placeholder="Search images..." value="${NS.escapeHtml(this.search)}" aria-label="Search" />
         <select class="admin-filter" data-filter="is_visible"><option value="">Visibility</option><option value="true" ${this.activeFilters.is_visible === 'true' ? 'selected' : ''}>Visible</option><option value="false" ${this.activeFilters.is_visible === 'false' ? 'selected' : ''}>Hidden</option></select>
         <select class="admin-filter" data-filter="category"><option value="">Category</option><option value="academy" ${this.activeFilters.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${this.activeFilters.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${this.activeFilters.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${this.activeFilters.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${this.activeFilters.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${this.activeFilters.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>
         <button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Upload Image</button>
@@ -208,13 +210,13 @@ export class AdminGalleryModule extends BaseAdminModule {
     const cards = this.items.map(item => `
       <div class="admin-gallery-card" data-id="${item.id}" data-order="${item.display_order}">
         <div class="admin-gallery-card__thumb">
-          <img src="${item.image_url || ''}" alt="${item.title || ''}" loading="lazy">
+          <img src="${NS.safeUrl(item.image_url || '')}" alt="${NS.escapeHtml(item.title || '')}" loading="lazy">
           ${item.is_featured ? '<span class="admin-gallery-card__badge">Featured</span>' : ''}
         </div>
         <div class="admin-gallery-card__body">
           <div class="admin-gallery-card__info">
-            <h4 class="admin-gallery-card__title">${item.title || 'Untitled'}</h4>
-            <span class="admin-gallery-card__category">${item.category || '-'}</span>
+            <h4 class="admin-gallery-card__title">${NS.escapeHtml(item.title || 'Untitled')}</h4>
+            <span class="admin-gallery-card__category">${NS.escapeHtml(item.category || '-')}</span>
           </div>
           <div class="admin-gallery-card__controls">
             <div class="admin-gallery-card__toggles">
@@ -259,9 +261,9 @@ export class AdminGalleryModule extends BaseAdminModule {
 
     const rows = this.items.length > 0 ? this.items.map(item => `
       <tr data-id="${item.id}" data-order="${item.display_order}">
-        <td><img src="${item.image_url || ''}" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>
-        <td>${item.title || '-'}</td>
-        <td>${item.category}</td>
+        <td><img src="${NS.safeUrl(item.image_url || '')}" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--radius-sm);"></td>
+        <td>${NS.escapeHtml(item.title || '-')}</td>
+        <td>${NS.escapeHtml(item.category)}</td>
         <td>
           <label class="admin-toggle">
             <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
@@ -317,10 +319,10 @@ export class AdminGalleryModule extends BaseAdminModule {
       <div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};">
         <label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>
         ${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}<option value="">Select category</option><option value="academy" ${item?.category === 'academy' ? 'selected' : ''}>Academy</option><option value="training" ${item?.category === 'training' ? 'selected' : ''}>Training</option><option value="competitions" ${item?.category === 'competitions' ? 'selected' : ''}>Competitions</option><option value="events" ${item?.category === 'events' ? 'selected' : ''}>Events</option><option value="facilities" ${item?.category === 'facilities' ? 'selected' : ''}>Facilities</option><option value="achievements" ${item?.category === 'achievements' ? 'selected' : ''}>Achievements</option></select>` :
-        field.type === 'image' ? `<div class="admin-image-upload"><input type="file" name="${field.key}" id="${field.key}" accept="image/*" ${!isEdit && field.required ? 'required' : ''} style="display: none;"><button type="button" class="btn btn--secondary admin-image-upload__btn" data-action="pick-image">${item?.image_url ? 'Change Image' : 'Select Image'}</button>${item?.image_url ? `<img src="${item.image_url}" alt="Preview" class="admin-image-upload__preview">` : ''}<input type="hidden" name="image_url" value="${item?.image_url || ''}"><input type="hidden" name="storage_path" value="${item?.storage_path || ''}"></div>` :
+        field.type === 'image' ? `<div class="admin-image-upload"><input type="file" name="${field.key}" id="${field.key}" accept="image/*" ${!isEdit && field.required ? 'required' : ''} style="display: none;"><button type="button" class="btn btn--secondary admin-image-upload__btn" data-action="pick-image">${item?.image_url ? 'Change Image' : 'Select Image'}</button>${item?.image_url ? `<img src="${NS.safeUrl(item.image_url)}" alt="Preview" class="admin-image-upload__preview">` : ''}<input type="hidden" name="image_url" value="${NS.escapeHtml(item?.image_url || '')}"><input type="hidden" name="storage_path" value="${NS.escapeHtml(item?.storage_path || '')}"></div>` :
         field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` :
-        field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}">${item?.[field.key] || ''}</textarea>` :
-        `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required && !isEdit ? 'required' : ''}>`}
+        field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}">${NS.escapeHtml(item?.[field.key] || '')}</textarea>` :
+        `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${NS.escapeHtml(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required && !isEdit ? 'required' : ''}>`}
       </div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary" ${this.uploading ? 'disabled' : ''}>${this.uploading ? `Uploading ${this.uploadProgress}%...` : (this.editingId ? 'Update' : 'Upload')}</button></div></form></div>`;
   }
 
@@ -332,11 +334,9 @@ export class AdminGalleryModule extends BaseAdminModule {
       this.bindEvents();
 
       try {
-        const timestamp = Date.now();
-        const ext = data.image_file.name.split('.').pop();
-        const path = `gallery/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const { blob, path } = await prepareImageUpload(data.image_file, 'gallery');
 
-        await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
+        await uploadImage(STORAGE_BUCKETS.GALLERY, blob, path);
 
         const supabaseModule = await import('@/lib/supabase');
         data.image_url = `${supabaseModule.getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
@@ -363,11 +363,9 @@ async handleUpdate(id, data) {
       this.render();
       this.bindEvents();
 
-      const timestamp = Date.now();
-      const ext = data.image_file.name.split('.').pop();
-      const path = `gallery/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
+      const { blob, path } = await prepareImageUpload(data.image_file, 'gallery');
 
-      await uploadImage(STORAGE_BUCKETS.GALLERY, data.image_file, path);
+      await uploadImage(STORAGE_BUCKETS.GALLERY, blob, path);
 
       const supabaseModule = await import('@/lib/supabase');
       data.image_url = `${supabaseModule.getSupabaseConfig().url}/storage/v1/object/public/${STORAGE_BUCKETS.GALLERY}/${path}`;
@@ -458,10 +456,15 @@ async handleUpdate(id, data) {
         return;
       }
 
-      if (this.editingId) {
-        await this.handleUpdate(this.editingId, data);
-      } else {
-        await this.handleCreate(data);
+      try {
+        if (this.editingId) {
+          await this.handleUpdate(this.editingId, data);
+        } else {
+          await this.handleCreate(data);
+        }
+      } catch (err) {
+        console.error('Gallery save failed:', err);
+        alert(err?.message || 'Failed to save image.');
       }
     });
   }

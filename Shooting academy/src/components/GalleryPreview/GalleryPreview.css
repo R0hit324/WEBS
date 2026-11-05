@@ -135,4 +135,38 @@
     grid-column: span 1;
     aspect-ratio: 16 / 9;
   }
+  .gallery-item__overlay {
+    opacity: 1;
+  }
+  .gallery-item__category {
+    font-size: var(--font-size-xs);
+  }
+  .gallery-item__title {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-preview {
+    padding: var(--spacing-10) 0;
+  }
+  .gallery-preview__grid {
+    gap: var(--spacing-3);
+  }
+  .gallery-item {
+    aspect-ratio: 16 / 9;
+  }
+  .gallery-item__placeholder-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .gallery-item__placeholder-text {
+    font-size: 0.6875rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .gallery-item__title {
+    font-size: 0.75rem;
+  }
 }

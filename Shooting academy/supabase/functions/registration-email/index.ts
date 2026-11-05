@@ -42,6 +42,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createLogger, logEmailSend, logHttpRequest, logHttpResponse } from '../_shared/logging.ts';
 
 // Types
 interface RegistrationData {
@@ -56,6 +57,19 @@ interface RegistrationData {
   message?: string;
   status: string;
   created_at: string;
+}
+
+// Simple in-memory rate limiting (per warm instance).
+interface WindowRecord { count?: number; resetAt: number; }
+const rateLimitMap = new Map<string, WindowRecord>();
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+function pruneExpired(map: Map<string, WindowRecord>) {
+  const now = Date.now();
+  for (const [key, value] of map) {
+    if (now > value.resetAt) map.delete(key);
+  }
 }
 
 interface EmailPayload {
@@ -78,8 +92,21 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+function escapeHtml(value: unknown): string {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ');
+}
+
 // Initialize Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// Logger for this function
+const log = createLogger('registration-email');
 
 /**
  * Send email via Resend API
@@ -93,7 +120,7 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `Matsya Shooting Academy <noreply@${Deno.env.get('EMAIL_DOMAIN') || 'matysashootingacademy.com'}>`,
+        from: `Matsya Shooting Academy <noreply@${Deno.env.get('EMAIL_DOMAIN') || 'matsyashootingacademy.com'}>`,
         to: payload.to,
         subject: payload.subject,
         html: payload.html,
@@ -103,13 +130,13 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('Resend API error:', error);
+      log.error('Resend API error', { error: error.message });
       return { success: false, error: error.message || 'Failed to send email' };
     }
 
     return { success: true };
   } catch (err) {
-    console.error('Email send error:', err);
+    log.error('Email send error', { error: String(err) });
     return { success: false, error: String(err) };
   }
 }
@@ -118,8 +145,8 @@ async function sendEmail(payload: EmailPayload): Promise<{ success: boolean; err
  * Generate admin notification email
  */
 function generateAdminEmail(registration: RegistrationData): EmailPayload {
-  const subject = `New Registration: ${registration.full_name}`;
-  
+  const subject = `New Registration: ${escapeHtml(registration.full_name)}`.slice(0, 150);
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -132,18 +159,18 @@ function generateAdminEmail(registration: RegistrationData): EmailPayload {
         <h1 style="margin: 0; font-size: 24px;">New Registration</h1>
       </div>
       <div style="background: #191D1B; color: #F5F3EA; padding: 24px; border-radius: 0 0 8px 8px;">
-        <p><strong>Name:</strong> ${registration.full_name}</p>
-        <p><strong>Email:</strong> ${registration.email}</p>
-        <p><strong>Phone:</strong> ${registration.phone}</p>
-        ${registration.age ? `<p><strong>Age:</strong> ${registration.age}</p>` : ''}
-        ${registration.city ? `<p><strong>City:</strong> ${registration.city}</p>` : ''}
-        ${registration.interested_range ? `<p><strong>Interested Range:</strong> ${registration.interested_range}</p>` : ''}
-        ${registration.experience_level ? `<p><strong>Experience:</strong> ${registration.experience_level}</p>` : ''}
-        ${registration.message ? `<p><strong>Message:</strong><br>${registration.message}</p>` : ''}
+        <p><strong>Name:</strong> ${escapeHtml(registration.full_name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(registration.email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(registration.phone)}</p>
+        ${registration.age ? `<p><strong>Age:</strong> ${escapeHtml(registration.age)}</p>` : ''}
+        ${registration.city ? `<p><strong>City:</strong> ${escapeHtml(registration.city)}</p>` : ''}
+        ${registration.interested_range ? `<p><strong>Interested Range:</strong> ${escapeHtml(registration.interested_range)}</p>` : ''}
+        ${registration.experience_level ? `<p><strong>Experience:</strong> ${escapeHtml(registration.experience_level)}</p>` : ''}
+        ${registration.message ? `<p><strong>Message:</strong><br>${escapeHtml(registration.message)}</p>` : ''}
         <hr style="border-color: #2A302D; margin: 16px 0;">
         <p style="font-size: 12px; color: #B8B8AD;">
-          Registered at: ${new Date(registration.created_at).toLocaleString()}<br>
-          Registration ID: ${registration.id}
+          Registered at: ${escapeHtml(new Date(registration.created_at).toLocaleString())}<br>
+          Registration ID: ${escapeHtml(registration.id)}
         </p>
       </div>
     </body>
@@ -179,7 +206,7 @@ Registration ID: ${registration.id}
  */
 function generateConfirmationEmail(registration: RegistrationData): EmailPayload {
   const subject = 'Registration Received - Matsya Shooting Sports Academy';
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -192,21 +219,21 @@ function generateConfirmationEmail(registration: RegistrationData): EmailPayload
         <h1 style="margin: 0; font-size: 24px;">Registration Received</h1>
       </div>
       <div style="background: #191D1B; color: #F5F3EA; padding: 24px; border-radius: 0 0 8px 8px;">
-        <p>Dear ${registration.full_name},</p>
+        <p>Dear ${escapeHtml(registration.full_name)},</p>
         <p>Thank you for your interest in <strong>Matsya Shooting Sports Academy</strong>. We have received your registration and our team will contact you shortly.</p>
-        
+
         <div style="background: #202522; padding: 16px; border-radius: 8px; margin: 16px 0;">
           <h3 style="margin: 0 0 12px; color: #10B981;">Your Registration Details</h3>
-          <p><strong>Name:</strong> ${registration.full_name}</p>
-          <p><strong>Email:</strong> ${registration.email}</p>
-          <p><strong>Phone:</strong> ${registration.phone}</p>
-          ${registration.interested_range ? `<p><strong>Interested Range:</strong> ${registration.interested_range}</p>` : ''}
-          ${registration.experience_level ? `<p><strong>Experience Level:</strong> ${registration.experience_level}</p>` : ''}
+          <p><strong>Name:</strong> ${escapeHtml(registration.full_name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(registration.email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(registration.phone)}</p>
+          ${registration.interested_range ? `<p><strong>Interested Range:</strong> ${escapeHtml(registration.interested_range)}</p>` : ''}
+          ${registration.experience_level ? `<p><strong>Experience Level:</strong> ${escapeHtml(registration.experience_level)}</p>` : ''}
         </div>
         
         <p>Our team will reach out to you within 24-48 hours to discuss next steps and answer any questions you may have.</p>
         
-        <p>In the meantime, feel free to explore our <a href="${Deno.env.get('VITE_APP_URL') || 'https://matysashootingacademy.com'}/training" style="color: #10B981;">training programs</a> and <a href="${Deno.env.get('VITE_APP_URL') || 'https://matysashootingacademy.com'}/facilities" style="color: #10B981;">facilities</a>.</p>
+        <p>In the meantime, feel free to explore our <a href="${Deno.env.get('VITE_APP_URL') || 'https://matsyashootingacademy.com'}/training" style="color: #10B981;">training programs</a> and <a href="${Deno.env.get('VITE_APP_URL') || 'https://matsyashootingacademy.com'}/facilities" style="color: #10B981;">facilities</a>.</p>
         
         <hr style="border-color: #2A302D; margin: 24px 0;">
         <p style="font-size: 12px; color: #B8B8AD;">
@@ -264,20 +291,58 @@ serve(async (req: Request) => {
     );
   }
 
+  logHttpRequest(log, req);
+
   try {
-    // Verify authorization
+    // Verify authorization. This function is an internal DB-webhook receiver:
+    // only the service role key is accepted, so the public can never trigger
+    // registration emails directly (previously any bearer token passed).
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      log.warn('Unauthorized: missing or invalid Authorization header');
+      logHttpResponse(log, 401);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const bearer = authHeader.slice('Bearer '.length).trim();
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!serviceRoleKey || bearer !== serviceRoleKey) {
+      log.warn('Unauthorized: invalid service role key');
+      logHttpResponse(log, 401);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limit (per warm instance): guards against webhook storms or a
+    // compromised caller burning Resend quota via repeated rows.
+    pruneExpired(rateLimitMap);
+    const now = Date.now();
+    const ipKey = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'webhook';
+    const rateRecord = rateLimitMap.get(ipKey);
+    if (!rateRecord || now > rateRecord.resetAt) {
+      rateLimitMap.set(ipKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS * 10 });
+    } else if ((rateRecord.count ?? 0) >= RATE_LIMIT_MAX * 10) {
+      log.warn('Rate limit exceeded', { ipKey });
+      logHttpResponse(log, 429);
+      return new Response(
+        JSON.stringify({ error: 'Too many requests' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
+      rateRecord.count = (rateRecord.count ?? 0) + 1;
+    }
+
     // Parse registration data
     const registration: RegistrationData = await req.json();
 
     if (!registration.id || !registration.email || !registration.full_name) {
+      log.warn('Invalid registration data received');
+      logHttpResponse(log, 400);
       return new Response(
         JSON.stringify({ error: 'Invalid registration data' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -287,19 +352,18 @@ serve(async (req: Request) => {
     // Send admin notification
     const adminEmail = generateAdminEmail(registration);
     const adminResult = await sendEmail(adminEmail);
-    
-    if (!adminResult.success) {
-      console.error('Failed to send admin email:', adminResult.error);
-    }
+
+    const adminToDomain = adminEmail.to.split('@')[1] || 'unknown';
+    logEmailSend(log, 'admin', adminToDomain, adminResult.success, adminResult.error);
 
     // Send confirmation to registrant
     const confirmationEmail = generateConfirmationEmail(registration);
     const confirmationResult = await sendEmail(confirmationEmail);
-    
-    if (!confirmationResult.success) {
-      console.error('Failed to send confirmation email:', confirmationResult.error);
-    }
 
+    const confirmationToDomain = confirmationEmail.to.split('@')[1] || 'unknown';
+    logEmailSend(log, 'confirmation', confirmationToDomain, confirmationResult.success, confirmationResult.error);
+
+    logHttpResponse(log, 200, { adminSent: adminResult.success, confirmationSent: confirmationResult.success });
     return new Response(
       JSON.stringify({
         success: true,
@@ -310,7 +374,8 @@ serve(async (req: Request) => {
     );
 
   } catch (err) {
-    console.error('Edge function error:', err);
+    log.error('Edge function error', err);
+    logHttpResponse(log, 500);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

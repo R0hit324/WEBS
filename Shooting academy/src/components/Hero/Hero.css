@@ -114,11 +114,11 @@
 @media (max-width: 768px) {
   .hero {
     min-height: auto;
-    padding: var(--spacing-16) 0;
+    padding: var(--spacing-12) 0;
   }
   .hero__container {
     grid-template-columns: 1fr;
-    gap: var(--spacing-8);
+    gap: var(--spacing-6);
     text-align: center;
   }
   .hero__content {
@@ -133,37 +133,75 @@
   .hero__description {
     margin-left: auto;
     margin-right: auto;
+    max-width: 42ch;
   }
   .hero__actions {
     justify-content: center;
+    gap: var(--spacing-3);
   }
   .hero__target-wrapper {
-    max-width: 300px;
+    max-width: 280px;
   }
 }
 
 @media (max-width: 480px) {
   .hero {
-    padding: var(--spacing-12) 0;
+    padding: var(--spacing-10) 0;
   }
   .hero__container {
-    gap: var(--spacing-6);
+    gap: var(--spacing-5);
   }
+  /* Primary headline sized to the 30-36px premium band */
   .hero__headline {
-    font-size: var(--font-size-3xl);
+    font-size: clamp(1.875rem, 8vw, 2.25rem);
   }
   .hero__description {
     font-size: var(--font-size-base);
   }
+  /* Compact side-by-side actions keep the hero short */
   .hero__actions {
-    flex-direction: column;
-    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+    gap: var(--spacing-2);
   }
   .hero__actions .btn {
-    width: 100%;
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 140px;
+    white-space: nowrap;
   }
   .hero__target-wrapper {
-    max-width: 220px;
+    max-width: 210px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero {
+    padding: var(--spacing-8) 0;
+  }
+  .hero__container {
+    gap: var(--spacing-4);
+  }
+  .hero__badge {
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-2);
+  }
+  .hero__headline {
+    font-size: clamp(1.75rem, 8.5vw, 2rem);
+    letter-spacing: -0.02em;
+  }
+  .hero__description {
+    font-size: var(--font-size-sm);
+  }
+  .hero__actions .btn {
+    min-width: 120px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+  .hero__target-wrapper {
+    max-width: 170px;
   }
 }
 
@@ -275,17 +313,96 @@
 }
 
 @media (max-width: 768px) {
+  /* Stage 1: the room fills the whole first screen (dvh tracks the mobile
+     browser chrome). Stage 2-3 pin it for the lighting sequence. */
   .hero--chamber {
+    display: block;
     min-height: 100vh;
-    padding-top: calc(var(--spacing-20) + 48px);
+    min-height: 100dvh;
+    padding: 0;
   }
+
+  /* Stage 3-4: hero copy overlays the room itself, anchored to the bottom
+     edge in the floor band so the target frame (upper-middle of the screen,
+     bullseye ~51%) stays fully visible behind it. A soft bottom scrim + text
+     shadows keep the copy readable over the lit floor. */
   .hero--chamber .hero__container {
-    padding-top: var(--spacing-4);
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    padding: 0 var(--container-padding) calc(var(--spacing-6) + env(safe-area-inset-bottom, 0px));
+    background-image: linear-gradient(
+      180deg,
+      rgba(7, 9, 12, 0) 0%,
+      rgba(7, 9, 12, 0.5) 32%,
+      rgba(7, 9, 12, 0.8) 64%,
+      rgba(7, 9, 12, 0.88) 100%
+    );
   }
+
+  .hero--chamber .hero__content {
+    text-shadow: 0 1px 10px rgba(5, 8, 10, 0.6), 0 0 28px rgba(5, 8, 10, 0.4);
+  }
+
+  .hero--chamber .hero__badge {
+    margin-bottom: clamp(6px, 1.1dvh, 10px);
+    font-size: clamp(0.62rem, 1.7dvh, 0.72rem);
+    padding: 0.3em 0.75em;
+  }
+
+  /* dvh-based sizes keep the whole copy inside the floor band on every
+     small screen, so nothing clips, overlaps the bullseye, or jumps when
+     the browser chrome collapses. */
+  .hero--chamber .hero__headline {
+    font-size: clamp(1.35rem, 4.8dvh, 1.75rem);
+    line-height: 1.12;
+    margin-bottom: clamp(8px, 1.4dvh, 14px);
+  }
+
+  /* Let the words flow naturally instead of stacking three forced lines. */
+  .hero--chamber .hero__headline br {
+    display: none;
+  }
+
+  .hero--chamber .hero__description {
+    font-size: clamp(0.78rem, 2.2dvh, 0.92rem);
+    line-height: 1.5;
+    margin-bottom: clamp(10px, 1.6dvh, 16px);
+    max-width: 42ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* CTAs sit side by side over the floor band. */
+  .hero--chamber .hero__actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    width: auto;
+    gap: clamp(8px, 1.2dvh, 12px);
+  }
+
+  .hero--chamber .hero__actions .btn {
+    width: auto;
+    flex: 0 1 auto;
+    font-size: clamp(0.78rem, 2.3dvh, 0.88rem);
+    padding: 0.7em 1em;
+  }
+
+  /* On the smallest screens the total copy height would push its top edge
+     over the target frame's lower ring, so the location badge steps aside
+     there; the badge stays visible from 361px up. */
+  @media (max-width: 360px) {
+    .hero--chamber .hero__badge {
+      display: none;
+    }
+  }
+
   .pc-stage {
-    top: auto;
-    bottom: -6%;
-    height: 45%;
+    top: 0;
+    bottom: 0;
+    height: 100%;
     transform: translate(-50%, 0);
   }
 }

@@ -1,4 +1,7 @@
 import { BaseAdminModule } from '@/lib/admin-module';
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
 
 export class AdminPayPlayBookingsModule extends BaseAdminModule {
   constructor(container) {
@@ -37,7 +40,7 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
   }
 
   getListHtml() {
-    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search bookings..." value="${this.search}" aria-label="Search" /><select class="admin-filter" data-filter="booking_status"><option value="">Booking Status</option><option value="pending" ${this.activeFilters.booking_status === 'pending' ? 'selected' : ''}>Pending</option><option value="confirmed" ${this.activeFilters.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${this.activeFilters.booking_status === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="completed" ${this.activeFilters.booking_status === 'completed' ? 'selected' : ''}>Completed</option></select></div>${this.getTableHtml()}`;
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search bookings..." value="${ESC(this.search)}" aria-label="Search" /><select class="admin-filter" data-filter="booking_status"><option value="">Booking Status</option><option value="pending" ${this.activeFilters.booking_status === 'pending' ? 'selected' : ''}>Pending</option><option value="confirmed" ${this.activeFilters.booking_status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${this.activeFilters.booking_status === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="completed" ${this.activeFilters.booking_status === 'completed' ? 'selected' : ''}>Completed</option></select></div>${this.getTableHtml()}`;
   }
 
   getTableHtml() {
@@ -48,12 +51,12 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
     const rows = this.items.length > 0 ? this.items.map(item => `
       <tr data-id="${item.id}">
         <td>${new Date(item.created_at).toLocaleDateString()}</td>
-        <td><strong>${item.full_name}</strong></td>
-        <td>${item.email}</td>
-        <td>${item.session_id}</td>
-        <td>${item.preferred_date} ${item.preferred_time}</td>
-        <td>₹${item.amount}</td>
-        <td><span class="admin-badge admin-badge--${item.booking_status}">${item.booking_status}</span></td>
+        <td><strong>${ESC(item.full_name)}</strong></td>
+        <td>${ESC(item.email)}</td>
+        <td>${ESC(item.session_id)}</td>
+        <td>${ESC(item.preferred_date)} ${ESC(item.preferred_time)}</td>
+        <td>₹${ESC(item.amount)}</td>
+        <td><span class="admin-badge admin-badge--${ESC(item.booking_status)}">${ESC(item.booking_status)}</span></td>
         <td>
           <div class="admin-actions">
             <button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit">
@@ -103,7 +106,7 @@ export class AdminPayPlayBookingsModule extends BaseAdminModule {
                   <option value="completed" ${item?.booking_status === 'completed' ? 'selected' : ''}>Completed</option>
                 </select>
               ` : `
-                <input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" ${field.readonly ? 'readonly' : ''}>
+                <input type="${field.type}" name="${field.key}" id="${field.key}" value="${ESC(item?.[field.key] || '')}" ${field.readonly ? 'readonly' : ''}>
               `}
             </div>
           `).join('')}

@@ -14,6 +14,7 @@
 @import './components/FacilitiesPreview/FacilitiesPreview.css';
 @import './components/GalleryPreview/GalleryPreview.css';
 @import './components/Reviews/Reviews.css';
+@import './components/Reviews/ReviewForm.css';
 @import './components/Motivational/Motivational.css';
 @import './components/FinalCTA/FinalCTA.css';
 @import './components/AboutPage/AboutPage.css';
@@ -30,3 +31,4 @@
 @import './components/AdminLayout/AdminLayout.css';
 @import './components/AdminLayout/AdminModule.css';
 @import './components/AdminDashboard/AdminDashboard.css';
+@import './styles/card-centering.css';

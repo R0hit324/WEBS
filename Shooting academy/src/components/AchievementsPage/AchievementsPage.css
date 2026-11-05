@@ -76,8 +76,10 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-6);
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto var(--spacing-16);
+  /* Orientation-specific image areas change card heights; keep rows aligned to top */
+  align-items: start;
 }
 
 .medalist-card {
@@ -103,6 +105,36 @@
   overflow: hidden;
 }
 
+/* The image area adapts to the uploaded picture's own shape so pages stay
+   compact: landscape photos keep the 4/3 photo frame (faces sit high),
+   portrait photos get a portrait frame, squares a balanced square, and
+   certificates / documents (very wide) show the whole page with contain. */
+.medalist-card[data-orient="landscape"] .medalist-card__image {
+  object-position: center 22%;
+}
+
+.medalist-card[data-orient="portrait"] .medalist-card__visual {
+  aspect-ratio: 3 / 4;
+  max-height: 340px;
+}
+
+.medalist-card[data-orient="portrait"] .medalist-card__image {
+  object-position: center top;
+}
+
+.medalist-card[data-orient="square"] .medalist-card__visual {
+  aspect-ratio: 1 / 1;
+  max-height: 300px;
+}
+
+.medalist-card[data-orient="wide"] .medalist-card__visual {
+  aspect-ratio: 16 / 7;
+}
+
+.medalist-card[data-orient="wide"] .medalist-card__image {
+  object-fit: contain;
+}
+
 .medalist-card__image {
   width: 100%;
   height: 100%;
@@ -124,7 +156,7 @@
   background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
   color: var(--color-text-secondary);
   text-align: center;
-  padding: var(--spacing-8);
+  padding: var(--spacing-6);
 }
 
 .medalist-card__placeholder-icon {
@@ -141,10 +173,10 @@
 
 .medalist-card__medal-badge {
   position: absolute;
-  top: var(--spacing-4);
-  right: var(--spacing-4);
-  width: 56px;
-  height: 56px;
+  top: var(--spacing-3);
+  right: var(--spacing-3);
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -169,12 +201,12 @@
 }
 
 .medalist-card__medal-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .medalist-card__content {
-  padding: var(--spacing-6);
+  padding: var(--spacing-5);
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -184,8 +216,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-3);
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
 }
 
 .medalist-card__athlete {
@@ -225,7 +257,7 @@
 .medalist-card__discipline {
   font-size: var(--font-size-sm);
   color: var(--color-muted-ivory);
-  margin-bottom: var(--spacing-4);
+  margin-bottom: var(--spacing-3);
 }
 
 .medalist-card__description {
@@ -304,5 +336,105 @@
   .achievements-page__filter {
     padding: var(--spacing-2) var(--spacing-4);
     font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .achievements-page {
+    padding: var(--spacing-10) 0;
+  }
+  .achievements-page__hero {
+    padding: var(--spacing-10) 0 var(--spacing-6);
+  }
+  .achievements-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .achievements-page__description {
+    font-size: var(--font-size-base);
+  }
+  .achievements-page__grid {
+    gap: var(--spacing-4);
+  }
+  .medalist-card__content {
+    padding: var(--spacing-4);
+  }
+  .medalist-card__athlete {
+    font-size: var(--font-size-base);
+  }
+  .medalist-card__event {
+    font-size: var(--font-size-xs);
+  }
+  .medalist-card__competition {
+    font-size: var(--font-size-sm);
+  }
+  .medalist-card__discipline {
+    font-size: var(--font-size-xs);
+  }
+  .medalist-card__description {
+    font-size: var(--font-size-xs);
+  }
+  .medalist-card__medal-badge {
+    width: 40px;
+    height: 40px;
+  }
+  .medalist-card__medal-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .medalist-card__placeholder-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .achievements-page__empty-title {
+    font-size: var(--font-size-lg);
+  }
+  .achievements-page__empty-desc {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Cap tall photo frames so cards stay compact */
+  .medalist-card[data-orient="portrait"] .medalist-card__visual {
+    max-height: 210px;
+  }
+  .medalist-card[data-orient="square"] .medalist-card__visual {
+    max-height: 180px;
+  }
+  .medalist-card__visual {
+    aspect-ratio: 16 / 9;
+  }
+  .medalist-card[data-orient="portrait"] .medalist-card__visual {
+    aspect-ratio: auto;
+    height: 210px;
+  }
+  .medalist-card[data-orient="square"] .medalist-card__visual {
+    aspect-ratio: auto;
+    height: 180px;
+  }
+}
+
+@media (max-width: 360px) {
+  .achievements-page {
+    padding: var(--spacing-8) 0;
+  }
+  .achievements-page__hero {
+    padding: var(--spacing-8) 0 var(--spacing-5);
+  }
+  .achievements-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .achievements-page__description {
+    font-size: var(--font-size-sm);
+  }
+  .medalist-card__content {
+    padding: var(--spacing-3);
+  }
+  .medalist-card__athlete {
+    font-size: var(--font-size-base);
+  }
+  .medalist-card[data-orient="portrait"] .medalist-card__visual {
+    height: 180px;
+  }
+  .medalist-card[data-orient="square"] .medalist-card__visual {
+    height: 150px;
   }
 }

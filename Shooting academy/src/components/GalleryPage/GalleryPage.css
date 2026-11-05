@@ -72,6 +72,11 @@
   color: var(--color-ivory);
 }
 
+.gallery-page__more-wrap {
+  text-align: center;
+  margin: 0 0 var(--spacing-16);
+}
+
 .gallery-page__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -412,12 +417,14 @@
     font-size: var(--font-size-lg);
   }
   .gallery-page__grid {
-    grid-template-columns: 1fr;
-    max-width: 480px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+    max-width: 560px;
   }
   .gallery-item--featured {
-    grid-column: span 1;
-    aspect-ratio: 16 / 9;
+    grid-column: span 2;
+    grid-row: auto;
+    aspect-ratio: 4 / 3;
   }
   .gallery-page__filters {
     gap: var(--spacing-2);
@@ -435,5 +442,75 @@
   }
   .lightbox__caption-title {
     font-size: var(--font-size-base);
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-page {
+    padding: var(--spacing-10) 0;
+  }
+  .gallery-page__hero {
+    padding: var(--spacing-10) 0 var(--spacing-6);
+  }
+  .gallery-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .gallery-page__description {
+    font-size: var(--font-size-base);
+  }
+  .gallery-item {
+    aspect-ratio: 1 / 1;
+  }
+  .gallery-item--featured {
+    aspect-ratio: 4 / 3;
+  }
+  .gallery-item__overlay {
+    padding: var(--spacing-3);
+  }
+  .gallery-item__category {
+    font-size: 0.625rem;
+  }
+  .gallery-item__title {
+    font-size: var(--font-size-xs);
+  }
+  .gallery-item__placeholder-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .gallery-item__placeholder-text {
+    font-size: 0.6875rem;
+  }
+  .gallery-page__empty-title {
+    font-size: var(--font-size-lg);
+  }
+  .gallery-page__empty-desc {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 360px) {
+  .gallery-page {
+    padding: var(--spacing-8) 0;
+  }
+  .gallery-page__hero {
+    padding: var(--spacing-8) 0 var(--spacing-5);
+  }
+  .gallery-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .gallery-page__description {
+    font-size: var(--font-size-sm);
+  }
+  .lightbox__caption {
+    padding: var(--spacing-2);
+  }
+  .lightbox__caption-title {
+    font-size: var(--font-size-sm);
+  }
+  .lightbox__caption-desc {
+    font-size: var(--font-size-xs);
+  }
+  .lightbox__counter {
+    font-size: var(--font-size-xs);
   }
 }

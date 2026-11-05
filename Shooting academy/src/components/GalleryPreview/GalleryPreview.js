@@ -1,4 +1,9 @@
-﻿const CATEGORIES = [
+﻿import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
+const CATEGORIES = [
   { id: 'all', label: 'All' },
   { id: 'academy', label: 'Academy' },
   { id: 'training', label: 'Training' },
@@ -117,22 +122,22 @@ export class GalleryPreview {
     const categoryLabel = CATEGORIES.find(c => c.id === item.category)?.label || item.category || 'Academy';
 
     return `
-      <article class="gallery-item ${item.featured ? 'gallery-item--featured' : ''}" role="listitem" data-index="${index}" data-category="${item.category || 'academy'}" tabindex="0" aria-label="View ${item.title || 'gallery image'}">
-        ${item.image
-          ? `<img src="${item.image}" alt="${item.alt_text || item.title || 'Gallery image'}" class="gallery-item__image" loading="lazy"
-               onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
+      <article class="gallery-item ${item.featured ? 'gallery-item--featured' : ''}" role="listitem" data-index="${index}" data-category="${ESC(item.category || 'academy')}" tabindex="0" aria-label="View ${ESC(item.title || 'Gallery image')}">
+        ${item.image && SAFEURL(item.image)
+          ? `<img src="${SAFEURL(item.image)}" alt="${ESC(item.alt_text || item.title || 'Gallery image')}" class="gallery-item__image" loading="lazy"
+                >
           `
           : ''
         }
-        <div class="gallery-item__placeholder" role="img" aria-label="${item.title || 'Gallery image'} placeholder"
-             style="${item.image ? 'display:none' : ''}">
+        <div class="gallery-item__placeholder" role="img" aria-label="${ESC(item.title || 'Gallery image')} placeholder"
+             style="${item.image && SAFEURL(item.image) ? 'display:none' : ''}">
           <span class="gallery-item__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
           <span class="gallery-item__placeholder-text">Gallery Image</span>
         </div>
         <div class="gallery-item__overlay">
           <div class="gallery-item__info">
             <span class="gallery-item__category">${categoryLabel}</span>
-            <h3 class="gallery-item__title">${item.title || 'Untitled'}</h3>
+            <h3 class="gallery-item__title">${ESC(item.title || 'Untitled')}</h3>
           </div>
         </div>
       </article>
@@ -181,6 +186,9 @@ export class GalleryPreview {
         this.currentFilter = btn.dataset.filter;
         this.updateFilterUI();
         this.render();
+        // render() replaces the DOM, so re-bind or every click after the
+        // first one is dead.
+        this.bindFilterEvents();
       });
     });
   }

@@ -1,5 +1,5 @@
 ﻿import { getSupabaseConfig, TABLES } from '@/lib/supabase';
-import { getAdminAuthHeaders } from '@/lib/admin-auth';
+import { getAdminAuthHeaders, getRememberedAdminRole } from '@/lib/admin-auth';
 
 export interface AdminListParams {
   page?: number;
@@ -24,9 +24,22 @@ export interface AdminApiError {
   details?: Record<string, unknown>;
 }
 
+// UX-level write gate enforced before any mutating request leaves the app
+// (viewer role, or role unknown because the route-guard role check was
+// unavailable). Defense-in-depth only: the Supabase `can_admin_write()` RLS
+// policy remains the real security boundary; requests blocked here would be
+// rejected server-side anyway.
+function assertCanWrite(): void {
+  const role = getRememberedAdminRole();
+  if (role !== 'admin' && role !== 'editor') {
+    throw new Error('Read-only access: your role does not permit this operation.');
+  }
+}
+
 export async function adminFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers = await getAdminAuthHeaders();
   if (!headers) throw new Error('Not authenticated');
+  if (options.method && options.method !== 'GET') assertCanWrite();
 
   const config = getSupabaseConfig();
   if (!config.url) throw new Error('Supabase not configured');
@@ -126,6 +139,7 @@ export async function adminGet<T>(table: string, id: string): Promise<T | null> 
 }
 
 export async function adminCreate<T>(table: string, data: Partial<T>): Promise<T> {
+  assertCanWrite();
   const headers = await getAdminAuthHeaders();
   if (!headers) throw new Error('Not authenticated');
 
@@ -152,6 +166,7 @@ export async function adminCreate<T>(table: string, data: Partial<T>): Promise<T
 }
 
 export async function adminUpdate<T>(table: string, id: string, data: Partial<T>): Promise<T> {
+  assertCanWrite();
   const headers = await getAdminAuthHeaders();
   if (!headers) throw new Error('Not authenticated');
 
@@ -178,6 +193,7 @@ export async function adminUpdate<T>(table: string, id: string, data: Partial<T>
 }
 
 export async function adminDelete(table: string, id: string): Promise<void> {
+  assertCanWrite();
   const headers = await getAdminAuthHeaders();
   if (!headers) throw new Error('Not authenticated');
 
@@ -196,6 +212,7 @@ export async function adminDelete(table: string, id: string): Promise<void> {
 }
 
 export async function adminReorder(table: string, items: { id: string; display_order: number }[]): Promise<void> {
+  assertCanWrite();
   const headers = await getAdminAuthHeaders();
   if (!headers) throw new Error('Not authenticated');
 
@@ -224,11 +241,74 @@ export async function adminToggleFeatured(table: string, id: string, isFeatured:
 }
 
 
+/* ============================================================
+ * Image upload hardening (VUL-005)
+ *
+ * The browser-reported file.type and file extension are both client
+ * claims, not facts: anything can be renamed. Storage objects are
+ * served publicly by Content-Type, so a malicious upload could be
+ * stored as image/svg+xml or text/html and execute on direct
+ * navigation (stored XSS). Uploads are therefore validated by
+ * magic bytes, capped in size, and both the served Content-Type and
+ * the object path extension are derived from the sniffed type —
+ * never from the file name.
+ * SVG is rejected outright: it is XML that can carry script and is
+ * live-rendered on direct navigation; GIF cannot execute script.
+ * ============================================================ */
+
+export const IMAGE_UPLOAD_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+const IMAGE_MAGIC: { mime: string; ext: string; test: (b: Uint8Array) => boolean }[] = [
+  { mime: 'image/jpeg', ext: 'jpg', test: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  { mime: 'image/png', ext: 'png', test: (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
+  { mime: 'image/gif', ext: 'gif', test: (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38 },
+  {
+    mime: 'image/webp',
+    ext: 'webp',
+    test: (b) => b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46
+      && String.fromCharCode(b[8], b[9], b[10], b[11]) === 'WEBP',
+  },
+];
+
+export async function sniffImageType(file: File | Blob): Promise<{ mime: string; ext: string } | null> {
+  try {
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    const match = IMAGE_MAGIC.find(t => t.test(head));
+    return match ? { mime: match.mime, ext: match.ext } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validates an image upload and returns a Blob already typed with the
+ * sniffed MIME plus a randomised path with the sniffed extension.
+ * Caller must NOT use the original file name for path/type decisions.
+ */
+export async function prepareImageUpload(
+  file: File | Blob,
+  folder: string
+): Promise<{ blob: Blob; path: string }> {
+  if (file.size > IMAGE_UPLOAD_MAX_BYTES) {
+    const mb = Math.floor(IMAGE_UPLOAD_MAX_BYTES / (1024 * 1024));
+    throw new Error(`Image is too large (max ${mb} MB). Please compress it and try again.`);
+  }
+  const sniffed = await sniffImageType(file);
+  if (!sniffed) {
+    throw new Error('Unsupported image format. Use JPG, PNG, GIF or WebP.');
+  }
+  const path = folder
+    ? `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${sniffed.ext}`
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}.${sniffed.ext}`;
+  return { blob: new Blob([file], { type: sniffed.mime }), path };
+}
+
 export async function uploadImage(
   bucket: string,
-  file: File,
+  file: File | Blob,
   path: string
 ): Promise<string> {
+  assertCanWrite();
   const headers = await getAdminAuthHeaders();
 
   if (!headers) {
@@ -239,6 +319,18 @@ export async function uploadImage(
 
   if (!config.url) {
     throw new Error('Supabase not configured');
+  }
+
+  // Defence in depth: the caller is expected to pass a prepared blob,
+  // but every upload is re-validated here on size and magic bytes, and
+  // the Content-Type served by storage is taken from the sniffed type.
+  if (file.size > IMAGE_UPLOAD_MAX_BYTES) {
+    const mb = Math.floor(IMAGE_UPLOAD_MAX_BYTES / (1024 * 1024));
+    throw new Error(`Image is too large (max ${mb} MB). Please compress it and try again.`);
+  }
+  const sniffed = await sniffImageType(file);
+  if (!sniffed) {
+    throw new Error('Unsupported image format. Use JPG, PNG, GIF or WebP.');
   }
 
   const cleanPath = path
@@ -253,7 +345,7 @@ export async function uploadImage(
       headers: {
         'Authorization': headers.Authorization,
         'apikey': headers.apikey,
-        'Content-Type': file.type || 'application/octet-stream',
+        'Content-Type': sniffed.mime,
         'x-upsert': 'false',
       },
       body: file,
@@ -270,6 +362,7 @@ export async function uploadImage(
 
 
 export async function deleteImage(bucket: string, path: string): Promise<void> {
+  assertCanWrite();
   const headers = await getAdminAuthHeaders();
   if (!headers) throw new Error('Not authenticated');
 

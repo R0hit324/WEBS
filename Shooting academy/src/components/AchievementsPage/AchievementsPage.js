@@ -23,6 +23,11 @@ const MEDAL_CLASSES = {
 
 const EMPTY_ICON = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
 
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
 const PLACEHOLDER_ICON = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
 function sortAchievements(achievements) {
@@ -114,10 +119,14 @@ export class AchievementsPage {
           </header>
 
           <div class="achievements-page__filters" role="group" aria-label="Filter achievements by medal type">
-            <button class="achievements-page__filter achievements-page__filter--active" data-filter="all">All</button>
-            <button class="achievements-page__filter" data-filter="gold">Gold</button>
-            <button class="achievements-page__filter" data-filter="silver">Silver</button>
-            <button class="achievements-page__filter" data-filter="bronze">Bronze</button>
+            ${[
+                { id: 'all', label: 'All' },
+                { id: 'gold', label: 'Gold' },
+                { id: 'silver', label: 'Silver' },
+                { id: 'bronze', label: 'Bronze' },
+              ].map(cat => `
+              <button class="achievements-page__filter ${cat.id === this.currentFilter ? 'achievements-page__filter--active' : ''}" data-filter="${cat.id}">${cat.label}</button>
+            `).join('')}
           </div>
 
           <div class="achievements-page__grid" role="list">${achievementsHtml}</div>
@@ -135,15 +144,14 @@ export class AchievementsPage {
     return `
       <article class="medalist-card" data-medal="${medal}" role="listitem">
         <div class="medalist-card__visual">
-          ${a.photo
-            ? `<img src="${a.photo}" alt="${a.photoAlt || a.athlete || 'Athlete photo'}" class="medalist-card__image" loading="lazy"
-                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
-               ><div class="medalist-card__placeholder" role="img" aria-label="${a.athlete || 'Athlete'} photo placeholder" style="display:none">
+          ${a.photo && SAFEURL(a.photo)
+            ? `<img src="${SAFEURL(a.photo)}" alt="${ESC(a.photoAlt || a.athlete || 'Athlete photo')}" class="medalist-card__image" loading="lazy" decoding="async"
+               ><div class="medalist-card__placeholder" role="img" aria-label="${ESC(a.athlete || 'Athlete')} photo placeholder" style="display:none">
                  <span class="medalist-card__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
                  <span class="medalist-card__placeholder-text">Athlete Photo</span>
                </div>`
             : `
-              <div class="medalist-card__placeholder" role="img" aria-label="${a.athlete || 'Athlete'} photo placeholder">
+              <div class="medalist-card__placeholder" role="img" aria-label="${ESC(a.athlete || 'Athlete')} photo placeholder">
                 <span class="medalist-card__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
                 <span class="medalist-card__placeholder-text">Athlete Photo</span>
               </div>
@@ -155,14 +163,14 @@ export class AchievementsPage {
         </div>
         <div class="medalist-card__content">
           <header class="medalist-card__header">
-            ${a.athlete ? `<h2 class="medalist-card__athlete">${a.athlete}</h2>` : ''}
-            ${a.year ? `<span class="medalist-card__year">${a.year}</span>` : ''}
+            ${a.athlete ? `<h2 class="medalist-card__athlete">${ESC(a.athlete)}</h2>` : ''}
+            ${a.year ? `<span class="medalist-card__year">${ESC(a.year)}</span>` : ''}
           </header>
-          ${a.event ? `<p class="medalist-card__event">${a.event}</p>` : ''}
-          ${a.competition ? `<p class="medalist-card__competition">${a.competition}</p>` : ''}
-          ${a.discipline ? `<p class="medalist-card__discipline">${a.discipline}</p>` : ''}
+          ${a.event ? `<p class="medalist-card__event">${ESC(a.event)}</p>` : ''}
+          ${a.competition ? `<p class="medalist-card__competition">${ESC(a.competition)}</p>` : ''}
+          ${a.discipline ? `<p class="medalist-card__discipline">${ESC(a.discipline)}</p>` : ''}
           ${a.description ? `
-            <p class="medalist-card__description">${a.description}</p>
+            <p class="medalist-card__description">${ESC(a.description)}</p>
           ` : ''}
         </div>
       </article>
@@ -192,13 +200,15 @@ export class AchievementsPage {
   }
 
   bindFilterEvents() {
-    const filterButtons = this.container.querySelectorAll('.achievements-page__filter');
-    filterButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.currentFilter = btn.dataset.filter;
-        this.updateFilterUI();
-        this.render();
-      });
+    // One delegated listener on the persistent container: filters keep
+    // working no matter how many times render() replaces the DOM.
+    if (this.container.__achFiltersDelegated) return;
+    this.container.__achFiltersDelegated = true;
+    this.container.addEventListener('click', (event) => {
+      const btn = event.target.closest('.achievements-page__filter');
+      if (!btn || !this.container.contains(btn)) return;
+      this.currentFilter = btn.dataset.filter;
+      this.render();
     });
   }
 

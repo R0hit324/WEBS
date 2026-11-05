@@ -35,26 +35,6 @@ export function successResponse<T>(data: T, status = 200) {
 }
 
 /**
- * Verify authorization header
- */
-export function verifyAuth(req: Request, expectedKey?: string): boolean {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return false;
-  }
-
-  const token = authHeader.slice(7);
-  
-  // If expected key is provided, verify it matches
-  if (expectedKey) {
-    return token === expectedKey;
-  }
-
-  // Otherwise just check if token exists (Supabase JWT validation would go here)
-  return token.length > 0;
-}
-
-/**
  * Parse and validate JSON body
  */
 export async function parseJsonBody<T>(req: Request): Promise<T> {

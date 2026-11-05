@@ -43,7 +43,29 @@
 }
 
 @media (max-width: 480px) {
+  .section-heading {
+    margin-bottom: var(--spacing-8);
+  }
   .section-heading__title {
     font-size: var(--font-size-2xl);
+  }
+  .section-heading__subtitle {
+    font-size: var(--font-size-sm);
+  }
+  .section-heading__pretitle {
+    font-size: 0.6875rem;
+    margin-bottom: var(--spacing-2);
+  }
+}
+
+@media (max-width: 360px) {
+  .section-heading {
+    margin-bottom: var(--spacing-6);
+  }
+  .section-heading__title {
+    font-size: 1.1875rem;
+  }
+  .section-heading__subtitle {
+    font-size: 0.8125rem;
   }
 }

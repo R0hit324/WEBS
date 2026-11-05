@@ -1,5 +1,6 @@
 import { getSupabaseConfig, TABLES } from '@/lib/supabase';
 import { getAdminAuthHeaders } from '@/lib/admin-auth';
+import { NS } from '@/lib/escape-html';
 
 const STAT_CARDS = [
   { key: 'registrations_total', label: 'Total Registrations', icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`, color: 'var(--color-accent-bright)' },
@@ -164,10 +165,10 @@ export class AdminDashboard {
                     }
                   </div>
                   <div class="admin-activity__content">
-                    <div class="admin-activity__label">${item.label}</div>
-                    <div class="admin-activity__details">${item.name} &middot; ${item.email}</div>
+                    <div class="admin-activity__label">${NS.escapeHtml(item.label ?? '')}</div>
+                    <div class="admin-activity__details">${NS.escapeHtml(item.name ?? '')} &middot; ${NS.escapeHtml(item.email ?? '')}</div>
                   </div>
-                  <time class="admin-activity__time" datetime="${item.time}">${this.formatRelativeTime(item.time)}</time>
+                  <time class="admin-activity__time" datetime="${NS.escapeHtml(item.time ?? '')}">${this.formatRelativeTime(item.time)}</time>
                 </div>
               `).join('')}
             </div>

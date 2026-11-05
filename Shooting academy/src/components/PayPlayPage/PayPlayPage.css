@@ -402,9 +402,7 @@
   .pay-play-page__booking {
     padding: var(--spacing-6);
   }
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+  /* Keep paired short fields side-by-side on phones; stack only on tiny screens */
   .booking-step__actions {
     flex-direction: column-reverse;
     gap: var(--spacing-3);
@@ -414,6 +412,166 @@
   .booking-step__submit {
     width: 100%;
     justify-content: center;
+  }
+  .pay-play-session {
+    padding: var(--spacing-6);
+  }
+  .pay-play-session__name {
+    font-size: var(--font-size-lg);
+  }
+  .pay-play-session__price {
+    font-size: var(--font-size-2xl);
+  }
+  .pay-play-session__description {
+    font-size: var(--font-size-sm);
+  }
+  .booking-step__title {
+    font-size: var(--font-size-xl);
+  }
+  .booking-summary {
+    padding: var(--spacing-4);
+  }
+  .booking-summary__title {
+    font-size: var(--font-size-base);
+  }
+  .booking-summary__row {
+    font-size: var(--font-size-xs);
+  }
+  .booking-summary__total {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .pay-play-page {
+    padding: var(--spacing-10) 0;
+  }
+  .pay-play-page__hero {
+    padding: var(--spacing-10) 0 var(--spacing-6);
+  }
+  .pay-play-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .pay-play-page__description {
+    font-size: var(--font-size-base);
+  }
+  .pay-play-page__sessions {
+    gap: var(--spacing-4);
+  }
+  .pay-play-page__booking {
+    padding: var(--spacing-4);
+  }
+  .pay-play-session {
+    padding: var(--spacing-5);
+  }
+  .pay-play-session__name {
+    font-size: var(--font-size-base);
+  }
+  .pay-play-session__duration {
+    font-size: var(--font-size-xs);
+  }
+  .pay-play-session__price {
+    font-size: var(--font-size-xl);
+  }
+  .pay-play-session__description {
+    font-size: var(--font-size-xs);
+  }
+  .pay-play-session__feature {
+    font-size: 0.75rem;
+  }
+  .pay-play-session__feature-icon {
+    width: 14px;
+    height: 14px;
+  }
+  .booking-step__title {
+    font-size: var(--font-size-lg);
+  }
+  .booking-step__subtitle {
+    font-size: var(--font-size-xs);
+  }
+  .booking-step__progress-item {
+    font-size: 0.75rem;
+  }
+  .booking-step__progress-dot {
+    width: 10px;
+    height: 10px;
+  }
+  .booking-summary {
+    padding: var(--spacing-3);
+  }
+  .booking-summary__title {
+    font-size: var(--font-size-sm);
+  }
+  .booking-summary__row {
+    font-size: 0.75rem;
+  }
+  .booking-summary__total {
+    font-size: var(--font-size-base);
+  }
+  .form-group label {
+    font-size: 0.75rem;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-xs);
+    min-height: 44px;
+  }
+  .booking-step__actions {
+    gap: var(--spacing-2);
+  }
+  .booking-step__back,
+  .booking-step__next,
+  .booking-step__submit {
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--font-size-xs);
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .pay-play-page {
+    padding: var(--spacing-8) 0;
+  }
+  .pay-play-page__hero {
+    padding: var(--spacing-8) 0 var(--spacing-5);
+  }
+  .pay-play-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .pay-play-page__description {
+    font-size: var(--font-size-sm);
+  }
+  .pay-play-page__sessions {
+    gap: var(--spacing-3);
+  }
+  .pay-play-session__name {
+    font-size: 0.9375rem;
+  }
+  .pay-play-session__price {
+    font-size: var(--font-size-lg);
+  }
+  .booking-step__title {
+    font-size: var(--font-size-base);
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 0.8125rem;
+  }
+  .booking-step__back,
+  .booking-step__next,
+  .booking-step__submit {
+    font-size: 0.8125rem;
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+}
+
+/* Stack short field pairs only on genuinely tiny screens */
+@media (max-width: 400px) {
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }
 

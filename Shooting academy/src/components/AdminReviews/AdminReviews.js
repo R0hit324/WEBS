@@ -1,4 +1,7 @@
 ﻿import { BaseAdminModule } from '@/lib/admin-module';
+import { NS } from '@/lib/escape-html';
+
+function escHtml(v) { return NS.escapeHtml(String(v == null ? '' : v)); }
 
 export class AdminReviewsModule extends BaseAdminModule {
   constructor(container) {
@@ -10,6 +13,7 @@ export class AdminReviewsModule extends BaseAdminModule {
         { key: 'author_name', label: 'Author Name', type: 'text', required: true },
         { key: 'author_role', label: 'Author Role', type: 'text', placeholder: 'Student / Parent' },
         { key: 'rating', label: 'Rating', type: 'number', required: true, placeholder: '5' },
+        { key: 'review_title', label: 'Review Title', type: 'text', placeholder: 'Optional display title' },
         { key: 'review_text', label: 'Review Text', type: 'textarea', required: true },
         { key: 'review_date', label: 'Review Date', type: 'date' },
         { key: 'photo_url', label: 'Photo URL', type: 'text', placeholder: 'https://...' },
@@ -28,6 +32,8 @@ export class AdminReviewsModule extends BaseAdminModule {
       sortable: true,
       reorderable: true,
     });
+
+    this.auditTableName = 'reviews';
   }
 
   async init() {
@@ -202,19 +208,24 @@ destroy() {
     alert('Reviews must be submitted by visitors through the public form. Use the admin module to moderate existing reviews.');
   }
 
+  getRatingStarsHtml(item) {
+    const n = Number(item?.rating);
+    const rating = Number.isFinite(n) && n > 0 ? Math.min(5, Math.max(1, Math.round(n))) : 0;
+    const filled = `<svg class="admin-star admin-star--filled" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    const outline = `<svg class="admin-star admin-star--empty" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    return `<span class="admin-rating" role="img" aria-label="${rating} out of 5 stars">${filled.repeat(rating)}${outline.repeat(5 - rating)}</span>`;
+  }
+
   getMobileCardBadgeHtml(item) {
-    const rating = item.rating || 0;
-    const stars = '\u2605'.repeat(rating) + '\u2606'.repeat(5 - rating);
-    return `<span class="admin-rating">${stars}</span>`;
+    return this.getRatingStarsHtml(item);
   }
 
   getMobileCardMetaItems(item) {
-    const preview = item.review_text
-      ? (item.review_text.length > 80 ? item.review_text.substring(0, 80) + '\u2026' : item.review_text)
-      : '-';
+    const raw = item.review_text || '';
+    const preview = raw ? (raw.length > 80 ? raw.substring(0, 80) + '\u2026' : raw) : '';
     return [
-      { label: 'Review', value: preview },
-      { label: 'Date', value: item.review_date || '-' },
+      { label: 'Review', value: preview ? escHtml(preview) : '-' },
+      { label: 'Date', value: item.review_date ? escHtml(item.review_date) : '-' },
     ];
   }
 
@@ -225,22 +236,21 @@ destroy() {
 
   getListHtml() {
     if (this.isMobile()) {
-      return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search reviews..." value="${this.search}" aria-label="Search" />${this.filters.map(f => `<select class="admin-filter" data-filter="${f.key}"><option value="">${f.label}</option>${f.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[f.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>`).join('')}<button class="btn btn--primary" data-action="manage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 4H15.5l.001-.001a5.5 5.5 0 1 0-11 0 .001-.001 0 0 0 0 0V5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v6c0 .6-.2 1.1-.5 1.5L19 14v-9zM5 12c0 .6.2 1.1.5 1.5L5 14v-2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2z"/></svg> Manage Reviews</button></div>${this.getMobileCardHtml()}`;
+      return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search reviews..." value="${escHtml(this.search)}" aria-label="Search" />${this.filters.map(f => `<select class="admin-filter" data-filter="${f.key}"><option value="">${f.label}</option>${f.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[f.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>`).join('')}<button class="btn btn--primary" data-action="manage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 4H15.5l.001-.001a5.5 5.5 0 1 0-11 0 .001-.001 0 0 0 0 0V5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v6c0 .6-.2 1.1-.5 1.5L19 14v-9zM5 12c0 .6.2 1.1.5 1.5L5 14v-2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2z"/></svg> Manage Reviews</button></div>${this.getMobileCardHtml()}`;
     }
-    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search reviews..." value="${this.search}" aria-label="Search" />${this.filters.map(f => `<select class="admin-filter" data-filter="${f.key}"><option value="">${f.label}</option>${f.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[f.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>`).join('')}<button class="btn btn--primary" data-action="manage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 4H15.5l.001-.001a5.5 5.5 0 1 0-11 0 .001-.001 0 0 0 0 0V5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v6c0 .6-.2 1.1-.5 1.5L19 14v-9zM5 12c0 .6.2 1.1.5 1.5L5 14v-2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2z"/></svg> Manage Reviews</button></div>${this.getTableHtml()}`;
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search reviews..." value="${escHtml(this.search)}" aria-label="Search" />${this.filters.map(f => `<select class="admin-filter" data-filter="${f.key}"><option value="">${f.label}</option>${f.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[f.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>`).join('')}<button class="btn btn--primary" data-action="manage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 4H15.5l.001-.001a5.5 5.5 0 1 0-11 0 .001-.001 0 0 0 0 0V5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v6c0 .6-.2 1.1-.5 1.5L19 14v-9zM5 12c0 .6.2 1.1.5 1.5L5 14v-2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2z"/></svg> Manage Reviews</button></div>${this.getTableHtml()}`;
   }
 
   getTableHtml() {
-    const renderStars = function(r) { return 'â˜…'.repeat(r) + 'â˜†'.repeat(5 - r); };
     if (this.isLoading) {
       return `<div class="admin-module__loading"><div class="admin-spinner"></div></div>`;
     }
 
     const rows = this.items.length > 0 ? this.items.map(item => `
       <tr data-id="${item.id}" data-order="${item.display_order}">
-        <td><strong>${item.author_name}</strong>${item.author_role ? `<br><small>${item.author_role}</small>` : ''}</td>
-        <td><span class="admin-rating">${renderStars(item.rating || 0)}</span></td>
-        <td>${item.review_text ? item.review_text.substring(0, 60) + '...' : '-'}</td>
+        <td><strong>${escHtml(item.author_name)}</strong>${item.author_role ? `<br><small>${escHtml(item.author_role)}</small>` : ''}</td>
+        <td>${this.getRatingStarsHtml(item)}</td>
+        <td>${item.review_text ? escHtml(item.review_text.substring(0, 60)) + '...' : '-'}</td>
         <td><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></td>
         <td><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-featured" data-id="${item.id}" ${item.is_featured ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></td>
         <td><input type="number" class="admin-order-input" value="${item.display_order}" data-action="update-order" data-id="${item.id}" style="width: 60px;"></td>
@@ -280,7 +290,7 @@ destroy() {
   getFormHtml() {
     const item = this.editingId ? this.items.find(i => i.id === this.editingId) : null;
     const isEdit = !!this.editingId;
-    return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Add'} Review</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" id="admin-form" novalidate><div class="admin-form__grid">${this.fields.map(field => `<div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};"><label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>${field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` : field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${item?.[field.key] || ''}</textarea>` : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`}</div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary">${isEdit ? 'Update' : 'Create'}</button></div></form></div>`;
+    return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Add'} Review</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" id="admin-form" novalidate><div class="admin-form__grid">${this.fields.map(field => `<div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};"><label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>${field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` : field.type === 'textarea' ? `<textarea name="${field.key}" id="${field.key}" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${escHtml(item?.[field.key] || '')}</textarea>` : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${escHtml(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`}</div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary">${isEdit ? 'Update' : 'Create'}</button></div></form></div>`;
   }
 
   getPaginationHtml() {

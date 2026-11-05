@@ -98,4 +98,78 @@
     grid-template-columns: 1fr;
     max-width: 360px;
   }
+  .facility-card__content {
+    padding: var(--spacing-4);
+  }
+  .facility-card__name {
+    font-size: var(--font-size-base);
+  }
+  .facility-card__desc {
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .facilities-preview {
+    padding: var(--spacing-10) 0;
+  }
+  .facilities-preview__grid {
+    gap: var(--spacing-3);
+    max-width: none;
+  }
+
+  /* Compact horizontal card: image thumb left, info right.
+     height: auto (not fit-content) so the 1/1 aspect-ratio computes
+     reliably on <img> placeholders and images alike. */
+  .facility-card {
+    display: flex;
+    gap: var(--spacing-3);
+  }
+  .facility-card__image,
+  .facility-card__placeholder {
+    width: 34%;
+    max-width: 132px;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    align-self: flex-start;
+    flex-shrink: 0;
+    padding: var(--spacing-3);
+  }
+  .facility-card__placeholder-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .facility-card__content {
+    flex: 1;
+    min-width: 0;
+    padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) 0;
+    align-self: center;
+  }
+  .facility-card__name {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-1);
+  }
+  .facility-card__desc {
+    font-size: 0.8125rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 360px) {
+  .facility-card__image,
+  .facility-card__placeholder {
+    width: 30%;
+    max-width: 108px;
+    padding: var(--spacing-2);
+  }
+  .facility-card__name {
+    font-size: var(--font-size-sm);
+  }
+  .facility-card__desc {
+    -webkit-line-clamp: 2;
+    font-size: 0.75rem;
+  }
 }

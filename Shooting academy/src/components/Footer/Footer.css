@@ -304,4 +304,44 @@
     flex-direction: column;
     gap: var(--spacing-3);
   }
+  .footer__contact-item {
+    font-size: var(--font-size-xs);
+  }
+  .footer__contact-label {
+    min-width: auto;
+  }
+  .footer__btn {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 360px) {
+  .footer {
+    padding: var(--spacing-10) 0 var(--spacing-5);
+  }
+  .footer__logo {
+    height: 48px;
+  }
+  .footer__brand-name {
+    font-size: 1.25rem;
+  }
+  .footer__brand-tagline {
+    font-size: 0.55rem;
+  }
+  .footer__section-title {
+    font-size: var(--font-size-xs);
+  }
+  .footer__link {
+    font-size: var(--font-size-xs);
+  }
+  .footer__contact-item {
+    font-size: 0.75rem;
+  }
+  .footer__copyright {
+    font-size: var(--font-size-xs);
+  }
+  .footer__legal-link {
+    font-size: 0.625rem;
+  }
 }

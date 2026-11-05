@@ -249,4 +249,107 @@
   .about-page__content-block {
     padding: var(--spacing-6);
   }
+  .about-page__content-title {
+    font-size: var(--font-size-lg);
+  }
+  .about-page__content-text {
+    font-size: var(--font-size-sm);
+  }
+  .about-page__highlight-card {
+    padding: var(--spacing-6);
+  }
+  .about-page__highlight-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .about-page__highlight-title {
+    font-size: var(--font-size-base);
+  }
+  .about-page__highlight-desc {
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .about-page {
+    padding: var(--spacing-10) 0;
+  }
+  .about-page__hero {
+    padding: var(--spacing-10) 0 var(--spacing-6);
+  }
+  .about-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .about-page__description {
+    font-size: var(--font-size-base);
+  }
+  .about-page__section-title {
+    font-size: var(--font-size-xl);
+  }
+  .about-page__content-block {
+    padding: var(--spacing-4);
+  }
+  .about-page__content-title {
+    font-size: var(--font-size-base);
+  }
+  .about-page__content-text {
+    font-size: var(--font-size-xs);
+  }
+  .about-page__highlight-card {
+    padding: var(--spacing-4);
+  }
+  .about-page__highlight-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .about-page__highlight-title {
+    font-size: var(--font-size-sm);
+  }
+  .about-page__highlight-desc {
+    font-size: 0.75rem;
+  }
+  .about-page__cta-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .about-page__cta-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .about-page {
+    padding: var(--spacing-8) 0;
+  }
+  .about-page__hero {
+    padding: var(--spacing-8) 0 var(--spacing-5);
+  }
+  .about-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .about-page__description {
+    font-size: var(--font-size-sm);
+  }
+  .about-page__section-title {
+    font-size: var(--font-size-lg);
+  }
+  .about-page__content-block {
+    padding: var(--spacing-3);
+  }
+  .about-page__content-title {
+    font-size: var(--font-size-sm);
+  }
+  .about-page__content-text {
+    font-size: 0.75rem;
+  }
+  .about-page__highlight-card {
+    padding: var(--spacing-3);
+  }
+  .about-page__highlight-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .about-page__highlight-title {
+    font-size: 0.8125rem;
+  }
 }

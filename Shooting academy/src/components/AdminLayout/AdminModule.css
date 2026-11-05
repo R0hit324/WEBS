@@ -973,6 +973,11 @@
     padding: var(--spacing-2);
   }
 
+  /* Table container bleeds to the module edges: match the shrunken padding */
+  .admin-table-container {
+    margin: 0 calc(-1 * var(--spacing-2));
+  }
+
   .admin-module__header {
     margin-bottom: var(--spacing-2);
   }
@@ -1026,6 +1031,68 @@
   .admin-action-btn {
     width: 32px;
     height: 32px;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-module {
+    padding: var(--spacing-1);
+  }
+
+  /* Table container bleeds to the module edges: match the shrunken padding */
+  .admin-table-container {
+    margin: 0 calc(-1 * var(--spacing-1));
+  }
+
+  .admin-module__header {
+    margin-bottom: var(--spacing-1);
+  }
+
+  .admin-module__title {
+    font-size: var(--font-size-base);
+  }
+
+  .admin-module__subtitle {
+    font-size: 0.75rem;
+  }
+
+  .admin-module__toolbar {
+    gap: var(--spacing-1);
+  }
+
+  .admin-filter {
+    padding: var(--spacing-1);
+    font-size: 0.6875rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: var(--spacing-1);
+    font-size: 0.6875rem;
+  }
+
+  .admin-form-container {
+    padding: var(--spacing-1);
+  }
+
+  .admin-form__field input,
+  .admin-form__field select,
+  .admin-form__field textarea {
+    padding: var(--spacing-1);
+    font-size: 0.75rem;
+  }
+
+  .admin-form__field label {
+    font-size: 0.625rem;
+  }
+
+  .admin-action-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .admin-order-input {
+    width: 40px;
   }
 }
 
@@ -1299,4 +1366,45 @@
   width: 48px;
   padding: var(--spacing-1);
   font-size: var(--font-size-xs);
+}
+
+/* ============================================================
+   Read-only admin shell (viewer roles / unverified role checks).
+   Hides write affordances only — RLS on every table is the
+   actual enforcement; this is defense-in-depth UX.
+   ============================================================ */
+.admin-shell--readonly [data-action="create"],
+.admin-shell--readonly [data-action="manage"],
+.admin-shell--readonly .admin-action-btn,
+.admin-shell--readonly .admin-toggle__input,
+.admin-shell--readonly label:has(.admin-toggle__input),
+.admin-shell--readonly .admin-toggle__slider,
+.admin-shell--readonly .admin-order-input,
+.admin-shell--readonly .admin-form-container:not(.admin-form--view),
+.admin-shell--readonly .admin-form__actions button[type="submit"] {
+  display: none !important;
+}
+
+/* View-only dialogs remain visible for viewers; form controls are disabled
+   at runtime (markFormReadOnly) and the submit button is hidden above, so
+   "view" stays possible while writes stay blocked. */
+
+/* Review rating stars */
+.admin-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.admin-star {
+  flex-shrink: 0;
+}
+
+.admin-star--filled {
+  color: var(--color-gold-score, #C9A227);
+}
+
+.admin-star--empty {
+  color: var(--color-text-secondary, #9CA3AF);
 }

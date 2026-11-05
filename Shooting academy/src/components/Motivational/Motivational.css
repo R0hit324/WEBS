@@ -252,4 +252,28 @@
   .motivational__word {
     font-size: var(--font-size-lg);
   }
+  .motivational__item {
+    padding: var(--spacing-5) var(--spacing-3);
+  }
+}
+
+@media (max-width: 360px) {
+  .motivational {
+    padding: var(--spacing-10) 0;
+  }
+  .motivational__number {
+    font-size: var(--font-size-2xl);
+  }
+  .motivational__word {
+    font-size: var(--font-size-base);
+  }
+  .motivational__item {
+    padding: var(--spacing-4) var(--spacing-2);
+    gap: var(--spacing-3);
+  }
+  .motivational__item:nth-child(n) {
+    --mot-rise: 4px;
+    --mot-fall: 3.5px;
+    --mot-sway: 1.5px;
+  }
 }

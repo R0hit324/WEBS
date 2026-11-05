@@ -1,4 +1,9 @@
-﻿const COACH_PLACEHOLDER_ICON = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`;
+﻿import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
+const COACH_PLACEHOLDER_ICON = `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`;
 
 export class CoachesPreview {
   constructor(container, options = {}) {
@@ -47,19 +52,19 @@ export class CoachesPreview {
   render() {
     const coachesHtml = this.options.coaches.map(coach => `
       <article class="coach-card">
-        ${coach.imageSrc
-          ? `<img src="${coach.imageSrc}" alt="${coach.imageAlt}" class="coach-card__image" loading="lazy">`
+        ${coach.imageSrc && SAFEURL(coach.imageSrc)
+          ? `<img src="${SAFEURL(coach.imageSrc)}" alt="${ESC(coach.imageAlt || '')}" class="coach-card__image" loading="lazy">`
           : `
-            <div class="coach-card__placeholder" role="img" aria-label="${coach.name} photo placeholder">
+            <div class="coach-card__placeholder" role="img" aria-label="${ESC(coach.name)} photo placeholder">
               <span class="coach-card__placeholder-icon" aria-hidden="true">${COACH_PLACEHOLDER_ICON}</span>
               <span class="coach-card__placeholder-text">Coach Photo</span>
             </div>
           `
         }
         <div class="coach-card__content">
-          <h3 class="coach-card__name">${coach.name}</h3>
-          <p class="coach-card__role">${coach.role}</p>
-          <p class="coach-card__bio">${coach.bio}</p>
+          <h3 class="coach-card__name">${ESC(coach.name)}</h3>
+          <p class="coach-card__role">${ESC(coach.role)}</p>
+          <p class="coach-card__bio">${ESC(coach.bio)}</p>
         </div>
       </article>
     `).join('');

@@ -1,1 +1,1 @@
-export { createAdminCoaches } from './AdminCoaches.jsx';
+export { createAdminCoaches } from './AdminCoaches.js';

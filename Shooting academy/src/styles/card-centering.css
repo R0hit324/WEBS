@@ -1,0 +1,192 @@
+/* ============================================================
+   CARD CENTERING (count-aware)
+   ------------------------------------------------------------
+   Uniform card grids normally use repeat(N, 1fr); when a section
+   only holds one or two items the row shouldn't hug the left edge.
+
+   Strategy: keep every grid's normal template untouched. Using
+   :has() (pure CSS, re-evaluates automatically whenever admins
+   add, hide or delete items):
+
+   - exactly one card  -> track keeps the exact width of one
+     normal column, centered inside the content area
+   - exactly two cards -> both tracks keep the exact width of one
+     normal column (e.g. 2 tracks sized as 1/N of a 3-col grid),
+     centered together as a pair
+   - three+ cards      -> original repeat(N, 1fr) layout intact
+
+   Everything is scoped to the wide bands; on max-width: 768px
+   every grid already collapses to a single centered column.
+   ============================================================ */
+
+/* ---------- 3-column card grids (desktop) ---------- */
+@media (min-width: 1025px) {
+  .achievements-page__grid:has(> :only-child),
+  .facilities-page__grid:has(> :only-child),
+  .training-page__ranges-grid:has(> :only-child),
+  .pay-play-page__sessions:has(> :only-child),
+  .reviews__grid:has(> :only-child),
+  .reviews-page__grid:has(> :only-child),
+  .achievements-preview__grid:has(> :only-child),
+  .facilities-preview__grid:has(> :only-child),
+  .training-preview__cards:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - 2 * var(--spacing-6)) / 3));
+    justify-content: center;
+  }
+
+  .achievements-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .facilities-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .training-page__ranges-grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .pay-play-page__sessions:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .reviews__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .reviews-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .achievements-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .facilities-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .training-preview__cards:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - 2 * var(--spacing-6)) / 3)));
+    justify-content: center;
+  }
+
+  /* Facilities page cards use a larger gap */
+  .facilities-page__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - 2 * var(--spacing-8)) / 3));
+  }
+
+  .facilities-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - 2 * var(--spacing-8)) / 3)));
+  }
+
+  /* ---------- coaching preview grid (two columns) ---------- */
+  .coaches-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - var(--spacing-8)) / 2)));
+    justify-content: center;
+  }
+
+  /* ---------- audiences grid (four columns) ---------- */
+  .training-page__audiences-grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - 3 * var(--spacing-6)) / 4));
+    justify-content: center;
+  }
+
+  .training-page__audiences-grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - 3 * var(--spacing-6)) / 4)));
+    justify-content: center;
+  }
+
+  /* ---------- gallery mosaics (four columns) ---------- */
+  /* Small collections stay compact: featured tiles drop to normal tile size
+     and 1-2 photos sit centered at standard column width instead of huge
+     full-width blocks. */
+  .gallery-page__grid:has(> :only-child),
+  .gallery-preview__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - 3 * var(--spacing-4)) / 4));
+    justify-content: center;
+  }
+
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - 3 * var(--spacing-4)) / 4)));
+    justify-content: center;
+  }
+
+  .gallery-page__grid > :only-child,
+  .gallery-preview__grid > :only-child,
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :first-child,
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :nth-child(2),
+  .gallery-preview__grid > :only-child,
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :first-child,
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ---------- tablet band: 3-col grids switch to 2 columns here ---------- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* A single card keeps one normal column's width, centered. */
+  .achievements-page__grid:has(> :only-child),
+  .facilities-page__grid:has(> :only-child),
+  .training-page__ranges-grid:has(> :only-child),
+  .pay-play-page__sessions:has(> :only-child),
+  .reviews__grid:has(> :only-child),
+  .reviews-page__grid:has(> :only-child),
+  .achievements-preview__grid:has(> :only-child),
+  .facilities-preview__grid:has(> :only-child),
+  .training-preview__cards:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-6)) / 2));
+    justify-content: center;
+  }
+
+  .facilities-page__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-8)) / 2));
+  }
+
+  .coaches-preview__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-8)) / 2));
+    justify-content: center;
+  }
+
+  /* Gallery: small collections stay compact on the two-column band too. */
+  .gallery-page__grid:has(> :only-child),
+  .gallery-preview__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-4)) / 2));
+    justify-content: center;
+  }
+
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - var(--spacing-4)) / 2)));
+    justify-content: center;
+  }
+
+  .gallery-page__grid > :only-child,
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :first-child,
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :nth-child(2),
+  .gallery-preview__grid > :only-child,
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :first-child,
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ---------- coaching page / preview grid (two columns) ---------- */
+@media (min-width: 769px) {
+  .coaches-page__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-8)) / 2));
+    justify-content: center;
+  }
+
+  .coaches-preview__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-8)) / 2));
+    justify-content: center;
+  }
+}
+
+/* ---------- gallery: compact small collections on mobile two-column band ---------- */
+@media (max-width: 768px) {
+  .gallery-page__grid:has(> :only-child),
+  .gallery-preview__grid:has(> :only-child) {
+    grid-template-columns: minmax(0, calc((100% - var(--spacing-3)) / 2));
+    justify-content: center;
+  }
+
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: repeat(2, minmax(0, calc((100% - var(--spacing-3)) / 2)));
+    justify-content: center;
+  }
+
+  .gallery-page__grid > :only-child,
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :first-child,
+  .gallery-page__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :nth-child(2),
+  .gallery-preview__grid > :only-child,
+  .gallery-preview__grid:has(> :nth-child(2)):not(:has(> :nth-child(3))) > :first-child,
+  .gallery-preview__grid:has(> :nth-child(2)):not( :has(> :nth-child(3))) > :nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
+    aspect-ratio: 4 / 3;
+  }
+}

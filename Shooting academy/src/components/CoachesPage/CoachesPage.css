@@ -204,4 +204,93 @@
   .coach-profile__content {
     padding: var(--spacing-6);
   }
+
+  /* Cap the very tall 3/4 portraits so cards don't fill whole screens */
+  .coach-profile__visual {
+    aspect-ratio: auto;
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coaches-page {
+    padding: var(--spacing-10) 0;
+  }
+  .coaches-page__hero {
+    padding: var(--spacing-10) 0 var(--spacing-6);
+  }
+  .coaches-page__title {
+    font-size: var(--font-size-3xl);
+  }
+  .coaches-page__description {
+    font-size: var(--font-size-base);
+  }
+  .coaches-page__grid {
+    gap: var(--spacing-3);
+    max-width: 420px;
+  }
+  .coach-profile__visual {
+    height: 210px;
+  }
+  .coach-profile__content {
+    padding: var(--spacing-3);
+  }
+  .coach-profile__header {
+    margin-bottom: var(--spacing-3);
+    padding-bottom: var(--spacing-3);
+  }
+  .coach-profile__name {
+    font-size: var(--font-size-lg);
+  }
+  .coach-profile__role {
+    font-size: 0.6875rem;
+  }
+  .coach-profile__bio {
+    font-size: 0.8125rem;
+    margin-bottom: var(--spacing-3);
+  }
+  .coach-profile__placeholder {
+    padding: var(--spacing-4);
+  }
+  .coach-profile__placeholder-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .coach-profile__placeholder-text {
+    font-size: 0.8125rem;
+  }
+  .coach-profile__details {
+    gap: var(--spacing-2);
+  }
+  .coach-detail__value {
+    font-size: 0.75rem;
+  }
+  .coach-profile__cta {
+    margin-top: var(--spacing-3);
+    padding-top: var(--spacing-3);
+  }
+}
+
+@media (max-width: 360px) {
+  .coaches-page {
+    padding: var(--spacing-8) 0;
+  }
+  .coaches-page__hero {
+    padding: var(--spacing-8) 0 var(--spacing-5);
+  }
+  .coaches-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .coaches-page__description {
+    font-size: var(--font-size-sm);
+  }
+  .coach-profile__visual {
+    height: 180px;
+  }
+  .coach-profile__content {
+    padding: var(--spacing-2);
+  }
+  .coach-profile__name {
+    font-size: var(--font-size-base);
+  }
 }

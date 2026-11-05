@@ -1,5 +1,13 @@
 ﻿const DEFAULT_GALLERY = [];
 
+// Keep the initial grid compact; older photos load on demand via "Load More".
+const PAGE_SIZE = 24;
+
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
 const CATEGORIES = [
   { id: 'all', label: 'All' },
   { id: 'academy', label: 'Academy' },
@@ -46,6 +54,7 @@ export class GalleryPage {
     this.lightboxOpen = false;
     this.currentIndex = 0;
     this.filteredItems = [];
+    this.visibleCount = PAGE_SIZE;
     this.init();
   }
 
@@ -92,7 +101,9 @@ export class GalleryPage {
 
     this.filteredItems = filterGallery(items, this.currentFilter);
 
-    const gridHtml = this.filteredItems.map((item, index) => this.renderGalleryItem(item, index)).join('');
+    const shown = this.filteredItems.slice(0, this.visibleCount);
+    const gridHtml = shown.map((item, index) => this.renderGalleryItem(item, index)).join('');
+    const remaining = this.filteredItems.length - shown.length;
 
     this.container.innerHTML = `
       <section class="gallery-page" aria-labelledby="gallery-page-title">
@@ -111,6 +122,13 @@ export class GalleryPage {
 
           <div class="gallery-page__grid" role="list">${gridHtml}</div>
 
+          ${remaining > 0 ? `
+          <div class="gallery-page__more-wrap">
+            <button type="button" class="btn btn--secondary btn--large gallery-page__more" data-more>
+              Load More${remaining > 0 ? ` (${remaining} more)` : ''}
+            </button>
+          </div>` : ''}
+
           <!-- Lightbox -->
           <div class="lightbox" id="gallery-lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
             <div class="lightbox__backdrop"></div>
@@ -122,7 +140,7 @@ export class GalleryPage {
                 <span class="lightbox__nav-icon" aria-hidden="true">${PREV_ICON}</span>
               </button>
               <div class="lightbox__image-wrapper">
-                <img class="lightbox__image" src="" alt="" loading="lazy">
+                <img class="lightbox__image" alt="" style="display:none">
               </div>
               <button class="lightbox__nav lightbox__nav--next" aria-label="Next image">
                 <span class="lightbox__nav-icon" aria-hidden="true">${NEXT_ICON}</span>
@@ -146,22 +164,23 @@ export class GalleryPage {
     const categoryLabel = CATEGORIES.find(c => c.id === item.category)?.label || item.category || 'Academy';
 
     return `
-      <article class="gallery-item ${featured}" role="listitem" data-index="${index}" data-category="${item.category || 'academy'}" tabindex="0" aria-label="View ${item.title || 'gallery image'}">
-        ${item.image
-          ? `<img src="${item.image}" alt="${item.alt_text || item.title || 'Gallery image'}" class="gallery-item__image" loading="lazy"
-               onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
+      <article class="gallery-item ${featured}" role="listitem" data-index="${index}" data-category="${ESC(item.category || 'academy')}" tabindex="0" aria-label="View ${ESC(item.title || 'Gallery image')}">
+        ${item.image ? SAFEURL(item.image)
+          ? `<img src="${SAFEURL(item.image)}" alt="${ESC(item.alt_text || item.title || 'Gallery image')}" class="gallery-item__image" loading="lazy" decoding="async"
+                >
           `
           : ''
+        : ''
         }
-        <div class="gallery-item__placeholder" role="img" aria-label="${item.title || 'Gallery image'} placeholder"
-             style="${item.image ? 'display:none' : ''}">
+        <div class="gallery-item__placeholder" role="img" aria-label="${ESC(item.title || 'Gallery image')} placeholder"
+             style="${item.image && SAFEURL(item.image) ? 'display:none' : ''}">
           <span class="gallery-item__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
           <span class="gallery-item__placeholder-text">Gallery Image</span>
         </div>
         <div class="gallery-item__overlay">
           <div class="gallery-item__info">
             <span class="gallery-item__category">${categoryLabel}</span>
-            <h3 class="gallery-item__title">${item.title || 'Untitled'}</h3>
+            <h3 class="gallery-item__title">${ESC(item.title || 'Untitled')}</h3>
           </div>
         </div>
       </article>
@@ -195,21 +214,60 @@ export class GalleryPage {
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         this.currentFilter = btn.dataset.filter;
+        this.visibleCount = PAGE_SIZE;
         this.updateFilterUI();
         this.render();
+        this.bindEvents();
       });
     });
 
-    const gridItems = this.container.querySelectorAll('.gallery-item');
-    gridItems.forEach((item, index) => {
-      item.addEventListener('click', () => this.openLightbox(index));
-      item.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.openLightbox(index);
-        }
-      });
+    this.bindGalleryItems();
+
+    const moreBtn = this.container.querySelector('[data-more]');
+    if (moreBtn) moreBtn.addEventListener('click', () => this.showMore());
+  }
+
+  bindGalleryItems() {
+    const grid = this.container.querySelector('.gallery-page__grid');
+    if (!grid || grid.__delegated) return;
+    grid.__delegated = true;
+
+    // Delegated so tiles appended by the "Load More" button work with no rebind.
+    grid.addEventListener('click', (e) => {
+      const itemEl = e.target.closest('.gallery-item');
+      if (!itemEl || !grid.contains(itemEl)) return;
+      this.openLightbox(parseInt(itemEl.dataset.index, 10));
     });
+    grid.addEventListener('keydown', (e) => {
+      const itemEl = e.target.closest('.gallery-item');
+      if (!itemEl || !grid.contains(itemEl)) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.openLightbox(parseInt(itemEl.dataset.index, 10));
+      }
+    });
+  }
+
+  showMore() {
+    const grid = this.container.querySelector('.gallery-page__grid');
+    if (!grid) return;
+
+    const next = this.filteredItems.slice(this.visibleCount, this.visibleCount + PAGE_SIZE);
+    if (next.length === 0) return;
+
+    grid.insertAdjacentHTML('beforeend', next.map((item, i) => this.renderGalleryItem(item, this.visibleCount + i)).join(''));
+    this.visibleCount += next.length;
+
+    const remaining = this.filteredItems.length - this.visibleCount;
+    const moreWrap = this.container.querySelector('.gallery-page__more-wrap');
+    if (moreWrap) {
+      if (remaining > 0) {
+        const btn = moreWrap.querySelector('.gallery-page__more');
+        if (btn) btn.textContent = `Load More (${remaining} more)`;
+      } else {
+        moreWrap.remove();
+      }
+    }
   }
 
   bindLightboxEvents() {

@@ -1,0 +1,341 @@
+/* ============================================================
+   WRITE A REVIEW — public submission modal
+   Matches the admin-login-modal language: dark surface,
+   emerald accent, radius-xl panels, floating backdrop.
+   ============================================================ */
+
+.review-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+.review-modal--open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.review-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(7, 9, 12, 0.8);
+  backdrop-filter: blur(6px);
+  border: none;
+  cursor: default;
+}
+
+.review-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100dvh - var(--spacing-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  padding: var(--spacing-8);
+  transform: translateY(14px) scale(0.98);
+  transition: transform var(--transition-fast);
+}
+
+.review-modal--ready .review-modal__panel {
+  transform: translateY(0) scale(1);
+}
+
+.review-modal__close {
+  position: absolute;
+  top: var(--spacing-3);
+  right: var(--spacing-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-subtle);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.review-modal__close:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent);
+}
+
+.review-modal__header {
+  margin-bottom: var(--spacing-6);
+  padding-top: var(--spacing-2);
+}
+
+.review-modal__badge {
+  margin-bottom: var(--spacing-3);
+}
+
+.review-modal__title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.review-modal__title span {
+  color: var(--color-accent-bright);
+}
+
+.review-modal__subtitle {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.review-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-5);
+}
+
+.review-modal__field label,
+.review-modal__field .review-modal__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.review-modal__required {
+  color: #ef4444;
+}
+
+.review-modal__optional {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-muted-ivory);
+}
+
+.review-modal__field input[type="text"],
+.review-modal__field textarea {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-fast);
+}
+
+.review-modal__field input:focus,
+.review-modal__field textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.review-modal__field textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.review-modal__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.review-modal__rating-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-ivory);
+}
+
+.review-modal__rating-label--set {
+  color: var(--color-accent-bright);
+  font-weight: var(--font-weight-semibold);
+}
+
+.review-modal__stars {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.review-modal__stars label {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.review-modal__stars input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.review-modal__star {
+  display: inline-flex;
+  color: var(--color-gold-score);
+  transition: transform var(--transition-fast);
+}
+
+.review-modal__stars label:hover .review-modal__star,
+.review-modal__stars label:focus-within .review-modal__star {
+  transform: scale(1.12);
+}
+
+.review-modal__stars label:focus-within .review-modal__star {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* honeypot — visually removed, still focusable by bots only */
+.review-modal__hp {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.review-modal__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-4);
+  margin-bottom: var(--spacing-5);
+  border-radius: var(--radius-md);
+  border: 1px solid #ef4444;
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  overflow-wrap: anywhere;
+}
+
+.review-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+}
+
+.review-modal__submit {
+  position: relative;
+  min-width: 160px;
+}
+
+.review-modal__submit.is-loading {
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.review-modal__submit.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  animation: review-spin 0.7s linear infinite;
+}
+
+@keyframes review-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* success panel */
+.review-modal__success {
+  text-align: center;
+  padding: var(--spacing-8) var(--spacing-4) var(--spacing-4);
+}
+
+.review-modal__success-icon {
+  display: inline-flex;
+  color: var(--color-accent-bright);
+  margin-bottom: var(--spacing-4);
+}
+
+.review-modal__success-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.review-modal__success-desc {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  max-width: 380px;
+  margin: 0 auto var(--spacing-6);
+}
+
+/* "Write a Review" triggers blend with existing headers */
+.reviews__cta-actions,
+.reviews-page__cta,
+.reviews-page__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+  justify-content: center;
+  align-items: center;
+}
+
+.reviews-page__empty-actions {
+  margin-top: var(--spacing-2);
+}
+
+@media (max-width: 768px) {
+  .review-modal {
+    padding: var(--spacing-3);
+    align-items: flex-end;
+  }
+
+  .review-modal__panel {
+    max-width: none;
+    max-height: calc(100dvh - var(--spacing-6));
+    padding: var(--spacing-6) var(--spacing-5);
+    padding-bottom: calc(var(--spacing-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .review-modal__title {
+    font-size: var(--font-size-xl);
+  }
+
+  .review-modal__actions {
+    flex-direction: row;
+  }
+
+  .review-modal__actions .btn {
+    flex: 1 1 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-modal,
+  .review-modal__panel,
+  .review-modal__star {
+    transition: none;
+  }
+
+  .review-modal__submit.is-loading::after {
+    animation-duration: 1.5s;
+  }
+}

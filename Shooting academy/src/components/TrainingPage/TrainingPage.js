@@ -1,4 +1,9 @@
-﻿const RANGE_CARDS = [];
+﻿import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
+const RANGE_CARDS = [];
 
 const AUDIENCES = [
   {
@@ -77,16 +82,16 @@ export class TrainingPage {
     const rangesHtml = ranges.map((range, index) => `
       <article class="training-range-card">
         <div class="training-range-card__visual">
-          ${range.imageSrc
-            ? `<img src="${range.imageSrc}" alt="${range.imageAlt || range.distance + ' range'}" class="training-range-card__image" loading="lazy"
-                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
+          ${range.imageSrc && SAFEURL(range.imageSrc)
+            ? `<img src="${SAFEURL(range.imageSrc)}" alt="${ESC(range.imageAlt || (range.distance || '') + ' range')}" class="training-range-card__image" loading="lazy"
+                  >
                >
-               <div class="training-range-card__placeholder" role="img" aria-label="${range.distance} range placeholder" style="display:none">
+               <div class="training-range-card__placeholder" role="img" aria-label="${ESC(range.distance)} range placeholder" style="display:none">
                  <span class="training-range-card__placeholder-icon" aria-hidden="true">${range.placeholderIcon || range.icon}</span>
                  <span class="training-range-card__placeholder-text">Range Image</span>
                </div>`
             : `
-              <div class="training-range-card__placeholder" role="img" aria-label="${range.distance} range placeholder">
+              <div class="training-range-card__placeholder" role="img" aria-label="${ESC(range.distance)} range placeholder">
                 <span class="training-range-card__placeholder-icon" aria-hidden="true">${range.placeholderIcon || range.icon}</span>
                 <span class="training-range-card__placeholder-text">Range Image</span>
               </div>
@@ -94,14 +99,14 @@ export class TrainingPage {
           }
         </div>
         <div class="training-range-card__content">
-          <h3 class="training-range-card__distance">${range.distance}</h3>
-          <p class="training-range-card__discipline">${range.discipline}</p>
-          ${range.description ? `<p class="training-range-card__desc">${range.description}</p>` : ''}
+          <h3 class="training-range-card__distance">${ESC(range.distance)}</h3>
+          <p class="training-range-card__discipline">${ESC(range.discipline)}</p>
+          ${range.description ? `<p class="training-range-card__desc">${ESC(range.description)}</p>` : ''}
           <ul class="training-range-card__features" role="list">
             ${range.features.map(feature => `
               <li class="training-range-card__feature">
                 <span class="training-range-card__feature-icon" aria-hidden="true">${CHECK_ICON}</span>
-                <span>${feature}</span>
+                <span>${ESC(feature)}</span>
               </li>
             `).join('')}
           </ul>

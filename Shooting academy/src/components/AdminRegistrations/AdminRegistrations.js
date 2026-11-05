@@ -1,4 +1,7 @@
 ﻿import { BaseAdminModule } from '@/lib/admin-module';
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
 
 export class AdminRegistrationsModule extends BaseAdminModule {
   constructor(container) {
@@ -28,6 +31,10 @@ export class AdminRegistrationsModule extends BaseAdminModule {
       reorderable: false,
     });
     this.sortBy = 'created_at';
+    this.sortOrder = 'desc';
+    // Registration detail dialog is read-only for viewers: they may open/view it.
+    this.viewReadOnlyAllowed = true;
+    this.auditTableName = 'registrations';
   }
 
   async init() {
@@ -41,7 +48,7 @@ export class AdminRegistrationsModule extends BaseAdminModule {
   }
 
   getListHtml() {
-    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search registrations..." value="${this.search}" aria-label="Search" /><select class="admin-filter" data-filter="status"><option value="">Status</option><option value="new" ${this.activeFilters.status === 'new' ? 'selected' : ''}>New</option><option value="contacted" ${this.activeFilters.status === 'contacted' ? 'selected' : ''}>Contacted</option><option value="completed" ${this.activeFilters.status === 'completed' ? 'selected' : ''}>Completed</option><option value="rejected" ${this.activeFilters.status === 'rejected' ? 'selected' : ''}>Rejected</option></select></div>${this.getTableHtml()}`;
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search registrations..." value="${NS.escapeHtml(String(this.search ?? ''))}" aria-label="Search" /><select class="admin-filter" data-filter="status"><option value="">Status</option><option value="new" ${this.activeFilters.status === 'new' ? 'selected' : ''}>New</option><option value="contacted" ${this.activeFilters.status === 'contacted' ? 'selected' : ''}>Contacted</option><option value="completed" ${this.activeFilters.status === 'completed' ? 'selected' : ''}>Completed</option><option value="rejected" ${this.activeFilters.status === 'rejected' ? 'selected' : ''}>Rejected</option></select></div>${this.getTableHtml()}`;
   }
 
   getTableHtml() {
@@ -50,21 +57,30 @@ export class AdminRegistrationsModule extends BaseAdminModule {
     }
 
     const rows = this.items.length > 0 ? this.items.map(item => `
-      <tr data-id="${item.id}">
+      <tr data-id="${ESC(item.id)}">
         <td>${new Date(item.created_at).toLocaleDateString()}</td>
-        <td><strong>${item.full_name}</strong></td>
-        <td>${item.age || '-'}</td>
-        <td>${item.email}</td>
-        <td>${item.phone}</td>
-        <td>${item.city || '-'}</td>
-        <td>${item.interested_range || '-'}</td>
-        <td><span class="admin-badge admin-badge--${item.status}">${item.status}</span></td>
+        <td><strong>${ESC(item.full_name)}</strong></td>
+        <td>${ESC(item.age || '-')}</td>
+        <td>${ESC(item.email)}</td>
+        <td>${ESC(item.phone)}</td>
+        <td>${ESC(item.city || '-')}</td>
+        <td>${ESC(item.interested_range || '-')}</td>
+        <td><span class="admin-badge admin-badge--${ESC(item.status)}">${ESC(item.status)}</span></td>
 <td>
           <div class="admin-actions">
             <button
               class="admin-action-btn"
+              data-action="view"
+              data-id="${ESC(item.id)}"
+              title="View registration"
+              aria-label="View registration"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button
+              class="admin-action-btn"
               data-action="delete"
-              data-id="${item.id}"
+              data-id="${ESC(item.id)}"
               title="Delete registration"
               aria-label="Delete registration"
             >
@@ -115,9 +131,9 @@ export class AdminRegistrationsModule extends BaseAdminModule {
                   <option value="rejected" ${item?.status === 'rejected' ? 'selected' : ''}>Rejected</option>
                 </select>
               ` : field.type === 'textarea' ? `
-                <textarea name="${field.key}" id="${field.key}" rows="3" ${field.readonly ? 'readonly' : ''}>${item?.[field.key] || ''}</textarea>
+                <textarea name="${field.key}" id="${field.key}" rows="3" ${field.readonly ? 'readonly' : ''}>${ESC(item?.[field.key] || '')}</textarea>
               ` : `
-                <input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" ${field.readonly ? 'readonly' : ''}>
+                <input type="${field.type}" name="${field.key}" id="${field.key}" value="${ESC(item?.[field.key] || '')}" ${field.readonly ? 'readonly' : ''}>
               `}
             </div>
           `).join('')}
@@ -170,6 +186,16 @@ export class AdminRegistrationsModule extends BaseAdminModule {
 
           this.currentPage = 1;
           this.loadData();
+        },
+      },
+      {
+        selector: '[data-action="view"]',
+        handler: (e) => {
+          const id = e.currentTarget.dataset.id;
+          const item = this.items.find(i => i.id === id);
+          if (!item) return;
+          this.showEditForm(item);
+          this.bindEvents();
         },
       },
       {

@@ -29,6 +29,11 @@
   }
 ];
 
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
 const COACH_PLACEHOLDER_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`;
 
 function sortCoaches(coaches) {
@@ -40,8 +45,12 @@ function sortCoaches(coaches) {
 export class CoachesPage {
   constructor(container, options = {}) {
     this.container = container;
+    // Coaches passed explicitly by a caller (homepage prefetch) must win.
+    // Otherwise seed with the built-in roster for first paint, but ALWAYS
+    // attempt a live fetch below so admin-managed coaches actually appear.
+    this.dataProvided = Array.isArray(options.coaches) && options.coaches.length > 0;
     this.options = {
-      coaches: options.coaches || DEFAULT_COACHES,
+      coaches: this.dataProvided ? options.coaches : DEFAULT_COACHES,
       ...options
     };
     this.init();
@@ -53,8 +62,8 @@ export class CoachesPage {
   }
 
   async loadData() {
-    if (this.options.coaches && this.options.coaches.length > 0) {
-      return; // Data already provided
+    if (this.dataProvided) {
+      return; // Explicit data was provided by the caller
     }
     try {
       const { getSupabaseClient, TABLES } = await import('@/lib/supabase');
@@ -66,7 +75,7 @@ export class CoachesPage {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      this.options.coaches = (data || []).map(item => ({
+      const mapped = (data || []).map(item => ({
         id: item.id,
         name: item.full_name,
         role: item.role,
@@ -82,6 +91,8 @@ export class CoachesPage {
         visible: item.is_visible !== false,
         displayOrder: item.display_order ?? 0
       }));
+      // Empty admin roster keeps the built-in roster; errors fall back to it too.
+      this.options.coaches = mapped.length > 0 ? mapped : DEFAULT_COACHES;
     } catch (error) {
       console.error('Failed to load coaches:', error);
       this.options.coaches = DEFAULT_COACHES;
@@ -94,16 +105,16 @@ export class CoachesPage {
     const coachesHtml = coaches.map(coach => `
       <article class="coach-profile" data-coach-id="${coach.id}">
         <div class="coach-profile__visual">
-          ${coach.photo
-            ? `<img src="${coach.photo}" alt="${coach.photoAlt || coach.name}" class="coach-profile__image" loading="lazy"
-                 onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';"
+          ${coach.photo && SAFEURL(coach.photo)
+            ? `<img src="${SAFEURL(coach.photo)}" alt="${ESC(coach.photoAlt || coach.name || '')}" class="coach-profile__image" loading="lazy"
+                  >
                >
-               <div class="coach-profile__placeholder" role="img" aria-label="${coach.name} photo placeholder" style="display:none">
+               <div class="coach-profile__placeholder" role="img" aria-label="${ESC(coach.name)} photo placeholder" style="display:none">
                  <span class="coach-profile__placeholder-icon" aria-hidden="true">${COACH_PLACEHOLDER_ICON}</span>
                  <span class="coach-profile__placeholder-text">Coach Photo</span>
                </div>`
             : `
-              <div class="coach-profile__placeholder" role="img" aria-label="${coach.name} photo placeholder">
+              <div class="coach-profile__placeholder" role="img" aria-label="${ESC(coach.name)} photo placeholder">
                 <span class="coach-profile__placeholder-icon" aria-hidden="true">${COACH_PLACEHOLDER_ICON}</span>
                 <span class="coach-profile__placeholder-text">Coach Photo</span>
               </div>
@@ -112,12 +123,12 @@ export class CoachesPage {
         </div>
         <div class="coach-profile__content">
           <header class="coach-profile__header">
-            <h2 class="coach-profile__name">${coach.name}</h2>
-            ${coach.role ? `<p class="coach-profile__role">${coach.role}</p>` : ''}
+            <h2 class="coach-profile__name">${ESC(coach.name)}</h2>
+            ${coach.role ? `<p class="coach-profile__role">${ESC(coach.role)}</p>` : ''}
           </header>
           ${coach.bio ? `
             <div class="coach-profile__bio">
-              <p>${coach.bio}</p>
+              <p>${ESC(coach.bio)}</p>
             </div>
           ` : ''}
           ${coach.qualifications || coach.certifications || coach.experience || coach.achievements ? `
@@ -125,25 +136,25 @@ export class CoachesPage {
               ${coach.qualifications ? `
                 <div class="coach-detail">
                   <span class="coach-detail__label">Qualifications</span>
-                  <span class="coach-detail__value">${coach.qualifications}</span>
+                  <span class="coach-detail__value">${ESC(coach.qualifications)}</span>
                 </div>
               ` : ''}
               ${coach.certifications ? `
                 <div class="coach-detail">
                   <span class="coach-detail__label">Certifications</span>
-                  <span class="coach-detail__value">${coach.certifications}</span>
+                  <span class="coach-detail__value">${ESC(coach.certifications)}</span>
                 </div>
               ` : ''}
               ${coach.experience ? `
                 <div class="coach-detail">
                   <span class="coach-detail__label">Experience</span>
-                  <span class="coach-detail__value">${coach.experience}</span>
+                  <span class="coach-detail__value">${ESC(coach.experience)}</span>
                 </div>
               ` : ''}
               ${coach.achievements ? `
                 <div class="coach-detail">
                   <span class="coach-detail__label">Achievements</span>
-                  <span class="coach-detail__value">${coach.achievements}</span>
+                  <span class="coach-detail__value">${ESC(coach.achievements)}</span>
                 </div>
               ` : ''}
             </div>

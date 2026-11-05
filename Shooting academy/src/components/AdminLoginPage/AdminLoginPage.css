@@ -153,7 +153,45 @@
 }
 
 @media (max-width: 480px) {
+  .admin-login-page {
+    padding: var(--spacing-4);
+  }
   .admin-login-page__card {
     padding: var(--spacing-8);
+  }
+  .admin-login-page__title {
+    font-size: var(--font-size-2xl);
+  }
+  .admin-login-page__subtitle {
+    font-size: var(--font-size-sm);
+  }
+  .admin-login-page__logo {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-login-page {
+    padding: var(--spacing-3);
+  }
+  .admin-login-page__card {
+    padding: var(--spacing-6);
+  }
+  .admin-login-page__title {
+    font-size: var(--font-size-xl);
+  }
+  .admin-login-page__subtitle {
+    font-size: var(--font-size-xs);
+  }
+  .admin-login-page__header {
+    margin-bottom: var(--spacing-6);
+  }
+  .admin-login-page__form input {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-xs);
+  }
+  .admin-login-page__form label {
+    font-size: var(--font-size-xs);
   }
 }

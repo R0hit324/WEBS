@@ -22,12 +22,18 @@ import { createPayPlayPage, createPayPlaySessionPage } from './components/PayPla
 import { createAdminLoginPage } from './components/AdminLoginPage/index.js';
 import { createAdminLayout } from './components/AdminLayout/index.js';
 import { createAdminDashboard } from './components/AdminDashboard/index.js';
-import { isAdminAuthenticated } from './lib/admin-auth.ts';
+import { getAdminSession, getAdminRole, rememberAdminRole, adminLogout } from './lib/admin-auth.ts';
+import { NS } from './lib/escape-html.ts';
 import { router } from './router/index.js';
 import { activateScrollReveal, destroyScrollReveal } from './lib/scroll-reveal.js';
 import { activatePrecisionChamber, destroyPrecisionChamber } from './lib/precision-chamber.js';
+import { installImageFallbacks } from './lib/img-fallbacks.ts';
 
 const app = document.getElementById('app');
+
+// Delegated capture-phase image fallbacks (CSP-safe replacement for the
+// per-<img> inline handlers that used to ship in the page markup).
+installImageFallbacks();
 
 // Public pages only: scoped background/ambience styles (design-system.css)
 // key off this class so admin surfaces keep their original palette.
@@ -143,7 +149,10 @@ function renderHome(mainContent) {
   const aboutContainer = document.createElement('div');
   aboutContainer.id = 'about';
   mainContent.appendChild(aboutContainer);
-  createAboutPreview(aboutContainer);
+  createAboutPreview(aboutContainer, {
+    imageSrc: '/assets/indoor-shooting-range.webp',
+    imageAlt: 'Matsya Shooting Sports Academy indoor range with target wall'
+  });
 
   const trainingContainer = document.createElement('div');
   trainingContainer.id = 'training';
@@ -178,7 +187,10 @@ function renderAbout(mainContent) {
 
   const aboutContainer = document.createElement('div');
   mainContent.appendChild(aboutContainer);
-  currentPageInstance = createAboutPage(aboutContainer);
+  currentPageInstance = createAboutPage(aboutContainer, {
+    imageSrc: '/assets/indoor-shooting-range.webp',
+    imageAlt: 'Matsya Shooting Sports Academy indoor range with target wall'
+  });
   activateScrollReveal(app);
 }
 
@@ -297,6 +309,36 @@ const ADMIN_MODULE_MAP = {
   pay_play: 'AdminPayPlay',
 };
 
+// Admin route guard: an active admin_users row with a recognized role is
+// required. Semantics:
+//   - no session            → redirect /admin/login (return null)
+//   - inactive/missing row  → logout + redirect /admin/login (return null);
+//                             the login screen then clears the dead session
+//                             and shows the form (no redirect loop)
+//   - role-check unavailable (network/5xx) → enter READ-ONLY instead of bouncing
+//                             a legitimate admin off the panel; RLS still
+//                             enforces every write server-side
+//   - viewer                → enter, but the shell gets read-only styling and
+//                             write controls are hidden/disabled
+async function requireAdminRole(mainContent) {
+  const session = await getAdminSession();
+  if (!session) {
+    window.location.href = '/admin/login';
+    return null;
+  }
+
+  const check = await getAdminRole();
+  if (check.status === 'denied') {
+    await adminLogout();
+    window.location.href = '/admin/login';
+    return null;
+  }
+
+  const role = check.status === 'allowed' ? check.role : 'viewer';
+  rememberAdminRole(role);
+  return role;
+}
+
 // Admin render functions
 function renderAdminLogin(mainContent) {
   clearMainContent(mainContent);
@@ -311,10 +353,8 @@ function renderAdminLogin(mainContent) {
 }
 
 async function renderAdminDashboard(mainContent) {
-  if (!(await isAdminAuthenticated())) {
-    window.location.href = '/admin/login';
-    return;
-  }
+  const adminRole = await requireAdminRole(mainContent);
+  if (!adminRole) return;
 
   clearMainContent(mainContent);
 
@@ -327,6 +367,7 @@ async function renderAdminDashboard(mainContent) {
       renderAdminSection(mainContent, section);
     },
   });
+  adminLayoutInstance.setAdminRole(adminRole);
 
   const contentContainer = adminContainer.querySelector('#admin-content');
   if (contentContainer) {
@@ -335,12 +376,12 @@ async function renderAdminDashboard(mainContent) {
 }
 
 async function renderAdminSection(mainContent, section) {
-  if (!(await isAdminAuthenticated())) {
-    window.location.href = '/admin/login';
-    return;
-  }
+  const adminRole = await requireAdminRole(mainContent);
+  if (!adminRole) return;
 
   if (!adminLayoutInstance) return;
+
+  adminLayoutInstance.setAdminRole(adminRole);
 
   const contentContainer = adminLayoutInstance.container.querySelector('#admin-content');
   if (!contentContainer) return;
@@ -386,8 +427,8 @@ async function renderAdminSection(mainContent, section) {
 
     contentContainer.innerHTML = `
       <div class="admin-coming-soon">
-        <h3>${section.charAt(0).toUpperCase() + section.slice(1)} Management</h3>
-        <p>${err.message || 'Error loading section'}</p>
+        <h3>${section.charAt(0).toUpperCase() + String(section).slice(1)} Management</h3>
+        <p>${NS.escapeHtml(String(err.message || 'Error loading section'))}</p>
       </div>
     `;
   }

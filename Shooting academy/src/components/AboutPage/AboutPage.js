@@ -51,6 +51,11 @@ const ABOUT_CONTENT = {
   ]
 };
 
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
+const SAFEURL = (v) => NS.safeUrl(v);
+
 const PLACEHOLDER_ICON = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
 export class AboutPage {
@@ -72,9 +77,10 @@ export class AboutPage {
   render() {
     const { content, imageSrc, imageAlt } = this.options;
 
-    const visualHtml = imageSrc
-      ? `<img src="${imageSrc}" alt="${imageAlt}" class="about-page__image" loading="lazy"
-           onerror="this.onerror=null;this.style.display='none';const f=this.nextElementSibling;if(f)f.style.display='flex';">
+    const visualHref = SAFEURL(imageSrc);
+    const visualHtml = visualHref
+      ? `<img src="${visualHref}" alt="${ESC(imageAlt || '')}" class="about-page__image" loading="lazy"
+           >
          <div class="about-page__placeholder" role="img" aria-label="Academy facility placeholder" style="display:none">
            <span class="about-page__placeholder-icon" aria-hidden="true">${PLACEHOLDER_ICON}</span>
            <span class="about-page__placeholder-text">Academy Facility Image</span>

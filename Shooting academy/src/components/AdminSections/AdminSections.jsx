@@ -1,4 +1,7 @@
 import { BaseAdminModule } from '@/lib/admin-module';
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
 
 const SECTION_KEYS = [
   { key: 'hero', label: 'Hero Section', description: 'Main hero banner with CTAs' },
@@ -54,7 +57,7 @@ export class AdminSiteSectionsModule extends BaseAdminModule {
   }
 
   getListHtml() {
-    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search sections..." value="${this.search}" aria-label="Search" /><button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Section</button></div>${this.getTableHtml()}`;
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search sections..." value="${ESC(this.search)}" aria-label="Search" /><button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Section</button></div>${this.getTableHtml()}`;
   }
 
   getTableHtml() {
@@ -66,7 +69,7 @@ export class AdminSiteSectionsModule extends BaseAdminModule {
       const sectionInfo = SECTION_KEYS.find(s => s.key === item.section_key);
       return `<tr data-id="${item.id}" data-order="${item.display_order}">
         <td><strong>${sectionInfo?.label || item.section_key}</strong><br><small>${sectionInfo?.description || ''}</small></td>
-        <td>${item.section_name || '-'}</td>
+        <td>${item.section_name ? ESC(item.section_name) : '-'}</td>
         <td>
           <label class="admin-toggle">
             <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
@@ -105,7 +108,7 @@ export class AdminSiteSectionsModule extends BaseAdminModule {
   getFormHtml() {
     const item = this.editingId ? this.items.find(i => i.id === this.editingId) : null;
     const isEdit = !!this.editingId;
-    return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Add'} Section</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" id="admin-form" novalidate><div class="admin-form__grid">${this.fields.map(field => `<div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};"><label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}><option value="">Select section</option>${SECTION_KEYS.map(s => `<option value="${s.key}" ${item?.section_key === s.key ? 'selected' : ''}>${s.label}</option>`).join('')}</select>` : field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`}</div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary">${isEdit ? 'Update' : 'Create'}</button></div></form></div>`;
+    return `<div class="admin-form-container"><div class="admin-form__header"><h3 class="admin-form__title">${isEdit ? 'Edit' : 'Add'} Section</h3><button class="btn btn--secondary" data-action="cancel">Cancel</button></div><form class="admin-form" id="admin-form" novalidate><div class="admin-form__grid">${this.fields.map(field => `<div class="admin-form__field" style="grid-column: span ${field.gridCol || 1};"><label for="${field.key}">${field.label}${field.required ? ' <span class="required-indicator">*</span>' : ''}</label>${field.type === 'select' ? `<select name="${field.key}" id="${field.key}" ${field.required ? 'required' : ''}><option value="">Select section</option>${SECTION_KEYS.map(s => `<option value="${s.key}" ${item?.section_key === s.key ? 'selected' : ''}>${s.label}</option>`).join('')}</select>` : field.type === 'checkbox' ? `<label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>` : `<input type="${field.type}" name="${field.key}" id="${field.key}" value="${ESC(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>`}</div>`).join('')}</div><div class="admin-form__actions"><button type="button" class="btn btn--secondary" data-action="cancel">Cancel</button><button type="submit" class="btn btn--primary">${isEdit ? 'Update' : 'Create'}</button></div></form></div>`;
   }
 
   getPaginationHtml() { return `<div class="admin-pagination"><button class="btn btn--secondary btn--sm" data-action="prev-page" ${this.currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="admin-pagination__info">Page ${this.currentPage} of ${this.totalPages} (${this.totalCount} total)</span><button class="btn btn--secondary btn--sm" data-action="next-page" ${this.currentPage === this.totalPages ? 'disabled' : ''}>Next</button></div>`; }

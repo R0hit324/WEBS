@@ -124,6 +124,59 @@
     margin: 0 auto;
   }
   .training-card {
-    padding: var(--spacing-6);
+    padding: var(--spacing-5);
+  }
+  .training-card__icon {
+    width: 40px;
+    height: 40px;
+  }
+  .training-card__distance {
+    font-size: var(--font-size-2xl);
+  }
+  .training-card__description {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .training-preview {
+    padding: var(--spacing-10) 0;
+  }
+  .training-preview__cards {
+    gap: var(--spacing-3);
+    max-width: 480px;
+  }
+  .training-card {
+    padding: var(--spacing-3);
+  }
+  .training-card__icon {
+    width: 30px;
+    height: 30px;
+    margin-bottom: var(--spacing-2);
+  }
+  .training-card__distance {
+    font-size: var(--font-size-xl);
+  }
+  .training-card__discipline {
+    font-size: 0.6875rem;
+  }
+  .training-card__description {
+    font-size: 0.8125rem;
+  }
+  .training-card__feature {
+    font-size: 0.75rem;
+  }
+  .training-card__feature-icon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .training-card {
+    padding: var(--spacing-2);
+  }
+  .training-card__distance {
+    font-size: var(--font-size-lg);
   }
 }

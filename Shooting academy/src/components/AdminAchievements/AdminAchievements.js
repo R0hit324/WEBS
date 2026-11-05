@@ -1,5 +1,6 @@
 ﻿import { BaseAdminModule } from '@/lib/admin-module';
-import { uploadImage, deleteImage } from '@/lib/admin-api';
+import { NS } from '@/lib/escape-html';
+import { uploadImage, deleteImage, prepareImageUpload } from '@/lib/admin-api';
 import { STORAGE_BUCKETS } from '@/lib/supabase';
 
 export class AdminAchievementsModule extends BaseAdminModule {
@@ -40,6 +41,7 @@ export class AdminAchievementsModule extends BaseAdminModule {
       reorderable: true,
     });
 
+    this.auditTableName = 'achievements';
     this.uploading = false;
   }
 
@@ -79,21 +81,18 @@ bindEvents() {
             break;
 
           case 'edit': {
-  console.log('Edit clicked, ID:', id);
+          const item = this.items.find(
+            entry => String(entry.id) === String(id)
+          );
 
-  const item = this.items.find(
-    entry => String(entry.id) === String(id)
-  );
+          if (!item) {
+            console.error('Achievement not found:', id);
+            break;
+          }
 
-  if (!item) {
-    console.error('Achievement not found:', id);
-    break;
-  }
-
-  console.log('Achievement found:', item);
-  this.showEditForm(item);
-  break;
-}
+          this.showEditForm(item);
+          break;
+        }
 
 case 'delete': {
   if (!id) {
@@ -178,7 +177,7 @@ case 'delete': {
       participation: '#6b7280',
     };
 
-    return `<span class="admin-medal" style="background:${medalColors[item.medal] || '#6b7280'}">${item.medal || ''}</span>`;
+    return `<span class="admin-medal" style="background:${medalColors[item.medal] || '#6b7280'}">${item.medal ? NS.escapeHtml(item.medal) : ''}</span>`;
   }
 
   getMobileCardSubtitle(item) {
@@ -187,9 +186,9 @@ case 'delete': {
 
   getMobileCardMetaItems(item) {
     return [
-      { label: 'Competition', value: item.competition || '-' },
-      { label: 'Event', value: item.event || '-' },
-      { label: 'Year', value: item.year ?? '-' },
+      { label: 'Competition', value: item.competition ? NS.escapeHtml(item.competition) : '-' },
+      { label: 'Event', value: item.event ? NS.escapeHtml(item.event) : '-' },
+      { label: 'Year', value: item.year != null ? NS.escapeHtml(String(item.year)) : '-' },
     ];
   }
 
@@ -287,15 +286,15 @@ case 'delete': {
     const rows = this.items.length
       ? this.items.map(item => `
           <tr data-id="${item.id}" data-order="${item.display_order ?? 0}">
-            <td><strong>${item.athlete_name || ''}</strong></td>
+            <td><strong>${item.athlete_name ? NS.escapeHtml(item.athlete_name) : ''}</strong></td>
             <td>
               <span class="admin-medal"
                 style="background:${medalColors[item.medal] || '#6b7280'}">
-                ${item.medal || ''}
+                ${item.medal ? NS.escapeHtml(item.medal) : ''}
               </span>
             </td>
-            <td>${item.competition || '-'}</td>
-            <td>${item.event || '-'}</td>
+            <td>${item.competition ? NS.escapeHtml(item.competition) : '-'}</td>
+            <td>${item.event ? NS.escapeHtml(item.event) : '-'}</td>
             <td>${item.year ?? '-'}</td>
             <td>
               <label class="admin-toggle">
@@ -463,8 +462,8 @@ case 'delete': {
 
                           ${item?.photo_url ? `
                             <img
-                              src="${item.photo_url}"
-                              alt="${item.photo_alt || 'Athlete photo preview'}"
+                              src="${NS.safeUrl(item.photo_url)}"
+                              alt="${NS.escapeHtml(item.photo_alt || 'Athlete photo preview')}"
                               class="admin-image-upload__preview"
                               style="display:block;max-width:200px;max-height:150px;object-fit:cover;margin-top:12px"
                             >
@@ -476,7 +475,7 @@ case 'delete': {
                           <input
                             type="hidden"
                             name="photo_url"
-                            value="${item?.photo_url || ''}"
+                            value="${NS.escapeHtml(item?.photo_url || '')}"
                           >
                         </div>
                       `
@@ -501,14 +500,14 @@ case 'delete': {
                               rows="3"
                               placeholder="${field.placeholder || ''}"
                               ${field.required ? 'required' : ''}
-                            >${item?.[field.key] || ''}</textarea>
+                            >${NS.escapeHtml(item?.[field.key] || '')}</textarea>
                           `
                           : `
                             <input
                               type="${field.type}"
                               name="${field.key}"
                               id="${field.key}"
-                              value="${item?.[field.key] ?? ''}"
+                              value="${NS.escapeHtml(item?.[field.key] ?? '')}"
                               placeholder="${field.placeholder || ''}"
                               ${field.required ? 'required' : ''}
                             >
@@ -637,18 +636,8 @@ form?.addEventListener('submit', async (event) => {
   }
 
   async uploadAchievementPhoto(file) {
-    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const safeExtension = /^[a-z0-9]+$/.test(extension) ? extension : 'jpg';
-    const path = `achievements/${Date.now()}-${Math.random()
-      .toString(36).slice(2)}.${safeExtension}`;
-
-    const photoUrl = await uploadImage(
-      STORAGE_BUCKETS.ACHIEVEMENTS,
-      file,
-      path
-    );
-
-    return photoUrl;
+    const { blob, path } = await prepareImageUpload(file, 'achievements');
+    return await uploadImage(STORAGE_BUCKETS.ACHIEVEMENTS, blob, path);
   }
 
   async handleCreate(data) {

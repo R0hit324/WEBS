@@ -168,7 +168,7 @@ export class Navbar {
 
   handleResize() {
     this.syncFixedWidths();
-    if (window.innerWidth > 768 && this.isMobileOpen) {
+    if (window.innerWidth > 1024 && this.isMobileOpen) {
       this.closeMobileMenu();
     }
   }

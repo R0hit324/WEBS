@@ -131,10 +131,10 @@ export const sanitize = {
   stripHtml: (value: string): string => value.replace(/<[^>]*>/g, ''),
   escapeHtml: (value: string): string =>
     value
-      .replace(/&/g, '&')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/"/g, '"')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;'),
   digitsOnly: (value: string): string => value.replace(/\D/g, ''),
   alphanumeric: (value: string): string => value.replace(/[^a-zA-Z0-9]/g, ''),

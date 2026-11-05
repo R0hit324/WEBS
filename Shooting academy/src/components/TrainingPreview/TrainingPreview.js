@@ -1,4 +1,6 @@
-﻿const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+﻿import { NS } from '@/lib/escape-html';
+
+const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 export class TrainingPreview {
   constructor(container, options = {}) {
@@ -45,17 +47,18 @@ export class TrainingPreview {
   }
 
   render() {
+    const escVal = (v) => NS.escapeHtml(String(v == null ? '' : v));
     const cardsHtml = this.options.cards.map(card => `
       <article class="training-card">
         <span class="training-card__icon" aria-hidden="true">${card.icon}</span>
-        <h3 class="training-card__distance">${card.distance}</h3>
-        <p class="training-card__discipline">${card.discipline}</p>
-        ${card.description ? `<p class="training-card__description">${card.description}</p>` : ''}
+        <h3 class="training-card__distance">${escVal(card.distance)}</h3>
+        <p class="training-card__discipline">${escVal(card.discipline)}</p>
+        ${card.description ? `<p class="training-card__description">${escVal(card.description)}</p>` : ''}
         <ul class="training-card__features" role="list">
           ${card.features.map(feature => `
             <li class="training-card__feature">
               <span class="training-card__feature-icon" aria-hidden="true">${CHECK_ICON}</span>
-              <span>${feature}</span>
+              <span>${escVal(feature)}</span>
             </li>
           `).join('')}
           </ul>

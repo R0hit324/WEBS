@@ -14,6 +14,27 @@ export interface AdminSession {
   expires_at: number;
 }
 
+export type AdminRole = 'admin' | 'editor' | 'viewer';
+
+export type AdminRoleCheck =
+  | { status: 'allowed'; role: AdminRole }
+  | { status: 'denied' }        // no session, no admin_users row, or inactive row
+  | { status: 'unavailable' };  // role check could not be performed (network/DB error)
+
+// In-memory role for the admin UI session. Set by the route guard after a
+// successful role check; consumed by admin-api/base modules to hide/disable
+// write controls for read-only roles. Frontend gating is UX only — Supabase
+// RLS (can_admin_write()) is the actual enforcement layer.
+let rememberedAdminRole: AdminRole | null | undefined = undefined;
+
+export function rememberAdminRole(role: AdminRole | null): void {
+  rememberedAdminRole = role;
+}
+
+export function getRememberedAdminRole(): AdminRole | null | undefined {
+  return rememberedAdminRole;
+}
+
 const ADMIN_SESSION_KEY = 'matsya_admin_session';
 
 export async function adminLogin(email: string, password: string): Promise<AdminSession> {
@@ -73,6 +94,25 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     if (!stored) return null;
 
     const session: AdminSession = JSON.parse(stored);
+
+    // Reject tampered / malformed entries instead of sending
+    // `Bearer undefined`-style headers downstream.
+    const valid =
+      session &&
+      typeof session.user === 'object' &&
+      session.user !== null &&
+      typeof session.user.id === 'string' &&
+      session.user.id.length > 0 &&
+      typeof session.access_token === 'string' &&
+      session.access_token.length > 0 &&
+      typeof session.refresh_token === 'string' &&
+      typeof session.expires_at === 'number' &&
+      Number.isFinite(session.expires_at);
+
+    if (!valid) {
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+      return null;
+    }
 
     if (Date.now() > session.expires_at - 60000) {
       return await refreshAdminSession(session);
@@ -167,24 +207,47 @@ export async function fetchAdminUser(): Promise<AdminSession['user'] | null> {
 }
 
 export async function checkAdminRole(): Promise<boolean> {
+  const check = await getAdminRole();
+  return check.status === 'allowed' && (check.role === 'admin' || check.role === 'editor');
+}
+
+/**
+ * Decides whether the current session may enter an admin route and with
+ * which role:
+ *  - 'allowed'    → active admin_users row with a known role (admin/editor/viewer)
+ *  - 'denied'     → no session, no admin_users row for this uid, or is_active = false
+ *  - 'unavailable'→ transient failure (network / 5xx / unexpected payload).
+ *                   Callers should fail CLOSED for navigation (deny entry and
+ *                   let the user retry from the login screen) but keep RLS as
+ *                   the real guarantee — never trust this UI decision for data
+ *                   access.
+ */
+export async function getAdminRole(): Promise<AdminRoleCheck> {
   const session = await getAdminSession();
-  if (!session) return false;
+  if (!session) return { status: 'denied' };
 
   const config = getSupabaseConfig();
-  if (!config.url || !config.anonKey) return false;
+  if (!config.url || !config.anonKey) return { status: 'unavailable' };
 
   try {
-    const response = await fetch(`${config.url}/rest/v1/${TABLES.ADMIN_USERS}?id=eq.${session.user.id}&select=role,is_active`, {
+    const response = await fetch(`${config.url}/rest/v1/${TABLES.ADMIN_USERS}?id=eq.${encodeURIComponent(session.user.id)}&select=role,is_active`, {
       headers: {
         'apikey': config.anonKey,
         'Authorization': `Bearer ${session.access_token}`,
       },
     });
 
-    if (!response.ok) return false;
+    if (!response.ok) return { status: 'unavailable' };
+
     const data = await response.json();
-    return data.length > 0 && data[0].is_active === true && ['admin', 'editor'].includes(data[0].role);
+    if (!Array.isArray(data) || data.length === 0) return { status: 'denied' };
+
+    const row = data[0];
+    if (row.is_active !== true) return { status: 'denied' };
+    if (!['admin', 'editor', 'viewer'].includes(row.role)) return { status: 'denied' };
+
+    return { status: 'allowed', role: row.role as AdminRole };
   } catch {
-    return false;
+    return { status: 'unavailable' };
   }
 }

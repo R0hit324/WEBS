@@ -9,7 +9,11 @@ const SCROLL_START = 'top 88%';
 const HEAD_SELECTOR = '[class$="__header"], [class*="__head"]';
 const PAGE_TITLE_SELECTOR = '[class*="-page__title"]';
 const SUBTITLE_SELECTOR = '[class$="__subtitle"], [class$="__meta"], [class$="__breadcrumb"], [class$="__description"]';
-const GRID_SCOPE_SELECTOR = '[role="list"], [class$="__grid"], [class$="-grid"], [class$="__cards"], [class$="__list"], [class$="-cards"], [class$="__sessions"], [class$="__filters"], [class$="-details"], [class$="__details"]';
+// NOTE: '[class$="__filters"]' was removed deliberately — filter rows are
+// interactive controls. Re-animating them after every re-render (autoAlpha 0 +
+// y-offset) hid them for several hundred ms and swallowed fast option clicks.
+// Other grid scopes keep the staggered reveal animation.
+const GRID_SCOPE_SELECTOR = '[role="list"], [class$="__grid"], [class$="-grid"], [class$="__cards"], [class$="__list"], [class$="-cards"], [class$="__sessions"], [class$="-details"], [class$="__details"]';
 const IMAGE_SELECTOR = 'img[class$="__image"], [class$="__image"] img, [class$="__media"] img, [class$="__visual"] img, [class$="__banner"] img';
 const BLOCK_SELECTOR = '[class$="__cta"], [class$="__cta-actions"], [class$="__cta-section"], [class$="__form"], [class$="__form-wrapper"], [class$="__info"], [class$="__empty"], [class$="__note"], [class$="__actions"]';
 const HERO_SELECTOR = '.hero';

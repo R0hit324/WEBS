@@ -1,5 +1,6 @@
 ﻿import { BaseAdminModule } from '@/lib/admin-module';
-import { uploadImage, deleteImage } from '@/lib/admin-api';
+import { NS } from '@/lib/escape-html';
+import { uploadImage, deleteImage, prepareImageUpload } from '@/lib/admin-api';
 import { STORAGE_BUCKETS } from '@/lib/supabase';
 
 export class AdminTrainingModule extends BaseAdminModule {
@@ -36,6 +37,7 @@ export class AdminTrainingModule extends BaseAdminModule {
       reorderable: true,
     });
 
+    this.auditTableName = 'training_ranges';
     this.uploading = false;
     this.uploadProgress = 0;
   }
@@ -141,16 +143,8 @@ async handleCreate(data) {
     }
 
     try {
-      const timestamp = Date.now();
-      const ext = data.image_file.name.split('.').pop();
-      const path = `training/${timestamp}-${Math.random()
-        .toString(36).substring(7)}.${ext}`;
-
-      await uploadImage(
-        STORAGE_BUCKETS.TRAINING,
-        data.image_file,
-        path
-      );
+      const { blob, path } = await prepareImageUpload(data.image_file, 'training');
+      await uploadImage(STORAGE_BUCKETS.TRAINING, blob, path);
 
       const supabaseModule = await import('@/lib/supabase');
 
@@ -195,16 +189,8 @@ async handleUpdate(id, data) {
     }
 
     try {
-      const timestamp = Date.now();
-      const ext = data.image_file.name.split('.').pop();
-      const path = `training/${timestamp}-${Math.random()
-        .toString(36).substring(7)}.${ext}`;
-
-      await uploadImage(
-        STORAGE_BUCKETS.TRAINING,
-        data.image_file,
-        path
-      );
+      const { blob, path } = await prepareImageUpload(data.image_file, 'training');
+      await uploadImage(STORAGE_BUCKETS.TRAINING, blob, path);
 
       const supabaseModule = await import('@/lib/supabase');
 
@@ -343,7 +329,7 @@ break;
       return headerHtml + `
           <div class="admin-module__toolbar">
             <div class="admin-module__search">
-              <input type="search" class="admin-search" placeholder="Search ranges..." value="${this.search}" aria-label="Search" />
+              <input type="search" class="admin-search" placeholder="Search ranges..." value="${NS.escapeHtml(this.search)}" aria-label="Search" />
             </div>
             <div class="admin-module__filters">
               ${this.filters.map(filter => `<select class="admin-filter" data-filter="${filter.key}" aria-label="${filter.label}"><option value="">${filter.label}</option>${filter.options.map(opt => `<option value="${opt.value}" ${this.activeFilters[filter.key] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}</select>`).join('')}
@@ -355,7 +341,7 @@ break;
     return headerHtml + `
           <div class="admin-module__toolbar">
             <div class="admin-module__search">
-              <input type="search" class="admin-search" placeholder="Search ranges..." value="${this.search}" aria-label="Search" />
+              <input type="search" class="admin-search" placeholder="Search ranges..." value="${NS.escapeHtml(this.search)}" aria-label="Search" />
             </div>
             <div class="admin-module__filters">
               ${this.filters.map(filter => `
@@ -393,9 +379,9 @@ break;
             <tbody class="admin-table__body ${this.reorderable ? 'admin-table__body--reorderable' : ''}">
               ${this.items.length > 0 ? this.items.map(item => `
                 <tr data-id="${item.id}" data-order="${item.display_order}">
-                  <td><strong>${item.name}</strong></td>
-                  <td>${item.distance}</td>
-                  <td>${item.discipline || '-'}</td>
+<td><strong>${item.name ? NS.escapeHtml(item.name) : ''}</strong></td>
+<td>${NS.escapeHtml(item.distance ?? '')}</td>
+<td>${item.discipline ? NS.escapeHtml(item.discipline) : '-'}</td>
                   <td><label class="admin-toggle"><input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}><span class="admin-toggle__slider"></span></label></td>
                   <td><input type="number" class="admin-order-input" value="${item.display_order}" data-action="update-order" data-id="${item.id}" style="width: 60px;"></td>
                   <td><div class="admin-actions"><button class="admin-action-btn" data-action="edit" data-id="${item.id}" title="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="admin-action-btn admin-action-btn--danger" data-action="delete" data-id="${item.id}" title="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td>
@@ -428,17 +414,17 @@ break;
                 ` : field.type === 'checkbox' ? `
                   <label class="admin-checkbox"><input type="checkbox" name="${field.key}" id="${field.key}" ${item?.[field.key] ? 'checked' : ''}><span class="admin-checkbox__checkmark"></span> ${field.label}</label>
                 ` : field.type === 'textarea' ? `
-                  <textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}">${item?.[field.key] || ''}</textarea>
+                  <textarea name="${field.key}" id="${field.key}" rows="3" placeholder="${field.placeholder || ''}">${NS.escapeHtml(item?.[field.key] || '')}</textarea>
                 ` : field.type === 'image' ? `
                   <div class="admin-image-upload">
                     <input type="file" name="${field.key}" id="${field.key}" accept="image/*" ${!isEdit && field.required ? 'required' : ''} style="display: none;">
                     <button type="button" class="btn btn--secondary admin-image-upload__btn" data-action="pick-image">${item?.image_url ? 'Change Image' : 'Select Image'}</button>
-                    ${item?.image_url ? `<img src="${item.image_url}" alt="Preview" class="admin-image-upload__preview">` : ''}
-                    <input type="hidden" name="image_url" value="${item?.image_url || ''}">
-                    <input type="hidden" name="storage_path" value="${item?.storage_path || ''}">
+                    ${item?.image_url ? `<img src="${NS.safeUrl(item.image_url)}" alt="Preview" class="admin-image-upload__preview">` : ''}
+                    <input type="hidden" name="image_url" value="${NS.escapeHtml(item?.image_url || '')}">
+                    <input type="hidden" name="storage_path" value="${NS.escapeHtml(item?.storage_path || '')}">
                   </div>
                 ` : `
-                  <input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''} ${field.readonly ? 'readonly' : ''}>
+                  <input type="${field.type}" name="${field.key}" id="${field.key}" value="${NS.escapeHtml(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''} ${field.readonly ? 'readonly' : ''}>
                 `}
               </div>
             `).join('')}
@@ -455,9 +441,9 @@ break;
 
   getMobileCardMetaItems(item) {
     return [
-      { label: 'Distance', value: item.distance || '-' },
+      { label: 'Distance', value: item.distance ? NS.escapeHtml(String(item.distance)) : '-' },
       { label: 'Discipline', value: this.formatFieldValue(item, 'discipline') },
-      { label: 'Capacity', value: item.capacity ?? '-' },
+      { label: 'Capacity', value: item.capacity != null ? NS.escapeHtml(String(item.capacity)) : '-' },
     ];
   }
 

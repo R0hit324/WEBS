@@ -1,4 +1,7 @@
 import { BaseAdminModule } from '@/lib/admin-module';
+import { NS } from '@/lib/escape-html';
+
+const ESC = (v) => NS.escapeHtml(String(v == null ? '' : v));
 
 export class AdminMotivationalModule extends BaseAdminModule {
   constructor(container) {
@@ -33,7 +36,7 @@ export class AdminMotivationalModule extends BaseAdminModule {
   }
 
   getListHtml() {
-    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search quotes..." value="${this.search}" aria-label="Search" /><button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Quote</button></div>${this.getTableHtml()}`;
+    return `<div class="admin-module__toolbar"><input type="search" class="admin-search" placeholder="Search quotes..." value="${ESC(this.search)}" aria-label="Search" /><button class="btn btn--primary" data-action="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Quote</button></div>${this.getTableHtml()}`;
   }
 
   getTableHtml() {
@@ -43,9 +46,9 @@ export class AdminMotivationalModule extends BaseAdminModule {
 
     const rows = this.items.length > 0 ? this.items.map(item => `
       <tr data-id="${item.id}" data-order="${item.display_order}">
-        <td>"${item.quote_text ? item.quote_text.substring(0, 60) : ''}..."</td>
-        <td>${item.author_name || '-'}</td>
-        <td>${item.number_prefix || '-'}</td>
+<td>"${item.quote_text ? ESC(item.quote_text.substring(0, 60)) : ''}..."</td>
+<td>${item.author_name ? ESC(item.author_name) : '-'}</td>
+<td>${item.number_prefix ? ESC(item.number_prefix) : '-'}</td>
         <td>
           <label class="admin-toggle">
             <input type="checkbox" class="admin-toggle__input" data-action="toggle-visibility" data-id="${item.id}" ${item.is_visible ? 'checked' : ''}>
@@ -101,9 +104,9 @@ export class AdminMotivationalModule extends BaseAdminModule {
                   <span class="admin-checkbox__checkmark"></span> ${field.label}
                 </label>
               ` : field.type === 'textarea' ? `
-                <textarea name="${field.key}" id="${field.key}" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${item?.[field.key] || ''}</textarea>
+                <textarea name="${field.key}" id="${field.key}" rows="4" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>${ESC(item?.[field.key] || '')}</textarea>
               ` : `
-                <input type="${field.type}" name="${field.key}" id="${field.key}" value="${item?.[field.key] || ''}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>
+                <input type="${field.type}" name="${field.key}" id="${field.key}" value="${ESC(item?.[field.key] || '')}" placeholder="${field.placeholder || ''}" ${field.required ? 'required' : ''}>
               `}
             </div>
           `).join('')}
