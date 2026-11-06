@@ -1,0 +1,8 @@
+# Matsya Shooting Sports Academy — robots.txt
+# Public site is fully crawlable; admin surfaces are private.
+
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://matsyaacademy-h01oefate-rohit-efef.vercel.app/sitemap.xml
